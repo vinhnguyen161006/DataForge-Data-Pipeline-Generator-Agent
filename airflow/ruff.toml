@@ -1,0 +1,4 @@
+extend = "../backend/pyproject.toml"
+
+[lint]
+extend-select = ["AIR"]

@@ -1,0 +1,25 @@
+repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: a56c0b927e6465d37cae3e97d35d4d18ab2b96cd
+    hooks:
+      - id: ruff-check
+        args: [--config, backend/pyproject.toml]
+        exclude: ^(airflow|scripts)/
+      - id: ruff-format
+        args: [--config, backend/pyproject.toml]
+        exclude: ^(airflow|scripts)/
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    rev: a1a56a60ddf7e9ba639fdd9f00f852d63ede4c04
+    hooks:
+      - id: uv-lock
+        files: ^backend/(pyproject\.toml|uv\.lock)$
+        args: [--project, backend, --check]
+
+  - repo: local
+    hooks:
+      - id: check-conventions
+        name: check conventions (no comments, ASCII code)
+        entry: python scripts/check_conventions.py
+        language: system
+        pass_filenames: false

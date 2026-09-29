@@ -1,0 +1,86 @@
+[project]
+name = "dataforge-backend"
+version = "0.1.0"
+description = "DataForge: agent that generates ETL pipelines and dashboards from CSV"
+requires-python = "==3.11.*"
+dependencies = [
+    "fastapi==0.141.1",
+    "uvicorn[standard]==0.54.0",
+    "pydantic==2.13.5",
+    "pydantic-settings==2.15.0",
+    "python-multipart==0.0.32",
+    "sqlalchemy[asyncio]==2.1.1",
+    "alembic==1.20.0",
+    "asyncpg==0.31.0",
+    "psycopg[binary]==3.3.6",
+    "langgraph==1.2.12",
+    "langgraph-checkpoint-postgres==3.1.2",
+    "google-genai==2.25.0",
+    "duckdb==1.5.5",
+    "dbt-core==1.12.5",
+    "dbt-duckdb==1.11.0",
+    "sqlglot==30.20.0",
+    "qdrant-client==1.19.1",
+    "httpx==0.28.1",
+    "jinja2==3.1.6",
+    "pyjwt==2.15.0",
+    "argon2-cffi==25.1.0",
+    "pyyaml==6.0.3",
+]
+
+[dependency-groups]
+dev = [
+    "asgi-lifespan==2.1.0",
+    "mypy==2.3.1",
+    "pip-audit==2.10.1",
+    "pytest==9.1.1",
+    "pytest-asyncio==1.4.0",
+    "ruff==0.16.9",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = ["--strict-markers", "--strict-config"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+asyncio_default_test_loop_scope = "function"
+markers = [
+    "integration: needs real services (Postgres); runs only when DATAFORGE_TEST_DATABASE_URL is set",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["app/agents/prompts"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "ASYNC", "S", "PT", "RUF", "SIM", "C4", "TC"]
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+    "pydantic_settings.BaseSettings",
+    "sqlalchemy.orm.DeclarativeBase",
+    "app.db.models.Base",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101"]
+"app/api/**" = ["TC001", "TC002", "TC003"]
+"app/api/schemas.py" = ["S105"]
+"migrations/versions/**" = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+plugins = ["pydantic.mypy"]
+strict = true
+warn_unreachable = true
+exclude = ["^migrations/versions/"]
+
+[[tool.mypy.overrides]]
+module = ["asgi_lifespan.*", "duckdb.*", "qdrant_client.*"]
+ignore_missing_imports = true

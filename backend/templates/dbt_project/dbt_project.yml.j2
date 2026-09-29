@@ -1,0 +1,27 @@
+name: "[[ project_name ]]"
+version: "1.0.0"
+config-version: 2
+profile: "dataforge"
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target"]
+
+vars:
+  raw_dir: "./raw"
+  batch_id: "local"
+  loaded_at: "1970-01-01 00:00:00"
+
+models:
+  "[[ project_name ]]":
+    bronze:
+      +materialized: table
+      +schema: bronze
+    silver:
+      +materialized: table
+      +schema: silver
+    mart:
+      +materialized: table
+      +schema: mart

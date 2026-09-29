@@ -1,0 +1,7 @@
+dataforge:
+  target: local
+  outputs:
+    local:
+      type: duckdb
+      path: "{{ env_var('DATAFORGE_DUCKDB_PATH', 'warehouse.duckdb') }}"
+      threads: [[ threads ]]

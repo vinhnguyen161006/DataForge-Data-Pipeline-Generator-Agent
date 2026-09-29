@@ -1,0 +1,49 @@
+version: 2
+updates:
+  - package-ecosystem: uv
+    directory: /backend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+    groups:
+      dbt-duckdb-stack:
+        patterns:
+          - dbt-core
+          - dbt-duckdb
+          - duckdb
+
+  - package-ecosystem: pip
+    directory: /airflow/dbt
+    schedule:
+      interval: weekly
+    groups:
+      dbt-duckdb-stack:
+        patterns:
+          - "*"
+
+  - package-ecosystem: npm
+    directory: /frontend
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
+
+  - package-ecosystem: docker
+    directories:
+      - /backend
+      - /airflow
+    schedule:
+      interval: weekly
+    groups:
+      base-images:
+        patterns:
+          - "*"
+
+  - package-ecosystem: docker-compose
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

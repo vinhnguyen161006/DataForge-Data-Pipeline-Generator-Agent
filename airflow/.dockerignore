@@ -1,0 +1,3 @@
+dbt/requirements.in
+__pycache__
+tests
