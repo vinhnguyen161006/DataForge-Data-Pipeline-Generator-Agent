@@ -2,6 +2,8 @@
 
 Kế hoạch và nhật ký công việc 6 tuần, từ **2026-10-02** đến **2026-11-12**. Giao task theo tuần, **họp chốt vào cuối mỗi tuần**; kết quả họp ghi vào mục "Chốt tuần" của đúng tuần đó.
 
+Vì dự án bắt đầu thứ Sáu 02/10, mỗi "tuần" tính từ **thứ Sáu đến thứ Năm**; buổi họp chốt diễn ra vào **thứ Năm cuối mỗi tuần**. Nếu nhóm muốn họp cuối tuần theo lịch thường, dịch cả sáu mốc lên hai ngày và cập nhật lại các ngày trong file này.
+
 Nguồn yêu cầu: [docs/đặc tả.md](docs/đặc tả.md). Quy ước code và nguyên tắc bất biến: [CLAUDE.md](CLAUDE.md). Ranh giới module: [ARCHITECT.md](ARCHITECT.md).
 
 ---
@@ -10,14 +12,21 @@ Nguồn yêu cầu: [docs/đặc tả.md](docs/đặc tả.md). Quy ước code 
 
 | Thành viên | Vai trò | Vùng sở hữu chính |
 |---|---|---|
-| **Vinh** | Full stack, AI | Điều phối LangGraph (`graph/`, `services/runs`), toàn bộ frontend, tích hợp end-to-end, triển khai demo |
-| **Tuấn Anh** | AI | Agent LLM (`agents/`: llm, modeler, codegen, optimizer, prompts), `optimizer/rules.py`, retrieval Qdrant, gói xuất ZIP/PR |
-| **Tú** | Backend, AI | Auth/phân quyền, hàng đợi job, sandbox worker, `services/approvals` + `versioning`, API routes, tích hợp Airflow (chạy lại theo lịch) |
+| **Vinh** | Full stack, AI | Điều phối LangGraph (`graph/`, `services/runs`), vòng sửa lỗi Codegen, `compare/multiset` (đối chiếu tương đương), toàn bộ frontend, tích hợp end-to-end, triển khai demo |
+| **Tuấn Anh** | AI | Agent LLM (`agents/`: llm, modeler, codegen, prompts), `optimizer/rules.py`, `compare/benchmark`, retrieval Qdrant, ablation, gói xuất ZIP/PR |
+| **Tú** | Backend, AI | Auth/phân quyền, hàng đợi job, sandbox worker, `agents/optimizer` (đề xuất rewrite), `services/approvals` + `versioning`, API routes, tích hợp Airflow (chạy lại theo lịch) |
 | **Tuấn** | BA, Data | Golden dataset, bản thiết kế chuẩn, bảng kết quả chuẩn, kịch bản nghiệm thu, danh mục lỗi tiêm, báo cáo và tài liệu |
-| **Ánh** | AI, Data | `ingest/`, `profiler/`, `codegen/bronze` + `codegen/tests`, `compare/`, `optimizer/judge`, bộ eval offline |
-| **Trí** | Backend, AI | Hạ tầng Compose/CI, khóa phiên bản, `codegen/guard` + `codegen/project`, DAG template, `publisher/`, `metabase/`, nghiệm thu ZIP |
+| **Ánh** | Data | `ingest/`, `profiler/` (hồ sơ, dò khóa và quan hệ), `codegen/bronze`, chuẩn hóa golden dataset, chạy bộ eval và tổng hợp số liệu |
+| **Trí** (Trí đầu to) | Backend, AI | Hạ tầng Compose/CI, khóa phiên bản, `codegen/guard` + `codegen/project` + `codegen/tests`, `optimizer/judge` (phán xét xác định), DAG template, `publisher/`, `metabase/`, nghiệm thu ZIP |
 
 Mỗi module có một chủ sở hữu để tránh giẫm chân; người khác muốn sửa thì mở PR và nhờ chủ sở hữu review.
+
+Bốn người có kĩ năng AI (Vinh, Tuấn Anh, Tú, Trí) đều giữ một phần của vòng LLM; Ánh làm thuần Data. Hai cặp sau **bắt buộc khác người** để giữ nguyên tắc bất biến 1 (LLM đề xuất, công cụ xác định phán xét — không ai tự chấm mình):
+
+| Bên đề xuất (LLM) | Bên phán xét (xác định) |
+|---|---|
+| Tú — `agents/optimizer.py` đề xuất rewrite | Trí — `optimizer/judge.py` quyết định giữ/loại |
+| Tuấn Anh — `agents/codegen.py` sinh silver/mart | Trí — `codegen/tests.py` sinh test từ ràng buộc đã duyệt; Vinh — `compare/multiset` đối chiếu |
 
 ## 2. Quy ước chung cho mọi task
 
@@ -66,6 +75,7 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 - [ ] `core/security.py` (băm mật khẩu, token), `api/deps.py` (xác thực, `require_role`), `routes/auth.py`, `routes/projects.py` (FR-20: phân quyền theo dự án, hai vai trò Engineer/Reviewer).
 - [ ] `jobs/queue.py`: enqueue, claim bằng `FOR UPDATE SKIP LOCKED`, lease, retry, phục hồi job treo, `serial_key`. Integration test (cần `DATAFORGE_TEST_DATABASE_URL`).
 - [ ] Xác nhận bảng nào còn thiếu trong `db/models.py` cho approvals, batches, runs; nếu thiếu, tạo migration.
+- [ ] Spike DuckDB profiling: chạy `EXPLAIN ANALYZE` trên một query mẫu, xác định lấy được **thời gian chạy, số dòng quét, bộ nhớ đỉnh** ở đâu — nền cho `agents/optimizer.py` tuần 4 và đo hiệu năng tuần 3.
 
 ### Tuấn
 - [ ] Thu thập và chuẩn hóa **OULAD** (7 CSV) vào `eval/golden/oulad/`, kèm data dictionary tiếng Việt cho từng cột.
@@ -83,6 +93,7 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 - [ ] Chạy toàn stack `docker compose up -d --build` trên máy sạch; xác nhận `migrate` xong thì backend, worker, publisher mới lên; mạng `sandbox` đúng `internal: true`.
 - [ ] Xác nhận `infra/postgres/init.sh` tạo đủ 4 database + role (publisher ghi, `metabase_reader` chỉ đọc); khởi động Metabase v0.63.18.4 và tạo kết nối chỉ đọc tới warehouse.
 - [ ] Đưa job CI `images` và `security` chạy xanh trên `develop`.
+- [ ] Cùng Vinh chốt **hợp đồng giữa `compare/` và `optimizer/judge.py`** (ai trả gì, kiểu dữ liệu nào) để tuần 4 hai người làm song song không chặn nhau.
 
 ### Chốt tuần 1
 - Kết quả đạt:
@@ -152,6 +163,7 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 - [ ] `graph/nodes.py`: node `codegen`, `run_sandbox` và **vòng sửa lỗi** (compile/test fail → Codegen sửa) có ngân sách số lần tối đa; không tự chấm kết quả bằng LLM (nguyên tắc 1).
 - [ ] `services/runs.py`: enqueue job `dbt_build`, nhận kết quả từ worker qua bảng job.
 - [ ] Frontend `RunPage`: tiến trình theo bước, log, bảng đo từng model (thời gian, số dòng quét, bộ nhớ đỉnh), trạng thái test.
+- [ ] Bắt đầu `compare/multiset.py` (schema khớp + multiset có đếm số lần xuất hiện từng dòng), hoàn thiện ở tuần 4.
 - [ ] Review chéo PR của Tuấn Anh/Tú về ranh giới `graph` ↔ `agents` ↔ `jobs`.
 
 ### Tuấn Anh
@@ -174,11 +186,11 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 
 ### Ánh
 - [ ] `codegen/bronze.py` (FR-07): bronze giữ biểu diễn nguồn, **không ép kiểu nghiệp vụ** (`00123` giữ nguyên), mỗi dòng có `batch_id`, tên file, định danh dòng, thời điểm nạp, chấp nhận bản ghi lỗi.
-- [ ] `codegen/tests.py` (FR-08): sinh test **chỉ từ ràng buộc đã duyệt**, áp đúng tầng (bronze chấp nhận lỗi, silver cách ly kèm lý do và đếm, mart đạt ràng buộc); macro `dataforge_*` trong `templates/dbt_project/macros/`.
-- [ ] Unit test: ràng buộc chưa duyệt → không sinh test bắt buộc; quan sát thống kê chỉ ra cảnh báo.
-- [ ] Bắt đầu `compare/multiset.py` (schema khớp + multiset có đếm), hoàn thiện ở tuần 4.
+- [ ] Chuẩn bị dữ liệu silver/mart mẫu để Vinh và Trí có đầu vào test `compare/` và `codegen/tests.py`: bảng nhỏ có NULL, float, timestamp, dòng trùng.
+- [ ] Rà kết quả bronze trên 3 dataset golden: đếm bản ghi lỗi từng file, xác nhận `00123` không bị ép kiểu, báo số liệu cho Tuấn.
 
 ### Trí
+- [ ] `codegen/tests.py` (FR-08): sinh test **chỉ từ ràng buộc đã duyệt ở Cổng 1**, áp đúng tầng (bronze chấp nhận lỗi, silver cách ly kèm lý do và đếm, mart đạt ràng buộc); macro `dataforge_*` trong `templates/dbt_project/macros/`. Unit test: ràng buộc chưa duyệt → **không** sinh test bắt buộc; quan sát thống kê chỉ ra cảnh báo (nguyên tắc 9).
 - [ ] `codegen/project.py` + `templates/dbt_project/` (`dbt_project.yml.j2`, `profiles.yml.j2`): lắp ráp dbt project từ bronze/silver/mart/test; `dbt compile` phải thành công (FR-07).
 - [ ] Sinh `dag_config.json` xác định và hoàn thiện `airflow/dags/dataforge_pipelines.py` (template cố định, chỉ đọc cấu hình, không nạp Python tùy ý) (FR-09).
 - [ ] `airflow/tests/`: test DagBag integrity (DAG import được); thêm vào CI job `images`.
@@ -202,17 +214,22 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 - [ ] `graph/nodes.py`: node `optimize` (xếp hạng query → đề xuất → chạy lại → đối chiếu, trong ngân sách), `code_gate` (interrupt Cổng 2) và nhánh "trả lại → Codegen".
 - [ ] Frontend `CodeGatePage`: Monaco diff mã, kết quả test, **bảng so sánh hiệu năng trước/sau**, nhật ký rewrite bị loại kèm 4 loại lý do, cấu hình dashboard; nút duyệt chỉ hiện với Reviewer.
 - [ ] UI báo rõ khi phê duyệt cũ mất hiệu lực (`StaleApprovalError`) và yêu cầu chạy lại.
+- [ ] `compare/multiset.py` (hoàn thiện — tiêu chí **TƯƠNG ĐƯƠNG**): schema đầu ra khớp; so sánh **multiset có đếm số lần xuất hiện từng dòng**, không chỉ row count; quy tắc rõ cho NULL, số thực (dung sai) và timestamp; cố định giá trị phụ thuộc thời gian (`now()`, `current_date`, random) qua tham số. Unit test bằng bộ ca của Ánh.
+- [ ] Giữ **hai phép kiểm chứng tách biệt**, không gộp: (1) đầu ra vs đáp án chuẩn, (2) sau rewrite vs trước rewrite.
 - [ ] Ghi chú trên UI: đây là tối ưu **thời gian dựng dữ liệu trên DuckDB**, không tuyên bố dashboard Postgres nhanh hơn.
 
 ### Tuấn Anh
-- [ ] `agents/optimizer.py` + prompt: đề xuất rewrite cho các query xếp hạng chậm nhất; output validate Pydantic.
-- [ ] `optimizer/rules.py`: các rewrite theo quy tắc bằng sqlglot trên SQL đã compile (ví dụ đẩy filter xuống, bỏ subquery/CTE thừa, tránh join làm tăng dòng).
-- [ ] Ngân sách vòng lặp: số ứng viên tối đa, số lần sửa lỗi tối đa, thời gian tối đa, điều kiện dừng; query vốn đã tốt → kết quả hợp lệ "không cần rewrite".
-- [ ] Ghi token và thời gian tìm rewrite cho mỗi lượt (chỉ số eval).
+- [ ] `optimizer/rules.py`: các rewrite theo quy tắc bằng **sqlglot** trên SQL đã compile (đẩy filter xuống, bỏ subquery/CTE thừa, tránh join làm tăng dòng); mỗi rule có unit test giữ nguyên ngữ nghĩa.
+- [ ] `compare/benchmark.py` (tiêu chí **NHANH HƠN**): chạy lặp, lấy **median**, ước lượng biên độ nhiễu; "nhanh hơn" chỉ khi cải thiện vượt nhiễu; đo cả từng model và toàn pipeline. Cùng dữ liệu, cùng phiên bản engine, cùng cấu hình tài nguyên.
+- [ ] Phối hợp Tú: `rules.py` và `agents/optimizer.py` dùng chung một kiểu ứng viên rewrite (Pydantic) để `judge` của Trí xử lý được cả hai nguồn.
+- [ ] Chỉnh prompt Codegen theo lỗi compile/test thu được từ vòng sửa lỗi tuần 3 của Vinh.
+- [ ] Ghi token mỗi lần gọi agent cho toàn bộ luồng (chỉ số chi phí ở eval).
 
 ### Tú
 - [ ] `routes/runs.py`: endpoint duyệt Cổng 1/Cổng 2, `require_role` (chỉ Reviewer duyệt Cổng 2); chế độ nhóm Reviewer ≠ Engineer; chế độ cá nhân **ghi rõ "không có review độc lập" vào nhật ký**; lịch sử duyệt gắn với dự án (FR-20).
-- [ ] `worker/runner.py` job `rewrite_benchmark`: chạy lặp, cùng dữ liệu/engine/tài nguyên, trả số đo thô cho judge.
+- [ ] `agents/optimizer.py` + `agents/prompts/optimizer.md`: xếp hạng query theo thời gian chạy rồi **đề xuất rewrite** cho các query chậm nhất; output validate bằng Pydantic v2. Chỉ đề xuất — không tự kết luận giữ/loại (nguyên tắc 1).
+- [ ] **Ngân sách vòng lặp** optimizer: số ứng viên tối đa, số lần sửa lỗi tối đa, thời gian tối đa, điều kiện dừng; ghi thời gian tìm rewrite mỗi lượt.
+- [ ] `worker/runner.py` job `rewrite_benchmark`: chạy lặp, cùng dữ liệu/engine/tài nguyên, trả số đo thô cho `judge` của Trí.
 - [ ] Integration test **tình huống #2**: duyệt xong rồi sửa mã → phê duyệt cũ mất hiệu lực, không công bố được bằng phê duyệt cũ, phải chạy lại và duyệt lại (FR-13).
 - [ ] Integration test FR-21 với Cổng 2 và job đang chạy: restart backend/worker, lease hết hạn thì job được nhận lại, không chạy trùng.
 
@@ -223,12 +240,14 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 - [ ] Chuẩn bị mẫu bảng nhập kết quả eval 8 nhóm chỉ số cùng Ánh.
 
 ### Ánh
-- [ ] `compare/multiset.py` (hoàn thiện): schema đầu ra khớp; so sánh **multiset có đếm số lần xuất hiện từng dòng**, không chỉ row count; quy tắc rõ cho NULL, số thực (dung sai) và timestamp; cố định giá trị phụ thuộc thời gian (`now()`, `current_date`, random) qua tham số.
-- [ ] `compare/benchmark.py`: chạy lặp, lấy **median**, ước lượng biên độ nhiễu; "nhanh hơn" chỉ khi cải thiện vượt nhiễu; đo từng model và toàn pipeline.
-- [ ] `optimizer/judge.py`: phán xét xác định giữ/loại; phân loại bị loại: **sai dữ liệu / lỗi chạy / không nhanh hơn / quá thời gian**; mọi rewrite bị loại thì giữ bản hợp lệ trước đó.
-- [ ] Unit test đầy đủ cho các trường hợp biên (NULL, float, thứ tự dòng, trùng dòng, timestamp), gồm rewrite mẫu của Tuấn cho tình huống #1.
+- [ ] Dựng **bộ ca kiểm thử dữ liệu** cho `compare/`: cặp bảng giống/khác nhau ở NULL, sai số float, thứ tự dòng, dòng trùng lặp, timestamp lệch múi giờ; ghi rõ cặp nào phải kết luận "tương đương", cặp nào "khác". Giao cho Vinh và Trí dùng làm đầu vào test.
+- [ ] Kiểm chứng đầu ra mart sau publish khớp số liệu profile đã lập ở tuần 2 (số dòng, phân bố khóa); phát hiện sai lệch thì báo chủ sở hữu module.
+- [ ] Cùng Tuấn chốt mẫu bảng nhập kết quả eval 8 nhóm chỉ số; chuẩn hóa đơn vị đo (giây, số dòng, MB) để tuần 5–6 chỉ việc điền.
+- [ ] Chuẩn bị dữ liệu cho `eval/fault_injection.py` theo danh mục lỗi của Tuấn: sinh sẵn các biến thể CSV đã tiêm lỗi, mỗi biến thể ghi rõ lỗi gì và tầng nào phải bắt được.
 
 ### Trí
+- [ ] `optimizer/judge.py` (FR-12): **phán xét xác định** giữ/loại dựa trên `compare/` của Vinh — không dùng LLM để chấm (nguyên tắc 1); phân loại bị loại theo 4 lý do: **sai dữ liệu / lỗi chạy / không nhanh hơn / quá thời gian**; mọi rewrite bị loại thì giữ bản hợp lệ tốt nhất trước đó; query vốn đã tốt là kết quả hợp lệ.
+- [ ] Unit test `judge` với rewrite mẫu **cố ý nhanh hơn nhưng sai kết quả** của Tuấn (tình huống bắt buộc #1): phải bị loại, lý do "sai dữ liệu".
 - [ ] `publisher/postgres.py` (FR-14): nạp mart vào **staging** bằng psycopg `COPY` → đối chiếu (số dòng, tổng kiểm) → công bố nguyên tử (swap schema/view). Hỏng giữa chừng thì dashboard vẫn phục vụ phiên bản trước.
 - [ ] `worker/publisher_main.py`: chỉ tiến trình này giữ `PublisherSettings`; không bao giờ chạy mã LLM sinh.
 - [ ] Integration test **tình huống #3**: cùng một lô chạy hai lần → thay thế, **không nhân đôi dữ liệu**; test lỗi giữa chừng khi nạp.
@@ -252,12 +271,14 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 - [ ] `graph/nodes.py`: node `publish`, `dashboard`; `services/runs.deliver`: sau Cổng 2 → enqueue publisher → dựng dashboard → trả link.
 - [ ] **Chạy E2E OULAD** từ UI trên Compose đầy đủ; ghi mọi lỗi tích hợp vào backlog, sửa phần của mình, giao phần còn lại đúng chủ sở hữu.
 - [ ] Frontend `ExportPage`: tải ZIP, mở PR (nhập repo đích), sao chép từng file trong editor; hiển thị link dashboard và trạng thái từng bước; xử lý lỗi/retry.
+- [ ] `eval/run_eval.py`: dựng graph bằng `InMemorySaver` chạy pipeline offline cho từng tác vụ của Ánh (không qua FastAPI), thu kết quả dạng có cấu trúc.
 - [ ] Sửa trong editor sau bàn giao → tạo **phiên bản mới**, bắt chạy test lại (không dùng lại phê duyệt cũ).
 
 ### Tuấn Anh
 - [ ] `export/bundle.py`: ZIP **xác định** (cùng phiên bản → cùng nội dung) gồm `models/`, `dbt_project.yml`, `profiles.yml` mẫu, `schema.yml` + macro, loader CSV + manifest nguồn, script chuyển mart sang Postgres, cấu hình dashboard + script dựng lại, Dockerfile/Compose/dependency ghim, file DAG, manifest phiên bản + báo cáo kiểm chứng (FR-18).
 - [ ] `export/github_pr.py`: mở PR bằng GitHub API vào repo chỉ định, **không tự merge**; test bằng mock; ZIP và PR chứa cùng phiên bản đã duyệt (FR-19).
 - [ ] Gói xuất giữ đúng kiến trúc **DuckDB → Postgres → Metabase**; không transpile sang warehouse khác.
+- [ ] Chuẩn bị khung so sánh với **baseline người** (OULAD viết tay): chuẩn hóa engine, phần cứng, phạm vi đo; nếu không chuẩn hóa được thì ghi rõ là "so sánh giữa hai hệ thống".
 - [ ] Chỉnh prompt Modeler/Codegen theo lỗi thực tế thấy trong E2E (nhận log từ Vinh/Tuấn).
 
 ### Tú
@@ -273,15 +294,16 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 - [ ] Chuẩn bị dàn ý báo cáo cuối và danh sách số liệu cần từ eval.
 
 ### Ánh
-- [ ] `eval/tasks.py`, `eval/metrics.py`, `eval/run_eval.py`: nạp golden, chạy pipeline **offline tách khỏi web app**, so với đáp án chuẩn, tính các nhóm chỉ số (hợp lệ kỹ thuật, đúng dữ liệu, chất lượng thiết kế, chất lượng test, hiệu năng, rewrite bị loại, khả dụng).
-- [ ] `eval/fault_injection.py`: cài danh mục lỗi của Tuấn; đo tỉ lệ pass trên dữ liệu sạch và tỉ lệ bắt được lỗi tiêm.
-- [ ] Baseline nội bộ (output trước khi Optimizer can thiệp); chuẩn bị khung so sánh với baseline người (chuẩn hóa engine, phần cứng, phạm vi đo, hoặc ghi rõ là "so sánh giữa hai hệ thống").
+- [ ] `eval/tasks.py`: nạp golden (3 dataset) + đáp án chuẩn của Tuấn thành các tác vụ eval chạy được; bảo đảm **offline, tách khỏi web app**.
+- [ ] `eval/fault_injection.py`: cài danh mục lỗi của Tuấn vào dữ liệu đã chuẩn bị ở tuần 4; đo tỉ lệ pass trên dữ liệu sạch và tỉ lệ bắt được lỗi tiêm.
+- [ ] Chạy eval vòng đầu trên 3 dataset, lập danh sách tác vụ nào fail và fail ở nhóm chỉ số nào; giao bug về đúng chủ sở hữu module.
 - [ ] Số dòng quét và bộ nhớ đỉnh báo cáo là chỉ số tài nguyên, **không quy đổi thành tiền**.
 
 ### Trí
 - [ ] `metabase/builder.py`: đồng bộ metadata → tạo/cập nhật card **ba loại cố định (KPI số, đường, cột)** → gom vào dashboard → **kiểm tra truy vấn từng card** trước khi trả link (FR-15).
 - [ ] **Idempotent theo `logical_key`**: lưu ID card và dashboard, retry không tạo bản trùng, chạy lại riêng bước này không cần nạp lại dữ liệu; integration test với Metabase thật trong Compose.
 - [ ] Script dựng lại Metabase cho gói xuất (không gọi API nền tảng), phối hợp Tuấn Anh.
+- [ ] `eval/metrics.py`: tính 8 nhóm chỉ số (hợp lệ kỹ thuật, đúng dữ liệu, chất lượng thiết kế theo rubric của Tuấn, chất lượng test, hiệu năng, rewrite bị loại theo 4 lý do, khả dụng, ablation) + **baseline nội bộ** (output trước khi Optimizer can thiệp); tái dùng `compare/` của Vinh và `judge` của mình, không viết lại logic đối chiếu.
 - [ ] Bắt đầu nghiệm thu ZIP trên máy sạch (VM hoặc container trống) theo tài liệu của Tuấn; ghi lỗi gói xuất cho Tuấn Anh sửa.
 
 ### Chốt tuần 5
@@ -324,13 +346,14 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 
 ### Ánh
 - [ ] Chạy **eval đầy đủ** trên 3 dataset (offline): bảng 8 nhóm chỉ số, kèm baseline nội bộ; lưu kết quả dạng có cấu trúc để báo cáo trích.
-- [ ] Phân loại toàn bộ rewrite bị loại theo 4 lý do; kiểm chứng tỉ lệ bắt lỗi khi tiêm lỗi.
+- [ ] Kiểm chứng tỉ lệ bắt lỗi khi tiêm lỗi trên cả 3 dataset; đối chiếu bảng phân loại rewrite bị loại của Trí với dữ liệu thật.
 - [ ] Chạy lại eval sau mỗi lần sửa lớn để bảo đảm không hồi quy; chốt số liệu cuối trước code freeze.
 - [ ] Phối hợp Tuấn để số liệu trong báo cáo khớp kết quả chạy (ghi commit và phiên bản dữ liệu kèm theo).
 
 ### Trí
 - [ ] **Nghiệm thu tình huống #4**: máy sạch tải ZIP, điền cấu hình, cung cấp CSV → dựng lại mart và dashboard **không gọi API của nền tảng**; lặp lại đến khi ổn định.
 - [ ] Thử mở PR thật vào repo thử, xác nhận hệ thống không tự merge.
+- [ ] Xuất **bảng phân loại toàn bộ rewrite bị loại** theo 4 lý do từ nhật ký `judge`; đối chiếu với Ánh để số trong báo cáo khớp lần chạy thật.
 - [ ] CI toàn bộ xanh (6 job), build lại image Airflow và backend, `dbt --version` và import DAG trong image.
 - [ ] Rà lại **mọi phiên bản đã ghim** (không còn `latest`), digest image trong Dockerfile, Dependabot nhóm dbt-core + dbt-duckdb + duckdb.
 
@@ -352,12 +375,12 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 | FR-04 | Thiết kế đủ 6 nội dung | Tuấn Anh, Tuấn | 2 |
 | FR-05 | Hỏi lại khi mơ hồ | Tuấn Anh, Tuấn | 2 |
 | FR-06 | Cổng 1 | Vinh, Tú | 2 |
-| FR-07 | dbt 3 tầng, `dbt compile` | Ánh, Tuấn Anh, Trí | 3 |
-| FR-08 | Test từ ràng buộc đã duyệt | Ánh | 3 |
+| FR-07 | dbt 3 tầng, `dbt compile` | Ánh (bronze), Tuấn Anh (silver/mart), Trí (lắp ráp) | 3 |
+| FR-08 | Test từ ràng buộc đã duyệt | Trí | 3 |
 | FR-09 | DAG từ template | Trí | 3 |
 | FR-10 | Worker cách ly | Tú, Trí | 3 |
 | FR-11 | Đo từng model | Tú | 3 |
-| FR-12 | Rewrite có kiểm chứng | Tuấn Anh, Ánh | 4 |
+| FR-12 | Rewrite có kiểm chứng | Tú (đề xuất), Tuấn Anh (rules), Vinh (`compare/`), Trí (judge) | 4 |
 | FR-13 | Cổng 2, phê duyệt gắn phiên bản | Tú, Vinh | 4 |
 | FR-14 | Công bố Postgres | Trí | 4 |
 | FR-15 | Card/dashboard Metabase idempotent | Trí | 5 |
@@ -375,8 +398,9 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 | Tổ hợp Airflow + dbt-core + dbt-duckdb + DuckDB không tương thích | Chặn Airflow và gói xuất | Trí khóa trong tuần 1; không ai nâng lẻ một thành phần |
 | Gemini sinh SQL silver/mart sai hoặc không compile | Trễ tuần 3 và E2E | Vòng sửa lỗi có ngân sách; retrieval few-shot; Tuấn review sớm trên OULAD |
 | Modeler đoán thay vì hỏi lại | Vi phạm nguyên tắc 10, thiết kế sai grain | Tuấn dựng sẵn câu hỏi chuẩn; chấm bằng rubric từ tuần 2 |
-| Đo hiệu năng nhiễu nên "nhanh hơn" không đáng tin | Optimizer giữ nhầm rewrite | Median + so với biên độ nhiễu (Ánh); cùng engine và tài nguyên |
+| Đo hiệu năng nhiễu nên "nhanh hơn" không đáng tin | Optimizer giữ nhầm rewrite | Median + so với biên độ nhiễu (Vinh); cùng engine và tài nguyên |
 | Tích hợp E2E dồn vào tuần 5 | Trượt toàn kế hoạch | Mỗi tuần có mốc demo được; chạy E2E một phần từ tuần 3 |
 | Rò rỉ đáp án từ retrieval sang tập đo | Số liệu eval sai | Tách kho mẫu khỏi golden (Tuấn Anh + test) |
+| Vòng optimizer chia cho 4 người (Tú đề xuất, Tuấn Anh rules, Vinh compare, Trí judge) | Lệch hợp đồng dữ liệu, chặn nhau ở tuần 4 | Chốt kiểu ứng viên rewrite và hợp đồng `compare/` ↔ `judge` ngay tuần 1; Ánh cấp sẵn bộ ca kiểm thử ở tuần 4 |
 | Nhiều người sửa chung `graph/` và `app/db/models.py` | Xung đột, migration lệch | Chủ sở hữu rõ ràng; Alembic `alembic check` trong CI |
 | Máy sạch dựng lại ZIP thất bại | Rớt tiêu chí nghiệm thu #4 | Trí bắt đầu thử từ tuần 5, không để dồn tuần 6 |
