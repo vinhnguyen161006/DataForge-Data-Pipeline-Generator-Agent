@@ -17,7 +17,7 @@ Nguồn yêu cầu: [docs/đặc tả.md](docs/đặc tả.md). Quy ước code 
 | **Tú** | Backend, AI | Auth/phân quyền, hàng đợi job, sandbox worker, `agents/optimizer` (đề xuất rewrite), `services/approvals` + `versioning`, API routes, tích hợp Airflow (chạy lại theo lịch) |
 | **Tuấn** | BA, Data | Golden dataset, bản thiết kế chuẩn, bảng kết quả chuẩn, kịch bản nghiệm thu, danh mục lỗi tiêm, báo cáo và tài liệu |
 | **Ánh** | Data | `ingest/`, `profiler/` (hồ sơ, dò khóa và quan hệ), `codegen/bronze`, chuẩn hóa golden dataset, chạy bộ eval và tổng hợp số liệu |
-| **Trí** (Trí đầu to) | Backend, AI | Hạ tầng Compose/CI, khóa phiên bản, `codegen/guard` + `codegen/project` + `codegen/tests`, `optimizer/judge` (phán xét xác định), DAG template, `publisher/`, `metabase/`, nghiệm thu ZIP |
+| **Trí** | Backend, AI | Hạ tầng Compose/CI, khóa phiên bản, `codegen/guard` + `codegen/project` + `codegen/tests`, `optimizer/judge` (phán xét xác định), DAG template, `publisher/`, `metabase/`, nghiệm thu ZIP |
 
 Mỗi module có một chủ sở hữu để tránh giẫm chân; người khác muốn sửa thì mở PR và nhờ chủ sở hữu review.
 
