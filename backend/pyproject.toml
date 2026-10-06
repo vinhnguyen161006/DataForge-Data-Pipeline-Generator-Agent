@@ -19,7 +19,7 @@ dependencies = [
     "duckdb==1.5.5",
     "dbt-core==1.12.5",
     "dbt-duckdb==1.11.0",
-    "sqlglot==30.20.0",
+    "sqlglot==30.21.0",
     "qdrant-client==1.19.1",
     "httpx==0.28.1",
     "jinja2==3.1.6",
