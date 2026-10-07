@@ -3,7 +3,10 @@
   --fg: #1a1a1a;
   --muted: #666666;
   --accent: #2f6feb;
+  --accent-fg: #ffffff;
   --border: #e2e2e2;
+  --danger: #c62828;
+  --surface: #f6f7f9;
   font-family: system-ui, sans-serif;
   color: var(--fg);
   background: var(--bg);
@@ -14,7 +17,10 @@
     --bg: #121212;
     --fg: #eaeaea;
     --muted: #9a9a9a;
+    --accent: #5b8def;
     --border: #2c2c2c;
+    --danger: #ef6b6b;
+    --surface: #1c1c1c;
   }
 }
 
@@ -53,11 +59,116 @@ body {
   cursor: pointer;
 }
 
-.header button.active {
-  border-color: var(--accent);
+.header nav {
+  align-items: center;
+}
+
+.header h1 {
+  font-size: 1.4rem;
+}
+
+a {
   color: var(--accent);
 }
 
+.brand {
+  color: inherit;
+  text-decoration: none;
+}
+
+.page {
+  padding: 16px 0 32px;
+}
+
+.page.narrow {
+  max-width: 360px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 420px;
+  margin-top: 24px;
+}
+
+.form h3 {
+  margin: 0;
+}
+
+.form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 500;
+}
+
+.form input,
+.form select {
+  font: inherit;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  color: inherit;
+}
+
+button.primary {
+  align-self: flex-start;
+  font: inherit;
+  padding: 6px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--accent);
+  color: var(--accent-fg);
+  cursor: pointer;
+}
+
+button.primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+button.link {
+  margin-top: 12px;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  display: block;
+  overflow-x: auto;
+}
+
+.table th,
+.table td {
+  text-align: left;
+  padding: 8px 12px 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.badge {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.85em;
+}
+
+.error {
+  color: var(--danger);
+  margin: 0;
+}
+
+.muted,
 .todo {
   color: var(--muted);
 }
