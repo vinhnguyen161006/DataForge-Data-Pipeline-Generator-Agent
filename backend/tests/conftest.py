@@ -1,6 +1,7 @@
 import asyncio
 import os
 from collections.abc import AsyncIterator, Callable, Iterator
+from contextlib import asynccontextmanager
 
 import pytest
 from asgi_lifespan import LifespanManager
@@ -30,10 +31,15 @@ def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
             item.add_marker(skip)
 
 
+@asynccontextmanager
+async def open_in_memory_checkpointer(conn_string: str) -> AsyncIterator[InMemorySaver]:
+    yield InMemorySaver()
+
+
 @pytest.fixture
 def app() -> Iterator[FastAPI]:
     get_api_settings.cache_clear()
-    yield create_app()
+    yield create_app(open_checkpointer=open_in_memory_checkpointer)
     get_api_settings.cache_clear()
 
 
