@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
 from typing import TypeVar
-
+from google import genai
+from google.genai import types
 from pydantic import BaseModel
 
 T = TypeVar("T", bound=BaseModel)
@@ -21,9 +22,24 @@ class StructuredLLM:
     usage: TokenUsage = field(default_factory=TokenUsage)
 
     async def generate(self, *, system: str, prompt: str, schema: type[T]) -> T:
-        """TODO: call Gemini (google-genai) with response_json_schema=schema.model_json_schema().
+        async with genai.Client(api_key=self.api_key).aio as client:
+            self.usage.calls += 1
+            response = await client.models.generate_content(
+                model=self.model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=system,
+                    response_mime_type="application/json",
+                    response_json_schema=schema.model_json_schema(),
+                ),
+            )
 
-        Validate with schema.model_validate_json; on ValidationError retry up to
-        max_validation_retries with the error appended; record token usage.
-        """
-        raise NotImplementedError
+            if response.usage_metadata is not None:
+                self.usage.prompt_tokens += (
+                    response.usage_metadata.prompt_token_count or 0
+                )
+                self.usage.output_tokens += (
+                    response.usage_metadata.candidates_token_count or 0
+                )
+
+            return schema.model_validate_json(response.text or "")
