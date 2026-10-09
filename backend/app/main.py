@@ -16,7 +16,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     deliver_finished_jobs; close everything on shutdown.
     """
     yield
-    
+
 
 def create_app() -> FastAPI:
     settings = get_api_settings()
