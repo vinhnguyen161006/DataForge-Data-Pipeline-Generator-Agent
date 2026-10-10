@@ -175,6 +175,7 @@ Quan hệ theo zip không có khóa duy nhất phía cha (19.015 zip, 1.000.163 
 | F-13 | Giá trị `payment_installments` = 0 | Có (số dòng chưa đo) | Xác nhận ý nghĩa | Có |
 | F-14 | `shipping_limit_date` có năm 2020 | Khoảng đến 2020-04-09, ngoài khoảng đơn hàng 2016 đến 2018 | Cảnh báo; kiểm tra có phải dữ liệu thật không | Có |
 | F-15 | Nội dung đánh giá có xuống dòng và khoảng trắng | 8.120 nội dung có khoảng trắng; có `\r\n` | Giữ xuống dòng; đọc CSV đúng dấu nháy kép | Không (quy ước đọc) |
+| F-16 | Tọa độ `geolocation_lat` và `geolocation_lng` nằm ngoài Brazil | Vĩ độ lên đến 45,07; kinh độ lên đến 121,11 | Kiểm tra tọa độ theo khung Brazil trước khi dùng; không tự sửa | Có |
 
 ## Việc còn lại
 
@@ -184,3 +185,20 @@ Quan hệ theo zip không có khóa duy nhất phía cha (19.015 zip, 1.000.163 
 | 2 | Hỏi Engineer về F-3 | Có câu trả lời về `payment_value` |
 | 3 | Đếm số dòng cho các mục "chưa đo": F-9, F-12, F-13 | Có số liệu trong `profile_report.json` (cần truy vấn bổ sung) |
 | 4 | Đối chiếu ý nghĩa cột với mô tả gốc của Olist trên Kaggle | Các cột khớp được nâng lên `Đã xác nhận` |
+
+## Đơn vị của các cột
+
+Mọi đơn vị dưới đây là **Suy luận** từ tên cột và mô tả công khai của Olist; chưa đối chiếu với tài liệu gốc (mục 7 của README).
+
+| Bảng.Cột | Đơn vị | Ghi chú |
+|---|---|---|
+| customers.customer_zip_code_prefix, geolocation.geolocation_zip_code_prefix, sellers.seller_zip_code_prefix | mã bưu chính Brazil, 5 chữ số | Chuỗi, không phải số |
+| geolocation.geolocation_lat, geolocation_lng | độ (WGS84, suy luận) | Giá trị ngoài Brazil cần kiểm tra (F-16 trong báo cáo chất lượng) |
+| order_items.price, freight_value, order_payments.payment_value | BRL (real brasileiro) | Hai cột phí không có đơn vị khác |
+| order_payments.payment_installments | số kỳ trả góp | |
+| products.product_weight_g | gam | |
+| products.product_length_cm, product_height_cm, product_width_cm | cm | |
+| products.product_name_lenght, product_description_lenght | số ký tự | Tên cột viết sai chính tả trong nguồn, giữ nguyên |
+| products.product_photos_qty | số ảnh | |
+| review_score | điểm từ 1 đến 5 | |
+| các cột thời điểm (TIMESTAMP) | ngày giờ, múi giờ không rõ | Múi giờ chưa xác định; cần hỏi nguồn trước khi so sánh giờ |
