@@ -47,7 +47,9 @@
   - When bấm gửi
   - Then hệ thống từ chối với thông báo lỗi cụ thể và không tạo lượt chạy
 
-**Done when:** tải lên bộ OULAD gốc (7 file), mọi file có SHA-256 khớp `source_manifest.json`, và cấu hình đọc của cả 7 file được lưu trước khi chạy.
+**Tiêu chí trong đặc tả:** Đọc đúng encoding và dấu phân cách, hiển thị preview, lưu file gốc cùng cấu hình đọc.
+
+**Xong khi:** Tải đủ 7 CSV OULAD; SHA-256 từng file khớp `source_manifest.json`; bản xem trước đúng dấu phân cách; cấu hình đọc được lưu và file gốc không đổi byte.
 
 **Vấn đề mở:** đặc tả không nói ngưỡng khi đoán encoding sai. Đề xuất: nếu đoán không chắc chắn, bắt buộc Engineer chọn tay.
 
@@ -85,7 +87,9 @@
   - When kiểm tra toàn bộ đối tượng gửi đi tới LLM
   - Then không có trường nào chứa dòng dữ liệu thô
 
-**Done when:** với bộ OULAD đầy đủ, mọi tỉ lệ thiếu và số giá trị phân biệt trong `DataProfile` bằng với `profile_report.json` của Tuần 1 (sai số 0), và 0 trường trong payload gửi tới LLM chứa dòng dữ liệu thô.
+**Tiêu chí trong đặc tả:** Trả về thống kê từng cột; không gửi dữ liệu thô vào LLM.
+
+**Xong khi:** Hồ sơ trả thống kê cho từng cột (tỉ lệ thiếu, số giá trị khác nhau, min/max) khớp `profile_report.json`; payload gửi LLM không chứa dòng dữ liệu thô.
 
 **Vấn đề mở:** nếu một cột có hơn 5 giá trị mẫu, chọn 5 giá trị nào (ngẫu nhiên hay đầu tiên)? Cần cố định để kết quả tái lập.
 
@@ -123,7 +127,9 @@
   - When dò quan hệ
   - Then `fanout_warning` được đặt
 
-**Done when:** trên OULAD đầy đủ, hệ thống đề xuất đúng 6 khóa chính (không đề xuất `studentVle`), và đo ra đúng 10 quan hệ với số mồ côi trùng `profile_report.json`.
+**Tiêu chí trong đặc tả:** Mỗi ứng viên kèm tỉ lệ khớp khóa và cảnh báo join làm tăng số dòng.
+
+**Xong khi:** Mỗi ứng viên khóa/quan hệ kèm tỉ lệ khớp và cờ `fanout_warning`; trên OULAD hệ thống đề xuất đúng 6 khóa chính và không đề xuất `studentVle` làm khóa.
 
 **Vấn đề mở:** đặc tả không định nghĩa "khóa ứng viên" khi uniqueness đúng 100% nhưng chỉ trên một mẫu nhỏ. Đề xuất: yêu cầu cả 100% trên toàn bộ lô.
 
@@ -157,7 +163,9 @@
   - When Modeler chạy
   - Then `grain` của `fact_assessment_submission` là "một lần nộp của một enrollment cho một bài đánh giá" (khớp `canonical_design.md`, mục 1)
 
-**Done when:** với OULAD và yêu cầu chuẩn, `DataDesign` đạt đủ 9 trường bắt buộc, 100% mục có `rationale`, và grain của 6 bảng đích trùng với `canonical_design.md` (mục 1.2) hoặc có ghi lý do khác biệt.
+**Tiêu chí trong đặc tả:** Đủ sáu nội dung ở mục 3, mỗi lựa chọn có lý giải.
+
+**Xong khi:** `DataDesign` có đủ sáu nội dung của đặc tả mục 3 (bảng fact kèm grain, dimension, khóa, quan hệ, định nghĩa chỉ số, quy tắc làm sạch, và các mục còn lại) và mọi lựa chọn có `rationale` không rỗng.
 
 **Vấn đề mở:** đặc tả không định nghĩa tiêu chí so sánh một thiết kế do máy đề xuất với thiết kế chuẩn. Đề xuất: chấm theo bảng tiêu chí ở `canonical_design.md` mục 6, không đòi trùng tên bảng.
 
@@ -191,7 +199,9 @@
   - When hệ thống nhận output
   - Then output bị từ chối và Modeler được gọi lại
 
-**Done when:** với bộ kiểm thử gồm 10 tình huống mơ hồ đã dán nhãn và 10 tình huống rõ ràng, hệ thống hỏi đúng ít nhất 9/10 tình huống mơ hồ và không hỏi trong 10/10 tình huống rõ ràng ở cùng một lần chạy cố định.
+**Tiêu chí trong đặc tả:** Nghiệp vụ hoặc grain mơ hồ thì hỏi trước khi chốt thiết kế.
+
+**Xong khi:** Trên OULAD, Modeler hỏi lại khi grain hoặc nghiệp vụ mơ hồ (ví dụ `studentVle` có khóa trùng) và không chốt thiết kế cho những điểm đó.
 
 **Vấn đề mở:** bộ 20 tình huống chưa tồn tại. Đây là việc của Tuấn trong `eval/golden/` ở tuần sau; Deliverable D chỉ định nghĩa tiêu chí. Ví dụ OULAD có `studentVle` (Q1, nhóm trùng) là tình huống mơ hồ thật.
 
@@ -231,7 +241,9 @@
   - When hệ thống ghi phê duyệt
   - Then phê duyệt gắn với `design_hash` của đúng v2
 
-**Done when:** tất cả 4 AC đều đúng, và thử gọi bước sinh mã bằng API khi chưa duyệt đều trả về từ chối 100% lần.
+**Tiêu chí trong đặc tả:** Không sinh mã khi chưa có xác nhận.
+
+**Xong khi:** Mọi lần gọi bước sinh mã khi chưa có phê duyệt Cổng 1 đều bị từ chối.
 
 ---
 
@@ -267,7 +279,9 @@
   - When `guard.py` kiểm tra
   - Then mã bị từ chối trước khi chạy
 
-**Done when:** với OULAD, `dbt compile` thành công, số dòng mart `fact_assessment_submission` sau khi chạy bằng 173.912 và `dim_enrollment` bằng 32.593.
+**Tiêu chí trong đặc tả:** dbt compile thành công; bronze giữ biểu diễn nguồn.
+
+**Xong khi:** `dbt compile` thành công trên OULAD và bronze giữ biểu diễn chuỗi (ví dụ `00123` không thành `123`).
 
 **Vấn đề mở:** đặc tả không nói lượt chạy đầu tiên có phải đạt đúng số dòng mart kỳ vọng hay không, khi chưa có quyết định C09 (cộng dồn `studentVle`). Mục này không áp dụng cho `fact_vle_daily` cho tới khi nhóm duyệt Q1.
 
@@ -301,7 +315,9 @@
   - When Codegen chạy
   - Then không có test unique cho tổ hợp này
 
-**Done when:** trên OULAD, số test bắt buộc sinh ra bằng đúng số ràng buộc đã duyệt, và 0 test được sinh từ các quan sát A1 đến A10 trong `canonical_design.md` mục 4.2.
+**Tiêu chí trong đặc tả:** Không sinh test bắt buộc từ quan sát chưa được duyệt.
+
+**Xong khi:** Chỉ ràng buộc đã duyệt thành test bắt buộc; không có test nào sinh từ các quan sát A1–A10 của thiết kế chuẩn.
 
 ---
 
@@ -333,7 +349,9 @@
   - When Airflow quét thư mục approved
   - Then cấu hình bị bỏ qua có cảnh báo, không chạy
 
-**Done when:** trên OULAD, DAG import thành công trong môi trường thử và số tác vụ trong DAG khớp các bước đã duyệt.
+**Tiêu chí trong đặc tả:** DAG import được; không nạp mã Python tùy ý vào Airflow.
+
+**Xong khi:** DAG sinh từ template import được và chỉ tạo file `dag_config.json`, không tạo file Python mới.
 
 ---
 
@@ -371,7 +389,9 @@
   - When chạy
   - Then không có đường kết nối tới kho dữ liệu để ghi
 
-**Done when:** 4 AC đều đúng; và 10 mã thử mang tính tấn công (đọc file hệ thống, mở mạng, đọc biến môi trường, chạy vô hạn, ăn hết RAM) đều bị chặn 100%.
+**Tiêu chí trong đặc tả:** Worker có giới hạn tài nguyên và không giữ thông tin kết nối warehouse.
+
+**Xong khi:** Tiến trình worker có giới hạn RAM, CPU và thời gian, và không đọc được biến môi trường chứa thông tin kết nối kho dữ liệu.
 
 ---
 
@@ -403,7 +423,9 @@
   - When đo bộ nhớ
   - Then bộ nhớ đỉnh được ghi, không chỉ bộ nhớ cuối
 
-**Done when:** với OULAD, mỗi model trong 7 bảng có đủ thời gian (3 lần chạy), số dòng và bộ nhớ đỉnh, và số dòng quét của `studentVle` là 10.655.280.
+**Tiêu chí trong đặc tả:** Ghi thời gian chạy, số dòng quét, bộ nhớ đỉnh.
+
+**Xong khi:** Mỗi model có thời gian chạy, số dòng quét và bộ nhớ đỉnh; số dòng quét của `studentVle` bằng 10.655.280.
 
 ---
 
@@ -439,7 +461,9 @@
   - When tiếp tục
   - Then không thử thêm ứng viên nào
 
-**Done when:** trên bộ thử cố định (có ít nhất một rewrite đổi kết quả, một rewrite không nhanh hơn nhiễu, một rewrite hợp lệ), phán quyết đúng 100% và lý do loại được ghi cho mọi rewrite bị loại.
+**Tiêu chí trong đặc tả:** Rewrite đổi kết quả bị loại; mọi rewrite bị loại thì giữ bản hợp lệ trước đó.
+
+**Xong khi:** Rewrite đổi kết quả bị loại kèm lý do; khi mọi rewrite bị loại thì bản hợp lệ trước đó được giữ.
 
 **Vấn đề mở:** đặc tả không cho biết ngưỡng nhiễu cụ thể là bao nhiêu. Cần Tuấn/nhóm đo nhiễu trên máy chuẩn trước khi cố định.
 
@@ -473,7 +497,9 @@
   - When mở màn hình
   - Then thấy được kết quả test và bảng so sánh hiệu năng của đúng phiên bản đang xem
 
-**Done when:** AC-13.1 đúng trong 100% các lần thử sửa sau duyệt; và Reviewer xem được diff, test, benchmark trong một màn hình.
+**Tiêu chí trong đặc tả:** Không thể công bố phiên bản khác bằng phê duyệt của phiên bản cũ.
+
+**Xong khi:** Phiên bản đã duyệt không thể công bố sau khi mã bị sửa: phê duyệt cũ mất hiệu lực.
 
 **Vấn đề mở:** đặc tả nói Reviewer là người có quyền duyệt, nhưng chế độ cá nhân cho một người làm cả hai vai trò. Xem mục 9, vấn đề V1.
 
@@ -509,7 +535,9 @@
   - When đối chiếu
   - Then số dòng mỗi bảng khớp kỳ vọng trong `canonical_design.md` mục 6 (I1, I2, I3, I6)
 
-**Done when:** trên OULAD, công bố thành công, số dòng khớp I1 đến I6, và giả lập lỗi ở bước đổi công tắc không làm mất phiên bản đang phục vụ.
+**Tiêu chí trong đặc tả:** Nạp staging rồi đối chiếu; lỗi giữa chừng không phá phiên bản đang phục vụ.
+
+**Xong khi:** Nạp staging rồi đối chiếu; lỗi giữa chừng không làm hỏng phiên bản đang phục vụ.
 
 ---
 
@@ -545,7 +573,9 @@
   - When dựng
   - Then không có card loại khác được tạo
 
-**Done when:** trên OULAD, sau 5 lần thử lại có đúng một dashboard, mọi card chạy và trả số trùng với cột "Kiểm tra" trong `metrics_and_dashboards.md`.
+**Tiêu chí trong đặc tả:** Kiểm tra truy vấn từng card trước khi trả link; retry không tạo bản trùng.
+
+**Xong khi:** Mọi card được chạy thử trước khi trả link, và retry không tạo thêm dashboard hay card trùng.
 
 ---
 
@@ -577,7 +607,9 @@
   - When hệ thống nhận
   - Then lượt thứ hai xếp hàng, không chạy song song
 
-**Done when:** trên OULAD, chạy hai lần liên tiếp cùng lô cho số dòng mart giống hệt, và lượt trùng giờ không chạy song song (kiểm tra bằng số lượt đang chạy).
+**Tiêu chí trong đặc tả:** Cùng một lô chạy hai lần không nhân đôi dữ liệu.
+
+**Xong khi:** Cùng một lô chạy hai lần cho số dòng đích giống hệt lần đầu; không nhân đôi.
 
 ---
 
@@ -609,7 +641,9 @@
   - When DAG chạy
   - Then không dừng
 
-**Done when:** với ba lô thử (thêm cột, đổi kiểu, cấu trúc giống hệt), kết quả dừng/không dừng đúng 3/3 lần và không có dữ liệu nào vào kho trong hai trường hợp dừng.
+**Tiêu chí trong đặc tả:** Không tự áp dụng thay đổi schema chưa được duyệt.
+
+**Xong khi:** Lô có cột mới hoặc đổi kiểu bị dừng trước bước nạp, và không có dữ liệu nào vào kho.
 
 **Vấn đề mở:** đặc tả không định nghĩa "đổi kiểu" có bao gồm đổi cách viết (ví dụ `10-20` thành `10-20%`). Cần quyết định.
 
@@ -643,7 +677,9 @@
   - When chạy AC-18.2
   - Then không có lệnh gọi nào tới API nền tảng
 
-**Done when:** trên một máy không có DataForge, giải nén ZIP của OULAD, chạy và cho số dòng mart khớp I1 đến I3, với 0 lệnh gọi mạng tới nền tảng.
+**Tiêu chí trong đặc tả:** Máy sạch dựng lại được mart và dashboard, không gọi API nền tảng.
+
+**Xong khi:** ZIP của OULAD dựng lại được mart và dashboard trên máy sạch mà không gọi API nền tảng nào.
 
 ---
 
@@ -675,7 +711,9 @@
   - When gửi yêu cầu
   - Then hệ thống báo lỗi quyền, không tạo nhánh
 
-**Done when:** PR của OULAD có checksum nội dung trùng phiên bản đã duyệt và ở trạng thái mở, chưa merge.
+**Tiêu chí trong đặc tả:** PR chứa đúng phiên bản đã duyệt; hệ thống không tự merge.
+
+**Xong khi:** PR chứa đúng nội dung phiên bản đã duyệt (kiểm bằng checksum) và không tự merge.
 
 ---
 
@@ -713,7 +751,9 @@
   - When duyệt
   - Then hệ thống cho phép và ghi nhật ký "không có review độc lập"
 
-**Done when:** 4 AC đều đúng, và kiểm tra 100% các endpoint duyệt đều có kiểm tra vai trò ở phía máy chủ (không chỉ ở giao diện).
+**Tiêu chí trong đặc tả:** Chỉ Reviewer có quyền duyệt; lịch sử duyệt gắn với dự án.
+
+**Xong khi:** Chỉ Reviewer duyệt được Cổng 2 và mọi quyết định duyệt được ghi vào lịch sử gắn với dự án. (Xung đột với chế độ cá nhân: xem V1.)
 
 **Vấn đề mở:** AC-20.4 là quyết định nghiệp vụ, không phải kỹ thuật. Xem vấn đề V1 ở mục 9.
 
@@ -747,7 +787,9 @@
   - When xem lượt chạy
   - Then thấy đúng vị trí đang dừng
 
-**Done when:** giết tiến trình backend ở ba điểm (chờ Cổng 1, giữa codegen và execute, chờ Cổng 2), khởi động lại, và cả ba lượt đều tiếp tục đúng bước với nội dung không đổi.
+**Tiêu chí trong đặc tả:** Backend khởi động lại vẫn tiếp tục đúng trạng thái.
+
+**Xong khi:** Khởi động lại backend ở ba điểm chờ (Cổng 1, giữa codegen và execute, Cổng 2) thì lượt chạy tiếp tục đúng bước với nội dung không đổi.
 
 ---
 
@@ -784,6 +826,34 @@
 Các tình huống dùng cho nhiều FR: (a) OULAD gốc; (b) OULAD với một cột mới; (c) OULAD với một cột đổi kiểu; (d) bộ 10 mã tấn công; (e) bộ 20 tình huống mơ hồ/rõ ràng (FR-05, chưa có).
 
 ---
+
+## 6.3 Bảng tóm tắt "xong khi" (một dòng mỗi FR)
+
+| FR | Tiêu chí trong đặc tả | Xong khi |
+|---|---|---|
+| FR-01 | Đọc đúng encoding và dấu phân cách, hiển thị preview, lưu file gốc cùng cấu hình đọc | Tải đủ 7 CSV OULAD; SHA-256 từng file khớp `source_manifest.json`; bản xem trước đúng dấu phân cách; cấu hình đọc được lưu và file gốc không đổi byte. |
+| FR-02 | Trả về thống kê từng cột; không gửi dữ liệu thô vào LLM | Hồ sơ trả thống kê cho từng cột (tỉ lệ thiếu, số giá trị khác nhau, min/max) khớp `profile_report.json`; payload gửi LLM không chứa dòng dữ liệu thô. |
+| FR-03 | Mỗi ứng viên kèm tỉ lệ khớp khóa và cảnh báo join làm tăng số dòng | Mỗi ứng viên khóa/quan hệ kèm tỉ lệ khớp và cờ `fanout_warning`; trên OULAD hệ thống đề xuất đúng 6 khóa chính và không đề xuất `studentVle` làm khóa. |
+| FR-04 | Đủ sáu nội dung ở mục 3, mỗi lựa chọn có lý giải | `DataDesign` có đủ sáu nội dung của đặc tả mục 3 (bảng fact kèm grain, dimension, khóa, quan hệ, định nghĩa chỉ số, quy tắc làm sạch, và các mục còn lại) và mọi lựa chọn có `rationale` không rỗng. |
+| FR-05 | Nghiệp vụ hoặc grain mơ hồ thì hỏi trước khi chốt thiết kế | Trên OULAD, Modeler hỏi lại khi grain hoặc nghiệp vụ mơ hồ (ví dụ `studentVle` có khóa trùng) và không chốt thiết kế cho những điểm đó. |
+| FR-06 | Không sinh mã khi chưa có xác nhận | Mọi lần gọi bước sinh mã khi chưa có phê duyệt Cổng 1 đều bị từ chối. |
+| FR-07 | dbt compile thành công; bronze giữ biểu diễn nguồn | `dbt compile` thành công trên OULAD và bronze giữ biểu diễn chuỗi (ví dụ `00123` không thành `123`). |
+| FR-08 | Không sinh test bắt buộc từ quan sát chưa được duyệt | Chỉ ràng buộc đã duyệt thành test bắt buộc; không có test nào sinh từ các quan sát A1–A10 của thiết kế chuẩn. |
+| FR-09 | DAG import được; không nạp mã Python tùy ý vào Airflow | DAG sinh từ template import được và chỉ tạo file `dag_config.json`, không tạo file Python mới. |
+| FR-10 | Worker có giới hạn tài nguyên và không giữ thông tin kết nối warehouse | Tiến trình worker có giới hạn RAM, CPU và thời gian, và không đọc được biến môi trường chứa thông tin kết nối kho dữ liệu. |
+| FR-11 | Ghi thời gian chạy, số dòng quét, bộ nhớ đỉnh | Mỗi model có thời gian chạy, số dòng quét và bộ nhớ đỉnh; số dòng quét của `studentVle` bằng 10.655.280. |
+| FR-12 | Rewrite đổi kết quả bị loại; mọi rewrite bị loại thì giữ bản hợp lệ trước đó | Rewrite đổi kết quả bị loại kèm lý do; khi mọi rewrite bị loại thì bản hợp lệ trước đó được giữ. |
+| FR-13 | Không thể công bố phiên bản khác bằng phê duyệt của phiên bản cũ | Phiên bản đã duyệt không thể công bố sau khi mã bị sửa: phê duyệt cũ mất hiệu lực. |
+| FR-14 | Nạp staging rồi đối chiếu; lỗi giữa chừng không phá phiên bản đang phục vụ | Nạp staging rồi đối chiếu; lỗi giữa chừng không làm hỏng phiên bản đang phục vụ. |
+| FR-15 | Kiểm tra truy vấn từng card trước khi trả link; retry không tạo bản trùng | Mọi card được chạy thử trước khi trả link, và retry không tạo thêm dashboard hay card trùng. |
+| FR-16 | Cùng một lô chạy hai lần không nhân đôi dữ liệu | Cùng một lô chạy hai lần cho số dòng đích giống hệt lần đầu; không nhân đôi. |
+| FR-17 | Không tự áp dụng thay đổi schema chưa được duyệt | Lô có cột mới hoặc đổi kiểu bị dừng trước bước nạp, và không có dữ liệu nào vào kho. |
+| FR-18 | Máy sạch dựng lại được mart và dashboard, không gọi API nền tảng | ZIP của OULAD dựng lại được mart và dashboard trên máy sạch mà không gọi API nền tảng nào. |
+| FR-19 | PR chứa đúng phiên bản đã duyệt; hệ thống không tự merge | PR chứa đúng nội dung phiên bản đã duyệt (kiểm bằng checksum) và không tự merge. |
+| FR-20 | Chỉ Reviewer có quyền duyệt; lịch sử duyệt gắn với dự án | Chỉ Reviewer duyệt được Cổng 2 và mọi quyết định duyệt được ghi vào lịch sử gắn với dự án. (Xung đột với chế độ cá nhân: xem V1.) |
+| FR-21 | Backend khởi động lại vẫn tiếp tục đúng trạng thái | Khởi động lại backend ở ba điểm chờ (Cổng 1, giữa codegen và execute, Cổng 2) thì lượt chạy tiếp tục đúng bước với nội dung không đổi. |
+
+Ghi chú: mọi ngưỡng số trong bảng trên lấy từ dữ liệu OULAD đã đo, không tự đặt. Các ngưỡng không có trong đặc tả (ví dụ tỉ lệ đạt cho bộ test tình huống, số mã tấn công) được ghi là ĐỀ XUẤT trong mục 9 và không dùng làm tiêu chí xong.
 
 ## 7. Định nghĩa "Hoàn thành" của Deliverable D
 
