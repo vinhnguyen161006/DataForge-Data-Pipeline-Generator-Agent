@@ -1,0 +1,304 @@
+{
+  "customers": {
+    "file": "olist_customers_dataset.csv",
+    "bytes": 9033957,
+    "sha256": "983a422239e1712ded753b3bf9ecf47dc73f144d306029dcfa99e70a226883d2",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "lf",
+    "raw_header": "\"customer_id\",\"customer_unique_id\",\"customer_zip_code_prefix\",\"customer_city\",\"customer_state\"",
+    "delimiter_counts_in_header": {
+      ",": 4,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "customer_id",
+      "customer_unique_id",
+      "customer_zip_code_prefix",
+      "customer_city",
+      "customer_state"
+    ],
+    "expected_columns": [
+      "customer_id",
+      "customer_unique_id",
+      "customer_zip_code_prefix",
+      "customer_city",
+      "customer_state"
+    ],
+    "header_matches_expected": true,
+    "rows": 99441
+  },
+  "geolocation": {
+    "file": "olist_geolocation_dataset.csv",
+    "bytes": 61273883,
+    "sha256": "b514f6fc991b9566aeba02aa5d67e2c3630f034b60a0e05aa0d082a3b66d88d6",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 160464,
+    "line_endings": "lf",
+    "raw_header": "\"geolocation_zip_code_prefix\",\"geolocation_lat\",\"geolocation_lng\",\"geolocation_city\",\"geolocation_state\"",
+    "delimiter_counts_in_header": {
+      ",": 4,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "geolocation_zip_code_prefix",
+      "geolocation_lat",
+      "geolocation_lng",
+      "geolocation_city",
+      "geolocation_state"
+    ],
+    "expected_columns": [
+      "geolocation_zip_code_prefix",
+      "geolocation_lat",
+      "geolocation_lng",
+      "geolocation_city",
+      "geolocation_state"
+    ],
+    "header_matches_expected": true,
+    "rows": 1000163
+  },
+  "orders": {
+    "file": "olist_orders_dataset.csv",
+    "bytes": 17654914,
+    "sha256": "8df58ef3d2d7e9944010f7beecd9b75367f5588ec6e3c91cec19ae3345ef9ecf",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "lf",
+    "raw_header": "\"order_id\",\"customer_id\",\"order_status\",\"order_purchase_timestamp\",\"order_approved_at\",\"order_delivered_carrier_date\",\"order_delivered_customer_date\",\"order_estimated_delivery_date\"",
+    "delimiter_counts_in_header": {
+      ",": 7,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "order_id",
+      "customer_id",
+      "order_status",
+      "order_purchase_timestamp",
+      "order_approved_at",
+      "order_delivered_carrier_date",
+      "order_delivered_customer_date",
+      "order_estimated_delivery_date"
+    ],
+    "expected_columns": [
+      "order_id",
+      "customer_id",
+      "order_status",
+      "order_purchase_timestamp",
+      "order_approved_at",
+      "order_delivered_carrier_date",
+      "order_delivered_customer_date",
+      "order_estimated_delivery_date"
+    ],
+    "header_matches_expected": true,
+    "rows": 99441
+  },
+  "order_items": {
+    "file": "olist_order_items_dataset.csv",
+    "bytes": 15438671,
+    "sha256": "0bc4d068c4fe38cbb01bd90e8746e3c613fe7b4baef75fab7b0e329701c3e279",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "lf",
+    "raw_header": "\"order_id\",\"order_item_id\",\"product_id\",\"seller_id\",\"shipping_limit_date\",\"price\",\"freight_value\"",
+    "delimiter_counts_in_header": {
+      ",": 6,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "order_id",
+      "order_item_id",
+      "product_id",
+      "seller_id",
+      "shipping_limit_date",
+      "price",
+      "freight_value"
+    ],
+    "expected_columns": [
+      "order_id",
+      "order_item_id",
+      "product_id",
+      "seller_id",
+      "shipping_limit_date",
+      "price",
+      "freight_value"
+    ],
+    "header_matches_expected": true,
+    "rows": 112650
+  },
+  "order_payments": {
+    "file": "olist_order_payments_dataset.csv",
+    "bytes": 5777138,
+    "sha256": "4f713964f2815dbbaa40b9488268c55aac3627bfce5aa96cf58d1f3616de3cc0",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "lf",
+    "raw_header": "\"order_id\",\"payment_sequential\",\"payment_type\",\"payment_installments\",\"payment_value\"",
+    "delimiter_counts_in_header": {
+      ",": 4,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "order_id",
+      "payment_sequential",
+      "payment_type",
+      "payment_installments",
+      "payment_value"
+    ],
+    "expected_columns": [
+      "order_id",
+      "payment_sequential",
+      "payment_type",
+      "payment_installments",
+      "payment_value"
+    ],
+    "header_matches_expected": true,
+    "rows": 103886
+  },
+  "order_reviews": {
+    "file": "olist_order_reviews_dataset.csv",
+    "bytes": 14451670,
+    "sha256": "012b61c7593e34f51fa614efdf802b9c7056ce6aae5307ddb93236e7cfc797d7",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 110640,
+    "line_endings": "crlf",
+    "raw_header": "\"review_id\",\"order_id\",\"review_score\",\"review_comment_title\",\"review_comment_message\",\"review_creation_date\",\"review_answer_timestamp\"",
+    "delimiter_counts_in_header": {
+      ",": 6,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "review_id",
+      "order_id",
+      "review_score",
+      "review_comment_title",
+      "review_comment_message",
+      "review_creation_date",
+      "review_answer_timestamp"
+    ],
+    "expected_columns": [
+      "review_id",
+      "order_id",
+      "review_score",
+      "review_comment_title",
+      "review_comment_message",
+      "review_creation_date",
+      "review_answer_timestamp"
+    ],
+    "header_matches_expected": true,
+    "rows": 99224
+  },
+  "products": {
+    "file": "olist_products_dataset.csv",
+    "bytes": 2379446,
+    "sha256": "3e6569628a17fbc75fd206ee357b59e20364b9afa90f5b6cd5b4d624c58aa9cc",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "lf",
+    "raw_header": "\"product_id\",\"product_category_name\",\"product_name_lenght\",\"product_description_lenght\",\"product_photos_qty\",\"product_weight_g\",\"product_length_cm\",\"product_height_cm\",\"product_width_cm\"",
+    "delimiter_counts_in_header": {
+      ",": 8,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "product_id",
+      "product_category_name",
+      "product_name_lenght",
+      "product_description_lenght",
+      "product_photos_qty",
+      "product_weight_g",
+      "product_length_cm",
+      "product_height_cm",
+      "product_width_cm"
+    ],
+    "expected_columns": [
+      "product_id",
+      "product_category_name",
+      "product_name_lenght",
+      "product_description_lenght",
+      "product_photos_qty",
+      "product_weight_g",
+      "product_length_cm",
+      "product_height_cm",
+      "product_width_cm"
+    ],
+    "header_matches_expected": true,
+    "rows": 32951
+  },
+  "sellers": {
+    "file": "olist_sellers_dataset.csv",
+    "bytes": 174703,
+    "sha256": "1f643d2b950373b85735e7794b20986f528d7a000432e7c6f9bcbb44d0846a0e",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 6,
+    "line_endings": "lf",
+    "raw_header": "\"seller_id\",\"seller_zip_code_prefix\",\"seller_city\",\"seller_state\"",
+    "delimiter_counts_in_header": {
+      ",": 3,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "seller_id",
+      "seller_zip_code_prefix",
+      "seller_city",
+      "seller_state"
+    ],
+    "expected_columns": [
+      "seller_id",
+      "seller_zip_code_prefix",
+      "seller_city",
+      "seller_state"
+    ],
+    "header_matches_expected": true,
+    "rows": 3095
+  },
+  "category_translation": {
+    "file": "product_category_name_translation.csv",
+    "bytes": 2613,
+    "sha256": "a81f0d1f27b27e7293f761bc79e3ce8f348ee39c4b3ed3e49bde38f478586278",
+    "valid_utf8": true,
+    "has_utf8_bom": true,
+    "non_ascii_bytes": 3,
+    "line_endings": "crlf",
+    "raw_header": "product_category_name,product_category_name_english",
+    "delimiter_counts_in_header": {
+      ",": 1,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "product_category_name",
+      "product_category_name_english"
+    ],
+    "expected_columns": [
+      "product_category_name",
+      "product_category_name_english"
+    ],
+    "header_matches_expected": true,
+    "rows": 71
+  }
+}
