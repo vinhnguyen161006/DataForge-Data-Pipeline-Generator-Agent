@@ -1,0 +1,2581 @@
+{
+  "dataset": "olist",
+  "duckdb_version": "1.5.5",
+  "max_rows_per_file": null,
+  "null_like_tokens_checked": [
+    "",
+    "?",
+    "NA",
+    "N/A",
+    "NULL",
+    "null",
+    "NaN"
+  ],
+  "tables": {
+    "customers": {
+      "rows": 99441,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "customer_id"
+          ],
+          "rows": 99441,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 99441,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        },
+        {
+          "key_columns": [
+            "customer_unique_id"
+          ],
+          "rows": 99441,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 96096,
+          "uniqueness_pct": 96.636196,
+          "duplicate_key_groups": 2997,
+          "rows_in_duplicate_groups": 6342,
+          "max_rows_per_key": 17
+        }
+      ],
+      "columns": {
+        "customer_id": {
+          "rows": 99441,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 99441,
+          "min_text": "00012a2ce6f8dcda20d059ce98491703",
+          "max_text": "ffffe8b65bbe3087b653a978c870db99",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "00012a2ce6f8dcda20d059ce98491703",
+              1
+            ],
+            [
+              "000161a058600d5901f007fab4c27140",
+              1
+            ],
+            [
+              "0001fd6190edaaf884bcaf3d49edf079",
+              1
+            ],
+            [
+              "0002414f95344307404f0ace7a26f1d5",
+              1
+            ],
+            [
+              "000379cdec625522490c315e70c7a9fb",
+              1
+            ]
+          ]
+        },
+        "customer_unique_id": {
+          "rows": 99441,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 96096,
+          "min_text": "0000366f3b9a7992bf8c76cfdf3221e2",
+          "max_text": "ffffd2657e2aad2907e67c3e9daecbeb",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "8d50f5eadf50201ccdcedfb9e2ac8455",
+              17
+            ],
+            [
+              "3e43e6105506432c953e165fb2acf44c",
+              9
+            ],
+            [
+              "1b6c7548a2a1f9037c1fd3ddfed95f33",
+              7
+            ],
+            [
+              "6469f99c1f9dfae7733b25662e7f1782",
+              7
+            ],
+            [
+              "ca77025e7201e3b30c44b472ff346268",
+              7
+            ]
+          ]
+        },
+        "customer_zip_code_prefix": {
+          "rows": 99441,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 14994,
+          "min_text": "01003",
+          "max_text": "99990",
+          "inferred_type": "integer",
+          "numeric_min": 1003.0,
+          "numeric_max": 99990.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 23995,
+          "top5_values": [
+            [
+              "22790",
+              142
+            ],
+            [
+              "24220",
+              124
+            ],
+            [
+              "22793",
+              121
+            ],
+            [
+              "24230",
+              117
+            ],
+            [
+              "22775",
+              110
+            ]
+          ]
+        },
+        "customer_city": {
+          "rows": 99441,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 4119,
+          "min_text": "abadia dos dourados",
+          "max_text": "zortea",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "sao paulo",
+              15540
+            ],
+            [
+              "rio de janeiro",
+              6882
+            ],
+            [
+              "belo horizonte",
+              2773
+            ],
+            [
+              "brasilia",
+              2131
+            ],
+            [
+              "curitiba",
+              1521
+            ]
+          ]
+        },
+        "customer_state": {
+          "rows": 99441,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 27,
+          "min_text": "AC",
+          "max_text": "TO",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "SP": 41746,
+            "RJ": 12852,
+            "MG": 11635,
+            "RS": 5466,
+            "PR": 5045,
+            "SC": 3637,
+            "BA": 3380,
+            "DF": 2140,
+            "ES": 2033,
+            "GO": 2020,
+            "PE": 1652,
+            "CE": 1336,
+            "PA": 975,
+            "MT": 907,
+            "MA": 747,
+            "MS": 715,
+            "PB": 536,
+            "PI": 495,
+            "RN": 485,
+            "AL": 413,
+            "SE": 350,
+            "TO": 280,
+            "RO": 253,
+            "AM": 148,
+            "AC": 81,
+            "AP": 68,
+            "RR": 46
+          }
+        }
+      }
+    },
+    "geolocation": {
+      "rows": 1000163,
+      "duplicate_full_rows": 261831,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "geolocation_zip_code_prefix",
+            "geolocation_lat",
+            "geolocation_lng"
+          ],
+          "rows": 1000163,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 720154,
+          "uniqueness_pct": 72.003663,
+          "duplicate_key_groups": 131707,
+          "rows_in_duplicate_groups": 411716,
+          "max_rows_per_key": 314
+        }
+      ],
+      "columns": {
+        "geolocation_zip_code_prefix": {
+          "rows": 1000163,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 19015,
+          "min_text": "01001",
+          "max_text": "99990",
+          "inferred_type": "integer",
+          "numeric_min": 1001.0,
+          "numeric_max": 99990.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 245733,
+          "top5_values": [
+            [
+              "24220",
+              1146
+            ],
+            [
+              "24230",
+              1102
+            ],
+            [
+              "38400",
+              965
+            ],
+            [
+              "35500",
+              907
+            ],
+            [
+              "11680",
+              879
+            ]
+          ]
+        },
+        "geolocation_lat": {
+          "rows": 1000163,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 717372,
+          "min_text": "-0.00004367379244740171",
+          "max_text": "45.06593318269697",
+          "inferred_type": "numeric",
+          "numeric_min": -36.6053744107061,
+          "numeric_max": 45.06593318269697,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "-27.102098999999946",
+              314
+            ],
+            [
+              "-23.495901469908656",
+              190
+            ],
+            [
+              "-23.506049208479613",
+              141
+            ],
+            [
+              "-23.490617505282753",
+              127
+            ],
+            [
+              "-23.00551425914832",
+              102
+            ]
+          ]
+        },
+        "geolocation_lng": {
+          "rows": 1000163,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 717615,
+          "min_text": "-101.46676644931476",
+          "max_text": "9.341527629906514",
+          "inferred_type": "numeric",
+          "numeric_min": -101.46676644931476,
+          "numeric_max": 121.10539381057764,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "-48.62961349999995",
+              314
+            ],
+            [
+              "-46.87468669635919",
+              190
+            ],
+            [
+              "-46.71737739541604",
+              141
+            ],
+            [
+              "-46.86900366603934",
+              127
+            ],
+            [
+              "-43.37596441256672",
+              102
+            ]
+          ]
+        },
+        "geolocation_city": {
+          "rows": 1000163,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 8011,
+          "min_text": "* cidade",
+          "max_text": "\u00f3leo",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 1,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "sao paulo",
+              135800
+            ],
+            [
+              "rio de janeiro",
+              62151
+            ],
+            [
+              "belo horizonte",
+              27805
+            ],
+            [
+              "s\u00e3o paulo",
+              24918
+            ],
+            [
+              "curitiba",
+              16593
+            ]
+          ]
+        },
+        "geolocation_state": {
+          "rows": 1000163,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 27,
+          "min_text": "AC",
+          "max_text": "TO",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "SP": 404268,
+            "MG": 126336,
+            "RJ": 121169,
+            "RS": 61851,
+            "PR": 57859,
+            "SC": 38328,
+            "BA": 36045,
+            "GO": 20139,
+            "ES": 16748,
+            "PE": 16432,
+            "DF": 12986,
+            "MT": 12031,
+            "CE": 11674,
+            "PA": 10853,
+            "MS": 10431,
+            "MA": 7853,
+            "PB": 5538,
+            "RN": 5041,
+            "PI": 4549,
+            "AL": 4183,
+            "TO": 3576,
+            "SE": 3563,
+            "RO": 3478,
+            "AM": 2432,
+            "AC": 1301,
+            "AP": 853,
+            "RR": 646
+          }
+        }
+      }
+    },
+    "orders": {
+      "rows": 99441,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "order_id"
+          ],
+          "rows": 99441,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 99441,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "order_id": {
+          "rows": 99441,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 99441,
+          "min_text": "00010242fe8c5a6d1ba2dd792cb16214",
+          "max_text": "fffe41c64501cc87c801fd61db3f6244",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "00010242fe8c5a6d1ba2dd792cb16214",
+              1
+            ],
+            [
+              "00018f77f2f0320c557190d7a144bdd3",
+              1
+            ],
+            [
+              "000229ec398224ef6ca0657da4fc703e",
+              1
+            ],
+            [
+              "00024acbcdf0a6daa1e931b038114c75",
+              1
+            ],
+            [
+              "00042b26cf59d7ce69dfabb4e55b4fd9",
+              1
+            ]
+          ]
+        },
+        "customer_id": {
+          "rows": 99441,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 99441,
+          "min_text": "00012a2ce6f8dcda20d059ce98491703",
+          "max_text": "ffffe8b65bbe3087b653a978c870db99",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "00012a2ce6f8dcda20d059ce98491703",
+              1
+            ],
+            [
+              "000161a058600d5901f007fab4c27140",
+              1
+            ],
+            [
+              "0001fd6190edaaf884bcaf3d49edf079",
+              1
+            ],
+            [
+              "0002414f95344307404f0ace7a26f1d5",
+              1
+            ],
+            [
+              "000379cdec625522490c315e70c7a9fb",
+              1
+            ]
+          ]
+        },
+        "order_status": {
+          "rows": 99441,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 8,
+          "min_text": "approved",
+          "max_text": "unavailable",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "delivered": 96478,
+            "shipped": 1107,
+            "canceled": 625,
+            "unavailable": 609,
+            "invoiced": 314,
+            "processing": 301,
+            "created": 5,
+            "approved": 2
+          }
+        },
+        "order_purchase_timestamp": {
+          "rows": 99441,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 98875,
+          "min_text": "2016-09-04 21:15:19",
+          "max_text": "2018-10-17 17:30:18",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "2017-11-20 10:59:08",
+              3
+            ],
+            [
+              "2017-11-20 11:46:30",
+              3
+            ],
+            [
+              "2018-02-19 15:37:47",
+              3
+            ],
+            [
+              "2018-03-31 15:08:21",
+              3
+            ],
+            [
+              "2018-04-11 10:48:14",
+              3
+            ]
+          ]
+        },
+        "order_approved_at": {
+          "rows": 99441,
+          "null_like_rows": 160,
+          "null_like_rate_pct": 0.1609,
+          "null_like_tokens": {
+            "": 160
+          },
+          "distinct_values": 90734,
+          "min_text": "",
+          "max_text": "2018-09-03 17:40:06",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "",
+              160
+            ],
+            [
+              "2018-02-27 04:31:10",
+              9
+            ],
+            [
+              "2017-11-07 07:30:29",
+              7
+            ],
+            [
+              "2017-11-07 07:30:38",
+              7
+            ],
+            [
+              "2017-12-05 10:30:42",
+              7
+            ]
+          ]
+        },
+        "order_delivered_carrier_date": {
+          "rows": 99441,
+          "null_like_rows": 1783,
+          "null_like_rate_pct": 1.793,
+          "null_like_tokens": {
+            "": 1783
+          },
+          "distinct_values": 81019,
+          "min_text": "",
+          "max_text": "2018-09-11 19:48:28",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "",
+              1783
+            ],
+            [
+              "2018-05-09 15:48:00",
+              47
+            ],
+            [
+              "2018-05-10 18:29:00",
+              32
+            ],
+            [
+              "2018-05-07 12:31:00",
+              21
+            ],
+            [
+              "2018-05-02 15:15:00",
+              16
+            ]
+          ]
+        },
+        "order_delivered_customer_date": {
+          "rows": 99441,
+          "null_like_rows": 2965,
+          "null_like_rate_pct": 2.9817,
+          "null_like_tokens": {
+            "": 2965
+          },
+          "distinct_values": 95665,
+          "min_text": "",
+          "max_text": "2018-10-17 13:22:46",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "",
+              2965
+            ],
+            [
+              "2016-10-27 17:32:07",
+              3
+            ],
+            [
+              "2017-06-19 18:47:51",
+              3
+            ],
+            [
+              "2017-12-02 00:26:45",
+              3
+            ],
+            [
+              "2018-02-14 21:09:19",
+              3
+            ]
+          ]
+        },
+        "order_estimated_delivery_date": {
+          "rows": 99441,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 459,
+          "min_text": "2016-09-30 00:00:00",
+          "max_text": "2018-11-12 00:00:00",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "2017-12-20 00:00:00",
+              522
+            ],
+            [
+              "2018-03-12 00:00:00",
+              516
+            ],
+            [
+              "2018-03-13 00:00:00",
+              513
+            ],
+            [
+              "2018-05-29 00:00:00",
+              513
+            ],
+            [
+              "2018-02-14 00:00:00",
+              507
+            ]
+          ]
+        }
+      }
+    },
+    "order_items": {
+      "rows": 112650,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "order_id",
+            "order_item_id"
+          ],
+          "rows": 112650,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 112650,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "order_id": {
+          "rows": 112650,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 98666,
+          "min_text": "00010242fe8c5a6d1ba2dd792cb16214",
+          "max_text": "fffe41c64501cc87c801fd61db3f6244",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "8272b63d03f5f79c56e9e4120aec44ef",
+              21
+            ],
+            [
+              "1b15974a0141d54e36626dca3fdc731a",
+              20
+            ],
+            [
+              "ab14fdcfbe524636d65ee38360e22ce8",
+              20
+            ],
+            [
+              "428a2f660dc84138d969ccd69a0ab6d5",
+              15
+            ],
+            [
+              "9ef13efd6949e4573a18964dd1bbe7f5",
+              15
+            ]
+          ]
+        },
+        "order_item_id": {
+          "rows": 112650,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 21,
+          "min_text": "1",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 21.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "1": 98666,
+            "2": 9803,
+            "3": 2287,
+            "4": 965,
+            "5": 460,
+            "6": 256,
+            "7": 58,
+            "8": 36,
+            "9": 28,
+            "10": 25,
+            "11": 17,
+            "12": 13,
+            "13": 8,
+            "14": 7,
+            "15": 5,
+            "16": 3,
+            "17": 3,
+            "18": 3,
+            "19": 3,
+            "20": 3,
+            "21": 1
+          }
+        },
+        "product_id": {
+          "rows": 112650,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 32951,
+          "min_text": "00066f42aeeb9f3007548bb9d3f33c38",
+          "max_text": "fffe9eeff12fcbd74a2f2b007dde0c58",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "aca2eb7d00ea1a7b8ebd4e68314663af",
+              527
+            ],
+            [
+              "99a4788cb24856965c36a24e339b6058",
+              488
+            ],
+            [
+              "422879e10f46682990de24d770e7f83d",
+              484
+            ],
+            [
+              "389d119b48cf3043d311335e499d9c6b",
+              392
+            ],
+            [
+              "368c6c730842d78016ad823897a372db",
+              388
+            ]
+          ]
+        },
+        "seller_id": {
+          "rows": 112650,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 3095,
+          "min_text": "0015a82c2db000af6aaaf3ae2ecb0532",
+          "max_text": "ffff564a4f9085cd26170f4732393726",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "6560211a19b47992c3666cc44a7e94c0",
+              2033
+            ],
+            [
+              "4a3ca9315b744ce9f8e9374361493884",
+              1987
+            ],
+            [
+              "1f50f920176fa81dab994f9023523100",
+              1931
+            ],
+            [
+              "cc419e0650a3c5ba77189a1882b7556a",
+              1775
+            ],
+            [
+              "da8622b14eb17ae2831f4ac5b9dab84a",
+              1551
+            ]
+          ]
+        },
+        "shipping_limit_date": {
+          "rows": 112650,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 93318,
+          "min_text": "2016-09-19 00:15:34",
+          "max_text": "2020-04-09 22:35:08",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "2017-07-21 18:25:23",
+              21
+            ],
+            [
+              "2018-03-01 02:50:48",
+              21
+            ],
+            [
+              "2017-08-30 14:30:23",
+              20
+            ],
+            [
+              "2017-02-03 21:44:49",
+              15
+            ],
+            [
+              "2017-11-30 10:30:51",
+              15
+            ]
+          ]
+        },
+        "price": {
+          "rows": 112650,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 5968,
+          "min_text": "0.85",
+          "max_text": "999.99",
+          "inferred_type": "numeric",
+          "numeric_min": 0.85,
+          "numeric_max": 6735.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "59.90",
+              2481
+            ],
+            [
+              "69.90",
+              1987
+            ],
+            [
+              "49.90",
+              1953
+            ],
+            [
+              "89.90",
+              1548
+            ],
+            [
+              "99.90",
+              1432
+            ]
+          ]
+        },
+        "freight_value": {
+          "rows": 112650,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 6999,
+          "min_text": "0.00",
+          "max_text": "99.97",
+          "inferred_type": "numeric",
+          "numeric_min": 0.0,
+          "numeric_max": 409.68,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "15.10",
+              3707
+            ],
+            [
+              "7.78",
+              2262
+            ],
+            [
+              "14.10",
+              1875
+            ],
+            [
+              "11.85",
+              1846
+            ],
+            [
+              "18.23",
+              1575
+            ]
+          ]
+        }
+      }
+    },
+    "order_payments": {
+      "rows": 103886,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "order_id",
+            "payment_sequential"
+          ],
+          "rows": 103886,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 103886,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "order_id": {
+          "rows": 103886,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 99440,
+          "min_text": "00010242fe8c5a6d1ba2dd792cb16214",
+          "max_text": "fffe41c64501cc87c801fd61db3f6244",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "fa65dad1b0e818e3ccc5cb0e39231352",
+              29
+            ],
+            [
+              "ccf804e764ed5650cd8759557269dc13",
+              26
+            ],
+            [
+              "285c2e15bebd4ac83635ccc563dc71f4",
+              22
+            ],
+            [
+              "895ab968e7bb0d5659d16cd74cd1650c",
+              21
+            ],
+            [
+              "ee9ca989fc93ba09a6eddc250ce01742",
+              19
+            ]
+          ]
+        },
+        "payment_sequential": {
+          "rows": 103886,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 29,
+          "min_text": "1",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 29.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "1": 99360,
+            "2": 3039,
+            "3": 581,
+            "4": 278,
+            "5": 170,
+            "6": 118,
+            "7": 82,
+            "8": 54,
+            "9": 43,
+            "10": 34,
+            "11": 29,
+            "12": 21,
+            "13": 13,
+            "14": 10,
+            "15": 8,
+            "16": 6,
+            "17": 6,
+            "18": 6,
+            "19": 6,
+            "20": 4,
+            "21": 4,
+            "22": 3,
+            "23": 2,
+            "24": 2,
+            "25": 2,
+            "26": 2,
+            "27": 1,
+            "28": 1,
+            "29": 1
+          }
+        },
+        "payment_type": {
+          "rows": 103886,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 5,
+          "min_text": "boleto",
+          "max_text": "voucher",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "credit_card": 76795,
+            "boleto": 19784,
+            "voucher": 5775,
+            "debit_card": 1529,
+            "not_defined": 3
+          }
+        },
+        "payment_installments": {
+          "rows": 103886,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 24,
+          "min_text": "0",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 24.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "1": 52546,
+            "2": 12413,
+            "3": 10461,
+            "4": 7098,
+            "10": 5328,
+            "5": 5239,
+            "8": 4268,
+            "6": 3920,
+            "7": 1626,
+            "9": 644,
+            "12": 133,
+            "15": 74,
+            "18": 27,
+            "11": 23,
+            "24": 18,
+            "20": 17,
+            "13": 16,
+            "14": 15,
+            "17": 8,
+            "16": 5,
+            "21": 3,
+            "0": 2,
+            "22": 1,
+            "23": 1
+          }
+        },
+        "payment_value": {
+          "rows": 103886,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 29077,
+          "min_text": "0.00",
+          "max_text": "999.68",
+          "inferred_type": "numeric",
+          "numeric_min": 0.0,
+          "numeric_max": 13664.08,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "50.00",
+              324
+            ],
+            [
+              "20.00",
+              274
+            ],
+            [
+              "100.00",
+              255
+            ],
+            [
+              "77.57",
+              250
+            ],
+            [
+              "35.00",
+              165
+            ]
+          ]
+        }
+      }
+    },
+    "order_reviews": {
+      "rows": 99224,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "review_id"
+          ],
+          "rows": 99224,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 98410,
+          "uniqueness_pct": 99.179634,
+          "duplicate_key_groups": 789,
+          "rows_in_duplicate_groups": 1603,
+          "max_rows_per_key": 3
+        },
+        {
+          "key_columns": [
+            "review_id",
+            "order_id"
+          ],
+          "rows": 99224,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 99224,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "review_id": {
+          "rows": 99224,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 98410,
+          "min_text": "0001239bc1de2e33cb583967c2ca4c67",
+          "max_text": "fffefe7a48d22f7b32046421062219d1",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "08528f70f579f0c830189efc523d2182",
+              3
+            ],
+            [
+              "0c76e7a547a531e7bf9f0b99cba071c1",
+              3
+            ],
+            [
+              "1fb4ddc969e6bea80e38deec00393a6f",
+              3
+            ],
+            [
+              "2172867fd5b1a55f98fe4608e1547b4b",
+              3
+            ],
+            [
+              "2d6ac45f859465b5c185274a1c929637",
+              3
+            ]
+          ]
+        },
+        "order_id": {
+          "rows": 99224,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 98673,
+          "min_text": "00010242fe8c5a6d1ba2dd792cb16214",
+          "max_text": "fffe41c64501cc87c801fd61db3f6244",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "03c939fd7fd3b38f8485a0f95798f1f6",
+              3
+            ],
+            [
+              "8e17072ec97ce29f0e1f111e598b0c85",
+              3
+            ],
+            [
+              "c88b1d1b157a9999ce368f218a407141",
+              3
+            ],
+            [
+              "df56136b8031ecd28e200bb18e6ddb2e",
+              3
+            ],
+            [
+              "0035246a40f520710769010f752e7507",
+              2
+            ]
+          ]
+        },
+        "review_score": {
+          "rows": 99224,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 5,
+          "min_text": "1",
+          "max_text": "5",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 5.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "5": 57328,
+            "4": 19142,
+            "1": 11424,
+            "3": 8179,
+            "2": 3151
+          }
+        },
+        "review_comment_title": {
+          "rows": 99224,
+          "null_like_rows": 87657,
+          "null_like_rate_pct": 88.3425,
+          "null_like_tokens": {
+            "": 87656,
+            "?": 1
+          },
+          "distinct_values": 4528,
+          "min_text": "",
+          "max_text": "\ud83d\udd1f ",
+          "inferred_type": "text",
+          "numeric_min": 0.0,
+          "numeric_max": 10000000000000.0,
+          "rows_with_padding_whitespace": 1998,
+          "rows_with_leading_zero": 4,
+          "top5_values": [
+            [
+              "",
+              87656
+            ],
+            [
+              "Recomendo",
+              423
+            ],
+            [
+              "recomendo",
+              345
+            ],
+            [
+              "Bom",
+              293
+            ],
+            [
+              "super recomendo",
+              270
+            ]
+          ]
+        },
+        "review_comment_message": {
+          "rows": 99224,
+          "null_like_rows": 58250,
+          "null_like_rate_pct": 58.7056,
+          "null_like_tokens": {
+            "": 58247,
+            "?": 3
+          },
+          "distinct_values": 36160,
+          "min_text": "",
+          "max_text": "\ud83d\ude21\ud83d\ude21\ud83d\ude21\ud83d\ude21\ud83d\ude21\ud83d\udc4e\ud83d\udc4e\ud83d\udc4e\ud83d\udc4e\ud83d\udc4e\r\nEmpresa sem compromisso com o cliente",
+          "inferred_type": "text",
+          "numeric_min": 0.0,
+          "numeric_max": 10.0,
+          "rows_with_padding_whitespace": 8120,
+          "rows_with_leading_zero": 2,
+          "top5_values": [
+            [
+              "",
+              58247
+            ],
+            [
+              "Muito bom",
+              230
+            ],
+            [
+              "Bom",
+              189
+            ],
+            [
+              "muito bom",
+              122
+            ],
+            [
+              "bom",
+              107
+            ]
+          ]
+        },
+        "review_creation_date": {
+          "rows": 99224,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 636,
+          "min_text": "2016-10-02 00:00:00",
+          "max_text": "2018-08-31 00:00:00",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "2017-12-19 00:00:00",
+              463
+            ],
+            [
+              "2018-08-28 00:00:00",
+              452
+            ],
+            [
+              "2017-12-20 00:00:00",
+              440
+            ],
+            [
+              "2018-05-19 00:00:00",
+              434
+            ],
+            [
+              "2018-05-15 00:00:00",
+              425
+            ]
+          ]
+        },
+        "review_answer_timestamp": {
+          "rows": 99224,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 98248,
+          "min_text": "2016-10-07 18:32:28",
+          "max_text": "2018-10-29 12:27:35",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "2017-06-15 23:21:05",
+              4
+            ],
+            [
+              "2017-02-14 13:58:48",
+              3
+            ],
+            [
+              "2017-02-21 23:30:22",
+              3
+            ],
+            [
+              "2017-04-13 21:12:43",
+              3
+            ],
+            [
+              "2017-05-19 19:12:36",
+              3
+            ]
+          ]
+        }
+      }
+    },
+    "products": {
+      "rows": 32951,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "product_id"
+          ],
+          "rows": 32951,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 32951,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "product_id": {
+          "rows": 32951,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 32951,
+          "min_text": "00066f42aeeb9f3007548bb9d3f33c38",
+          "max_text": "fffe9eeff12fcbd74a2f2b007dde0c58",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "00066f42aeeb9f3007548bb9d3f33c38",
+              1
+            ],
+            [
+              "00088930e925c41fd95ebfe695fd2655",
+              1
+            ],
+            [
+              "0009406fd7479715e4bef61dd91f2462",
+              1
+            ],
+            [
+              "000b8f95fcb9e0096488278317764d19",
+              1
+            ],
+            [
+              "000d9be29b5207b54e86aa1b1ac54872",
+              1
+            ]
+          ]
+        },
+        "product_category_name": {
+          "rows": 32951,
+          "null_like_rows": 610,
+          "null_like_rate_pct": 1.8512,
+          "null_like_tokens": {
+            "": 610
+          },
+          "distinct_values": 74,
+          "min_text": "",
+          "max_text": "utilidades_domesticas",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "cama_mesa_banho",
+              3029
+            ],
+            [
+              "esporte_lazer",
+              2867
+            ],
+            [
+              "moveis_decoracao",
+              2657
+            ],
+            [
+              "beleza_saude",
+              2444
+            ],
+            [
+              "utilidades_domesticas",
+              2335
+            ]
+          ]
+        },
+        "product_name_lenght": {
+          "rows": 32951,
+          "null_like_rows": 610,
+          "null_like_rate_pct": 1.8512,
+          "null_like_tokens": {
+            "": 610
+          },
+          "distinct_values": 67,
+          "min_text": "",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": 5.0,
+          "numeric_max": 76.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "60",
+              2182
+            ],
+            [
+              "59",
+              2025
+            ],
+            [
+              "58",
+              1887
+            ],
+            [
+              "57",
+              1719
+            ],
+            [
+              "55",
+              1683
+            ]
+          ]
+        },
+        "product_description_lenght": {
+          "rows": 32951,
+          "null_like_rows": 610,
+          "null_like_rate_pct": 1.8512,
+          "null_like_tokens": {
+            "": 610
+          },
+          "distinct_values": 2961,
+          "min_text": "",
+          "max_text": "999",
+          "inferred_type": "integer",
+          "numeric_min": 4.0,
+          "numeric_max": 3992.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "",
+              610
+            ],
+            [
+              "404",
+              94
+            ],
+            [
+              "729",
+              86
+            ],
+            [
+              "651",
+              66
+            ],
+            [
+              "703",
+              66
+            ]
+          ]
+        },
+        "product_photos_qty": {
+          "rows": 32951,
+          "null_like_rows": 610,
+          "null_like_rate_pct": 1.8512,
+          "null_like_tokens": {
+            "": 610
+          },
+          "distinct_values": 20,
+          "min_text": "",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 20.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "1": 16489,
+            "2": 6263,
+            "3": 3860,
+            "4": 2428,
+            "5": 1484,
+            "6": 968,
+            "": 610,
+            "7": 343,
+            "8": 192,
+            "9": 105,
+            "10": 95,
+            "11": 46,
+            "12": 35,
+            "13": 9,
+            "15": 8,
+            "17": 7,
+            "14": 5,
+            "18": 2,
+            "19": 1,
+            "20": 1
+          }
+        },
+        "product_weight_g": {
+          "rows": 32951,
+          "null_like_rows": 2,
+          "null_like_rate_pct": 0.0061,
+          "null_like_tokens": {
+            "": 2
+          },
+          "distinct_values": 2205,
+          "min_text": "",
+          "max_text": "998",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 40425.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "200",
+              2084
+            ],
+            [
+              "300",
+              1561
+            ],
+            [
+              "150",
+              1259
+            ],
+            [
+              "400",
+              1206
+            ],
+            [
+              "100",
+              1188
+            ]
+          ]
+        },
+        "product_length_cm": {
+          "rows": 32951,
+          "null_like_rows": 2,
+          "null_like_rate_pct": 0.0061,
+          "null_like_tokens": {
+            "": 2
+          },
+          "distinct_values": 100,
+          "min_text": "",
+          "max_text": "99",
+          "inferred_type": "integer",
+          "numeric_min": 7.0,
+          "numeric_max": 105.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "16",
+              5520
+            ],
+            [
+              "20",
+              2816
+            ],
+            [
+              "30",
+              2029
+            ],
+            [
+              "18",
+              1502
+            ],
+            [
+              "25",
+              1387
+            ]
+          ]
+        },
+        "product_height_cm": {
+          "rows": 32951,
+          "null_like_rows": 2,
+          "null_like_rate_pct": 0.0061,
+          "null_like_tokens": {
+            "": 2
+          },
+          "distinct_values": 103,
+          "min_text": "",
+          "max_text": "99",
+          "inferred_type": "integer",
+          "numeric_min": 2.0,
+          "numeric_max": 105.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "10",
+              2548
+            ],
+            [
+              "15",
+              2022
+            ],
+            [
+              "20",
+              1991
+            ],
+            [
+              "16",
+              1595
+            ],
+            [
+              "11",
+              1551
+            ]
+          ]
+        },
+        "product_width_cm": {
+          "rows": 32951,
+          "null_like_rows": 2,
+          "null_like_rate_pct": 0.0061,
+          "null_like_tokens": {
+            "": 2
+          },
+          "distinct_values": 96,
+          "min_text": "",
+          "max_text": "98",
+          "inferred_type": "integer",
+          "numeric_min": 6.0,
+          "numeric_max": 118.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "11",
+              3718
+            ],
+            [
+              "20",
+              3053
+            ],
+            [
+              "16",
+              2808
+            ],
+            [
+              "15",
+              2393
+            ],
+            [
+              "30",
+              1786
+            ]
+          ]
+        }
+      }
+    },
+    "sellers": {
+      "rows": 3095,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "seller_id"
+          ],
+          "rows": 3095,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 3095,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "seller_id": {
+          "rows": 3095,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 3095,
+          "min_text": "0015a82c2db000af6aaaf3ae2ecb0532",
+          "max_text": "ffff564a4f9085cd26170f4732393726",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "0015a82c2db000af6aaaf3ae2ecb0532",
+              1
+            ],
+            [
+              "001cca7ae9ae17fb1caed9dfb1094831",
+              1
+            ],
+            [
+              "001e6ad469a905060d959994f1b41e4f",
+              1
+            ],
+            [
+              "002100f778ceb8431b7a1020ff7ab48f",
+              1
+            ],
+            [
+              "003554e2dce176b5555353e4f3555ac8",
+              1
+            ]
+          ]
+        },
+        "seller_zip_code_prefix": {
+          "rows": 3095,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 2246,
+          "min_text": "01001",
+          "max_text": "99730",
+          "inferred_type": "integer",
+          "numeric_min": 1001.0,
+          "numeric_max": 99730.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 1027,
+          "top5_values": [
+            [
+              "14940",
+              49
+            ],
+            [
+              "13660",
+              10
+            ],
+            [
+              "13920",
+              9
+            ],
+            [
+              "16200",
+              9
+            ],
+            [
+              "01026",
+              8
+            ]
+          ]
+        },
+        "seller_city": {
+          "rows": 3095,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 611,
+          "min_text": "04482255",
+          "max_text": "xaxim",
+          "inferred_type": "text",
+          "numeric_min": 4482255.0,
+          "numeric_max": 4482255.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 1,
+          "top5_values": [
+            [
+              "sao paulo",
+              694
+            ],
+            [
+              "curitiba",
+              127
+            ],
+            [
+              "rio de janeiro",
+              96
+            ],
+            [
+              "belo horizonte",
+              68
+            ],
+            [
+              "ribeirao preto",
+              52
+            ]
+          ]
+        },
+        "seller_state": {
+          "rows": 3095,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 23,
+          "min_text": "AC",
+          "max_text": "SP",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "SP": 1849,
+            "PR": 349,
+            "MG": 244,
+            "SC": 190,
+            "RJ": 171,
+            "RS": 129,
+            "GO": 40,
+            "DF": 30,
+            "ES": 23,
+            "BA": 19,
+            "CE": 13,
+            "PE": 9,
+            "PB": 6,
+            "MS": 5,
+            "RN": 5,
+            "MT": 4,
+            "RO": 2,
+            "SE": 2,
+            "AC": 1,
+            "AM": 1,
+            "MA": 1,
+            "PA": 1,
+            "PI": 1
+          }
+        }
+      }
+    },
+    "category_translation": {
+      "rows": 71,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "product_category_name"
+          ],
+          "rows": 71,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 71,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "product_category_name": {
+          "rows": 71,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 71,
+          "min_text": "agro_industria_e_comercio",
+          "max_text": "utilidades_domesticas",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "agro_industria_e_comercio",
+              1
+            ],
+            [
+              "alimentos",
+              1
+            ],
+            [
+              "alimentos_bebidas",
+              1
+            ],
+            [
+              "artes",
+              1
+            ],
+            [
+              "artes_e_artesanato",
+              1
+            ]
+          ]
+        },
+        "product_category_name_english": {
+          "rows": 71,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 71,
+          "min_text": "agro_industry_and_commerce",
+          "max_text": "watches_gifts",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "agro_industry_and_commerce",
+              1
+            ],
+            [
+              "air_conditioning",
+              1
+            ],
+            [
+              "art",
+              1
+            ],
+            [
+              "arts_and_craftmanship",
+              1
+            ],
+            [
+              "audio",
+              1
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "relationships": [
+    {
+      "relationship": "orders_to_customers",
+      "child": "orders",
+      "child_columns": [
+        "customer_id"
+      ],
+      "parent": "customers",
+      "parent_columns": [
+        "customer_id"
+      ],
+      "child_rows": 99441,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 99441,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 99441,
+      "distinct_parent_keys": 99441,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 1
+    },
+    {
+      "relationship": "order_items_to_orders",
+      "child": "order_items",
+      "child_columns": [
+        "order_id"
+      ],
+      "parent": "orders",
+      "parent_columns": [
+        "order_id"
+      ],
+      "child_rows": 112650,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 98666,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 99441,
+      "distinct_parent_keys": 99441,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 775,
+      "max_child_rows_per_key": 21
+    },
+    {
+      "relationship": "order_items_to_products",
+      "child": "order_items",
+      "child_columns": [
+        "product_id"
+      ],
+      "parent": "products",
+      "parent_columns": [
+        "product_id"
+      ],
+      "child_rows": 112650,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 32951,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 32951,
+      "distinct_parent_keys": 32951,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 527
+    },
+    {
+      "relationship": "order_items_to_sellers",
+      "child": "order_items",
+      "child_columns": [
+        "seller_id"
+      ],
+      "parent": "sellers",
+      "parent_columns": [
+        "seller_id"
+      ],
+      "child_rows": 112650,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 3095,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 3095,
+      "distinct_parent_keys": 3095,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 2033
+    },
+    {
+      "relationship": "order_payments_to_orders",
+      "child": "order_payments",
+      "child_columns": [
+        "order_id"
+      ],
+      "parent": "orders",
+      "parent_columns": [
+        "order_id"
+      ],
+      "child_rows": 103886,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 99440,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 99441,
+      "distinct_parent_keys": 99441,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 1,
+      "max_child_rows_per_key": 29
+    },
+    {
+      "relationship": "order_reviews_to_orders",
+      "child": "order_reviews",
+      "child_columns": [
+        "order_id"
+      ],
+      "parent": "orders",
+      "parent_columns": [
+        "order_id"
+      ],
+      "child_rows": 99224,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 98673,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 99441,
+      "distinct_parent_keys": 99441,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 768,
+      "max_child_rows_per_key": 3
+    },
+    {
+      "relationship": "products_to_category_translation",
+      "child": "products",
+      "child_columns": [
+        "product_category_name"
+      ],
+      "parent": "category_translation",
+      "parent_columns": [
+        "product_category_name"
+      ],
+      "child_rows": 32951,
+      "orphan_rows": 623,
+      "match_rate_pct": 98.109314,
+      "distinct_child_keys": 74,
+      "orphan_distinct_keys": 3,
+      "parent_rows": 71,
+      "distinct_parent_keys": 71,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 3029
+    },
+    {
+      "relationship": "customers_to_geolocation_by_zip",
+      "child": "customers",
+      "child_columns": [
+        "customer_zip_code_prefix"
+      ],
+      "parent": "geolocation",
+      "parent_columns": [
+        "geolocation_zip_code_prefix"
+      ],
+      "child_rows": 99441,
+      "orphan_rows": 278,
+      "match_rate_pct": 99.720437,
+      "distinct_child_keys": 14994,
+      "orphan_distinct_keys": 157,
+      "parent_rows": 1000163,
+      "distinct_parent_keys": 19015,
+      "parent_key_unique": false,
+      "parent_keys_without_children": 4178,
+      "max_child_rows_per_key": 142
+    },
+    {
+      "relationship": "sellers_to_geolocation_by_zip",
+      "child": "sellers",
+      "child_columns": [
+        "seller_zip_code_prefix"
+      ],
+      "parent": "geolocation",
+      "parent_columns": [
+        "geolocation_zip_code_prefix"
+      ],
+      "child_rows": 3095,
+      "orphan_rows": 7,
+      "match_rate_pct": 99.773829,
+      "distinct_child_keys": 2246,
+      "orphan_distinct_keys": 7,
+      "parent_rows": 1000163,
+      "distinct_parent_keys": 19015,
+      "parent_key_unique": false,
+      "parent_keys_without_children": 16776,
+      "max_child_rows_per_key": 49
+    }
+  ],
+  "custom_checks": {
+    "payment_vs_item_total_by_order": {
+      "columns": [
+        "orders_in_both",
+        "orders_with_difference",
+        "payment_greater",
+        "payment_smaller",
+        "differences_with_installments",
+        "orders_with_installments"
+      ],
+      "rows": [
+        [
+          98665,
+          380,
+          291,
+          89,
+          313,
+          50840
+        ]
+      ]
+    },
+    "customer_id_vs_unique_id": {
+      "columns": [
+        "customer_rows",
+        "distinct_customer_id",
+        "distinct_customer_unique_id"
+      ],
+      "rows": [
+        [
+          99441,
+          99441,
+          96096
+        ]
+      ]
+    },
+    "orders_per_unique_customer": {
+      "columns": [
+        "orders_per_unique_customer",
+        "customers"
+      ],
+      "rows": [
+        [
+          1,
+          93099
+        ],
+        [
+          2,
+          2745
+        ],
+        [
+          3,
+          203
+        ],
+        [
+          4,
+          30
+        ],
+        [
+          5,
+          8
+        ],
+        [
+          6,
+          6
+        ],
+        [
+          7,
+          3
+        ],
+        [
+          9,
+          1
+        ],
+        [
+          17,
+          1
+        ]
+      ]
+    },
+    "review_id_duplicates": {
+      "columns": [
+        "duplicate_review_id_groups",
+        "rows_in_groups",
+        "max_rows_per_review_id"
+      ],
+      "rows": [
+        [
+          789,
+          1603,
+          3
+        ]
+      ]
+    },
+    "orders_without_items": {
+      "columns": [
+        "orders"
+      ],
+      "rows": [
+        [
+          775
+        ]
+      ]
+    },
+    "orders_without_payments": {
+      "columns": [
+        "orders"
+      ],
+      "rows": [
+        [
+          1
+        ]
+      ]
+    },
+    "orders_without_reviews": {
+      "columns": [
+        "orders"
+      ],
+      "rows": [
+        [
+          768
+        ]
+      ]
+    },
+    "delivery_date_missing_by_status": {
+      "columns": [
+        "order_status",
+        "orders",
+        "missing_delivered_customer_date",
+        "missing_approved_at"
+      ],
+      "rows": [
+        [
+          "approved",
+          2,
+          2,
+          0
+        ],
+        [
+          "canceled",
+          625,
+          619,
+          141
+        ],
+        [
+          "created",
+          5,
+          5,
+          5
+        ],
+        [
+          "delivered",
+          96478,
+          8,
+          14
+        ],
+        [
+          "invoiced",
+          314,
+          314,
+          0
+        ],
+        [
+          "processing",
+          301,
+          301,
+          0
+        ],
+        [
+          "shipped",
+          1107,
+          1107,
+          0
+        ],
+        [
+          "unavailable",
+          609,
+          609,
+          0
+        ]
+      ]
+    },
+    "delivered_before_purchase": {
+      "columns": [
+        "orders"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "item_price_and_freight_signs": {
+      "columns": [
+        "price_not_positive",
+        "freight_negative",
+        "freight_zero"
+      ],
+      "rows": [
+        [
+          0,
+          0,
+          383
+        ]
+      ]
+    },
+    "payment_value_by_type": {
+      "columns": [
+        "payment_type",
+        "rows",
+        "value_not_positive"
+      ],
+      "rows": [
+        [
+          "boleto",
+          19784,
+          0
+        ],
+        [
+          "credit_card",
+          76795,
+          0
+        ],
+        [
+          "debit_card",
+          1529,
+          0
+        ],
+        [
+          "not_defined",
+          3,
+          3
+        ],
+        [
+          "voucher",
+          5775,
+          6
+        ]
+      ]
+    },
+    "order_item_sequence_gaps": {
+      "columns": [
+        "orders_with_gaps"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "geolocation_distinct_counts": {
+      "columns": [
+        "rows",
+        "zip_prefixes",
+        "distinct_zip_lat_lng"
+      ],
+      "rows": [
+        [
+          1000163,
+          19015,
+          720154
+        ]
+      ]
+    },
+    "product_category_gaps": {
+      "columns": [
+        "products_without_category",
+        "products_category_without_translation"
+      ],
+      "rows": [
+        [
+          610,
+          13
+        ]
+      ]
+    }
+  }
+}

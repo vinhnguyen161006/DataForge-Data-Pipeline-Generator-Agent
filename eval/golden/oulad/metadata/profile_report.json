@@ -1,0 +1,2806 @@
+{
+  "duckdb_version": "1.5.5",
+  "max_rows_per_file": null,
+  "null_like_tokens_checked": [
+    "",
+    "?",
+    "NA",
+    "N/A",
+    "NULL",
+    "null",
+    "NaN"
+  ],
+  "tables": {
+    "courses": {
+      "rows": 22,
+      "duplicate_full_rows": 0,
+      "candidate_key": {
+        "key_columns": [
+          "code_module",
+          "code_presentation"
+        ],
+        "rows": 22,
+        "rows_with_null_like_key_part": 0,
+        "distinct_keys": 22,
+        "uniqueness_pct": 100.0,
+        "duplicate_key_groups": 0,
+        "rows_in_duplicate_groups": 0,
+        "max_rows_per_key": 0
+      },
+      "columns": {
+        "code_module": {
+          "rows": 22,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 7,
+          "min_text": "AAA",
+          "max_text": "GGG",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "BBB": 4,
+            "DDD": 4,
+            "FFF": 4,
+            "EEE": 3,
+            "GGG": 3,
+            "AAA": 2,
+            "CCC": 2
+          }
+        },
+        "code_presentation": {
+          "rows": 22,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 4,
+          "min_text": "2013B",
+          "max_text": "2014J",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "2014J": 7,
+            "2013J": 6,
+            "2014B": 6,
+            "2013B": 3
+          }
+        },
+        "module_presentation_length": {
+          "rows": 22,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 7,
+          "min_text": "234",
+          "max_text": "269",
+          "inferred_type": "integer",
+          "numeric_min": 234.0,
+          "numeric_max": 269.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "241": 5,
+            "269": 5,
+            "268": 4,
+            "240": 3,
+            "261": 2,
+            "262": 2,
+            "234": 1
+          }
+        }
+      }
+    },
+    "assessments": {
+      "rows": 206,
+      "duplicate_full_rows": 0,
+      "candidate_key": {
+        "key_columns": [
+          "id_assessment"
+        ],
+        "rows": 206,
+        "rows_with_null_like_key_part": 0,
+        "distinct_keys": 206,
+        "uniqueness_pct": 100.0,
+        "duplicate_key_groups": 0,
+        "rows_in_duplicate_groups": 0,
+        "max_rows_per_key": 0
+      },
+      "columns": {
+        "code_module": {
+          "rows": 206,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 7,
+          "min_text": "AAA",
+          "max_text": "GGG",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "FFF": 52,
+            "BBB": 42,
+            "DDD": 35,
+            "GGG": 30,
+            "CCC": 20,
+            "EEE": 15,
+            "AAA": 12
+          }
+        },
+        "code_presentation": {
+          "rows": 206,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 4,
+          "min_text": "2013B",
+          "max_text": "2014J",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "2014B": 57,
+            "2014J": 57,
+            "2013J": 53,
+            "2013B": 39
+          }
+        },
+        "id_assessment": {
+          "rows": 206,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 206,
+          "min_text": "14984",
+          "max_text": "40088",
+          "inferred_type": "integer",
+          "numeric_min": 1752.0,
+          "numeric_max": 40088.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "14984",
+              1
+            ],
+            [
+              "14985",
+              1
+            ],
+            [
+              "14986",
+              1
+            ],
+            [
+              "14987",
+              1
+            ],
+            [
+              "14988",
+              1
+            ]
+          ]
+        },
+        "assessment_type": {
+          "rows": 206,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 3,
+          "min_text": "CMA",
+          "max_text": "TMA",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "TMA": 106,
+            "CMA": 76,
+            "Exam": 24
+          }
+        },
+        "date": {
+          "rows": 206,
+          "null_like_rows": 11,
+          "null_like_rate_pct": 5.3398,
+          "null_like_tokens": {
+            "": 11
+          },
+          "distinct_values": 75,
+          "min_text": "",
+          "max_text": "96",
+          "inferred_type": "integer",
+          "numeric_min": 12.0,
+          "numeric_max": 261.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "222",
+              15
+            ],
+            [
+              "229",
+              14
+            ],
+            [
+              "",
+              11
+            ],
+            [
+              "241",
+              9
+            ],
+            [
+              "227",
+              8
+            ]
+          ]
+        },
+        "weight": {
+          "rows": 206,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 24,
+          "min_text": "0",
+          "max_text": "9",
+          "inferred_type": "numeric",
+          "numeric_min": 0.0,
+          "numeric_max": 100.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "0": 56,
+            "100": 24,
+            "1": 15,
+            "18": 15,
+            "25": 15,
+            "20": 13,
+            "12.5": 11,
+            "28": 9,
+            "10": 8,
+            "22": 6,
+            "5": 4,
+            "8": 4,
+            "15": 3,
+            "16": 3,
+            "2": 3,
+            "3": 3,
+            "17.5": 2,
+            "30": 2,
+            "35": 2,
+            "4": 2,
+            "7": 2,
+            "9": 2,
+            "6": 1,
+            "7.5": 1
+          }
+        }
+      }
+    },
+    "vle": {
+      "rows": 6364,
+      "duplicate_full_rows": 0,
+      "candidate_key": {
+        "key_columns": [
+          "id_site"
+        ],
+        "rows": 6364,
+        "rows_with_null_like_key_part": 0,
+        "distinct_keys": 6364,
+        "uniqueness_pct": 100.0,
+        "duplicate_key_groups": 0,
+        "rows_in_duplicate_groups": 0,
+        "max_rows_per_key": 0
+      },
+      "columns": {
+        "id_site": {
+          "rows": 6364,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 6364,
+          "min_text": "1002902",
+          "max_text": "992243",
+          "inferred_type": "integer",
+          "numeric_min": 526721.0,
+          "numeric_max": 1077905.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1002902",
+              1
+            ],
+            [
+              "1004387",
+              1
+            ],
+            [
+              "1004809",
+              1
+            ],
+            [
+              "1006064",
+              1
+            ],
+            [
+              "1006065",
+              1
+            ]
+          ]
+        },
+        "code_module": {
+          "rows": 6364,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 7,
+          "min_text": "AAA",
+          "max_text": "GGG",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "FFF": 1967,
+            "DDD": 1708,
+            "BBB": 1154,
+            "CCC": 419,
+            "AAA": 413,
+            "GGG": 367,
+            "EEE": 336
+          }
+        },
+        "code_presentation": {
+          "rows": 6364,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 4,
+          "min_text": "2013B",
+          "max_text": "2014J",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "2013J": 1772,
+            "2014B": 1671,
+            "2014J": 1670,
+            "2013B": 1251
+          }
+        },
+        "activity_type": {
+          "rows": 6364,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 20,
+          "min_text": "dataplus",
+          "max_text": "url",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "resource": 2660,
+            "subpage": 1055,
+            "oucontent": 996,
+            "url": 886,
+            "forumng": 194,
+            "quiz": 127,
+            "page": 102,
+            "oucollaborate": 82,
+            "questionnaire": 61,
+            "ouwiki": 49,
+            "dataplus": 28,
+            "externalquiz": 26,
+            "homepage": 22,
+            "glossary": 21,
+            "ouelluminate": 21,
+            "dualpane": 20,
+            "repeatactivity": 5,
+            "htmlactivity": 4,
+            "sharedsubpage": 3,
+            "folder": 2
+          }
+        },
+        "week_from": {
+          "rows": 6364,
+          "null_like_rows": 5243,
+          "null_like_rate_pct": 82.3853,
+          "null_like_tokens": {
+            "": 5243
+          },
+          "distinct_values": 31,
+          "min_text": "",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 29.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "": 5243,
+            "18": 91,
+            "1": 84,
+            "28": 63,
+            "9": 52,
+            "21": 51,
+            "27": 49,
+            "11": 47,
+            "15": 46,
+            "29": 45,
+            "20": 43,
+            "2": 41,
+            "10": 40,
+            "22": 38,
+            "8": 36,
+            "3": 35,
+            "23": 33,
+            "24": 33,
+            "5": 33,
+            "14": 32,
+            "13": 31,
+            "26": 30,
+            "19": 29,
+            "16": 27,
+            "12": 26,
+            "25": 24,
+            "4": 24,
+            "6": 17,
+            "7": 15,
+            "17": 4,
+            "0": 2
+          }
+        },
+        "week_to": {
+          "rows": 6364,
+          "null_like_rows": 5243,
+          "null_like_rate_pct": 82.3853,
+          "null_like_tokens": {
+            "": 5243
+          },
+          "distinct_values": 31,
+          "min_text": "",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 29.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "": 5243,
+            "18": 91,
+            "1": 80,
+            "28": 63,
+            "9": 54,
+            "21": 51,
+            "27": 49,
+            "11": 47,
+            "15": 46,
+            "2": 45,
+            "29": 45,
+            "20": 43,
+            "10": 40,
+            "22": 38,
+            "8": 34,
+            "23": 33,
+            "24": 33,
+            "3": 33,
+            "14": 32,
+            "13": 31,
+            "5": 31,
+            "26": 30,
+            "19": 29,
+            "16": 27,
+            "12": 26,
+            "4": 26,
+            "25": 24,
+            "6": 17,
+            "7": 17,
+            "17": 4,
+            "0": 2
+          }
+        }
+      }
+    },
+    "studentInfo": {
+      "rows": 32593,
+      "duplicate_full_rows": 0,
+      "candidate_key": {
+        "key_columns": [
+          "code_module",
+          "code_presentation",
+          "id_student"
+        ],
+        "rows": 32593,
+        "rows_with_null_like_key_part": 0,
+        "distinct_keys": 32593,
+        "uniqueness_pct": 100.0,
+        "duplicate_key_groups": 0,
+        "rows_in_duplicate_groups": 0,
+        "max_rows_per_key": 0
+      },
+      "columns": {
+        "code_module": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 7,
+          "min_text": "AAA",
+          "max_text": "GGG",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "BBB": 7909,
+            "FFF": 7762,
+            "DDD": 6272,
+            "CCC": 4434,
+            "EEE": 2934,
+            "GGG": 2534,
+            "AAA": 748
+          }
+        },
+        "code_presentation": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 4,
+          "min_text": "2013B",
+          "max_text": "2014J",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "2014J": 11260,
+            "2013J": 8845,
+            "2014B": 7804,
+            "2013B": 4684
+          }
+        },
+        "id_student": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 28785,
+          "min_text": "100064",
+          "max_text": "99993",
+          "inferred_type": "integer",
+          "numeric_min": 3733.0,
+          "numeric_max": 2716795.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "584077",
+              5
+            ],
+            [
+              "157310",
+              4
+            ],
+            [
+              "172965",
+              4
+            ],
+            [
+              "2046628",
+              4
+            ],
+            [
+              "2681198",
+              4
+            ]
+          ]
+        },
+        "gender": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 2,
+          "min_text": "F",
+          "max_text": "M",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "M": 17875,
+            "F": 14718
+          }
+        },
+        "region": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 13,
+          "min_text": "East Anglian Region",
+          "max_text": "Yorkshire Region",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "Scotland": 3446,
+            "East Anglian Region": 3340,
+            "London Region": 3216,
+            "South Region": 3092,
+            "North Western Region": 2906,
+            "West Midlands Region": 2582,
+            "South West Region": 2436,
+            "East Midlands Region": 2365,
+            "South East Region": 2111,
+            "Wales": 2086,
+            "Yorkshire Region": 2006,
+            "North Region": 1823,
+            "Ireland": 1184
+          }
+        },
+        "highest_education": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 5,
+          "min_text": "A Level or Equivalent",
+          "max_text": "Post Graduate Qualification",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "A Level or Equivalent": 14045,
+            "Lower Than A Level": 13158,
+            "HE Qualification": 4730,
+            "No Formal quals": 347,
+            "Post Graduate Qualification": 313
+          }
+        },
+        "imd_band": {
+          "rows": 32593,
+          "null_like_rows": 1111,
+          "null_like_rate_pct": 3.4087,
+          "null_like_tokens": {
+            "": 1111
+          },
+          "distinct_values": 11,
+          "min_text": "",
+          "max_text": "90-100%",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "20-30%": 3654,
+            "30-40%": 3539,
+            "10-20": 3516,
+            "0-10%": 3311,
+            "40-50%": 3256,
+            "50-60%": 3124,
+            "60-70%": 2905,
+            "70-80%": 2879,
+            "80-90%": 2762,
+            "90-100%": 2536,
+            "": 1111
+          }
+        },
+        "age_band": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 3,
+          "min_text": "0-35",
+          "max_text": "55<=",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "0-35": 22944,
+            "35-55": 9433,
+            "55<=": 216
+          }
+        },
+        "num_of_prev_attempts": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 7,
+          "min_text": "0",
+          "max_text": "6",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 6.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "0": 28421,
+            "1": 3299,
+            "2": 675,
+            "3": 142,
+            "4": 39,
+            "5": 13,
+            "6": 4
+          }
+        },
+        "studied_credits": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 61,
+          "min_text": "100",
+          "max_text": "95",
+          "inferred_type": "integer",
+          "numeric_min": 30.0,
+          "numeric_max": 655.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "60",
+              16751
+            ],
+            [
+              "120",
+              6328
+            ],
+            [
+              "30",
+              3749
+            ],
+            [
+              "90",
+              3144
+            ],
+            [
+              "180",
+              830
+            ]
+          ]
+        },
+        "disability": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 2,
+          "min_text": "N",
+          "max_text": "Y",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "N": 29429,
+            "Y": 3164
+          }
+        },
+        "final_result": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 4,
+          "min_text": "Distinction",
+          "max_text": "Withdrawn",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "Pass": 12361,
+            "Withdrawn": 10156,
+            "Fail": 7052,
+            "Distinction": 3024
+          }
+        }
+      }
+    },
+    "studentRegistration": {
+      "rows": 32593,
+      "duplicate_full_rows": 0,
+      "candidate_key": {
+        "key_columns": [
+          "code_module",
+          "code_presentation",
+          "id_student"
+        ],
+        "rows": 32593,
+        "rows_with_null_like_key_part": 0,
+        "distinct_keys": 32593,
+        "uniqueness_pct": 100.0,
+        "duplicate_key_groups": 0,
+        "rows_in_duplicate_groups": 0,
+        "max_rows_per_key": 0
+      },
+      "columns": {
+        "code_module": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 7,
+          "min_text": "AAA",
+          "max_text": "GGG",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "BBB": 7909,
+            "FFF": 7762,
+            "DDD": 6272,
+            "CCC": 4434,
+            "EEE": 2934,
+            "GGG": 2534,
+            "AAA": 748
+          }
+        },
+        "code_presentation": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 4,
+          "min_text": "2013B",
+          "max_text": "2014J",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "2014J": 11260,
+            "2013J": 8845,
+            "2014B": 7804,
+            "2013B": 4684
+          }
+        },
+        "id_student": {
+          "rows": 32593,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 28785,
+          "min_text": "100064",
+          "max_text": "99993",
+          "inferred_type": "integer",
+          "numeric_min": 3733.0,
+          "numeric_max": 2716795.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "584077",
+              5
+            ],
+            [
+              "157310",
+              4
+            ],
+            [
+              "172965",
+              4
+            ],
+            [
+              "2046628",
+              4
+            ],
+            [
+              "2681198",
+              4
+            ]
+          ]
+        },
+        "date_registration": {
+          "rows": 32593,
+          "null_like_rows": 45,
+          "null_like_rate_pct": 0.1381,
+          "null_like_tokens": {
+            "": 45
+          },
+          "distinct_values": 333,
+          "min_text": "",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": -322.0,
+          "numeric_max": 167.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "-22",
+              1034
+            ],
+            [
+              "-29",
+              982
+            ],
+            [
+              "-24",
+              741
+            ],
+            [
+              "-25",
+              730
+            ],
+            [
+              "-23",
+              729
+            ]
+          ]
+        },
+        "date_unregistration": {
+          "rows": 32593,
+          "null_like_rows": 22521,
+          "null_like_rate_pct": 69.0977,
+          "null_like_tokens": {
+            "": 22521
+          },
+          "distinct_values": 417,
+          "min_text": "",
+          "max_text": "99",
+          "inferred_type": "integer",
+          "numeric_min": -365.0,
+          "numeric_max": 444.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "",
+              22521
+            ],
+            [
+              "12",
+              788
+            ],
+            [
+              "0",
+              419
+            ],
+            [
+              "27",
+              170
+            ],
+            [
+              "-1",
+              147
+            ]
+          ]
+        }
+      }
+    },
+    "studentAssessment": {
+      "rows": 173912,
+      "duplicate_full_rows": 0,
+      "candidate_key": {
+        "key_columns": [
+          "id_assessment",
+          "id_student"
+        ],
+        "rows": 173912,
+        "rows_with_null_like_key_part": 0,
+        "distinct_keys": 173912,
+        "uniqueness_pct": 100.0,
+        "duplicate_key_groups": 0,
+        "rows_in_duplicate_groups": 0,
+        "max_rows_per_key": 0
+      },
+      "columns": {
+        "id_assessment": {
+          "rows": 173912,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 188,
+          "min_text": "14984",
+          "max_text": "37443",
+          "inferred_type": "integer",
+          "numeric_min": 1752.0,
+          "numeric_max": 37443.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "24295",
+              1917
+            ],
+            [
+              "34873",
+              1859
+            ],
+            [
+              "34899",
+              1826
+            ],
+            [
+              "15020",
+              1776
+            ],
+            [
+              "14996",
+              1695
+            ]
+          ]
+        },
+        "id_student": {
+          "rows": 173912,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 23369,
+          "min_text": "100064",
+          "max_text": "99993",
+          "inferred_type": "integer",
+          "numeric_min": 6516.0,
+          "numeric_max": 2698588.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "537811",
+              28
+            ],
+            [
+              "554881",
+              26
+            ],
+            [
+              "632074",
+              25
+            ],
+            [
+              "2697921",
+              24
+            ],
+            [
+              "358075",
+              24
+            ]
+          ]
+        },
+        "date_submitted": {
+          "rows": 173912,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 312,
+          "min_text": "-1",
+          "max_text": "99",
+          "inferred_type": "integer",
+          "numeric_min": -11.0,
+          "numeric_max": 608.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "18",
+              2747
+            ],
+            [
+              "69",
+              2744
+            ],
+            [
+              "19",
+              2475
+            ],
+            [
+              "200",
+              2429
+            ],
+            [
+              "21",
+              2281
+            ]
+          ]
+        },
+        "is_banked": {
+          "rows": 173912,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 2,
+          "min_text": "0",
+          "max_text": "1",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 1.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "0": 172003,
+            "1": 1909
+          }
+        },
+        "score": {
+          "rows": 173912,
+          "null_like_rows": 173,
+          "null_like_rate_pct": 0.0995,
+          "null_like_tokens": {
+            "": 173
+          },
+          "distinct_values": 102,
+          "min_text": "",
+          "max_text": "99",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 100.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "100",
+              18813
+            ],
+            [
+              "80",
+              12109
+            ],
+            [
+              "60",
+              5620
+            ],
+            [
+              "78",
+              4504
+            ],
+            [
+              "90",
+              4368
+            ]
+          ]
+        }
+      }
+    },
+    "studentVle": {
+      "rows": 10655280,
+      "duplicate_full_rows": 787170,
+      "candidate_key": {
+        "key_columns": [
+          "code_module",
+          "code_presentation",
+          "id_student",
+          "id_site",
+          "date"
+        ],
+        "rows": 10655280,
+        "rows_with_null_like_key_part": 0,
+        "distinct_keys": 8459320,
+        "uniqueness_pct": 79.390875,
+        "duplicate_key_groups": 1614505,
+        "rows_in_duplicate_groups": 3810465,
+        "max_rows_per_key": 10
+      },
+      "columns": {
+        "code_module": {
+          "rows": 10655280,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 7,
+          "min_text": "AAA",
+          "max_text": "GGG",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "FFF": 4014499,
+            "DDD": 2166486,
+            "BBB": 1567564,
+            "CCC": 1207827,
+            "EEE": 961433,
+            "GGG": 387173,
+            "AAA": 350298
+          }
+        },
+        "code_presentation": {
+          "rows": 10655280,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 4,
+          "min_text": "2013B",
+          "max_text": "2014J",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "2014J": 3619452,
+            "2013J": 2988784,
+            "2014B": 2160176,
+            "2013B": 1886868
+          }
+        },
+        "id_student": {
+          "rows": 10655280,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 26074,
+          "min_text": "100064",
+          "max_text": "99993",
+          "inferred_type": "integer",
+          "numeric_min": 6516.0,
+          "numeric_max": 2698588.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "537811",
+              6389
+            ],
+            [
+              "2088765",
+              5240
+            ],
+            [
+              "298040",
+              4978
+            ],
+            [
+              "630905",
+              4916
+            ],
+            [
+              "2063578",
+              4518
+            ]
+          ]
+        },
+        "id_site": {
+          "rows": 10655280,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 6268,
+          "min_text": "1002902",
+          "max_text": "992243",
+          "inferred_type": "integer",
+          "numeric_min": 526721.0,
+          "numeric_max": 1049562.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "882537",
+              157590
+            ],
+            [
+              "716238",
+              156399
+            ],
+            [
+              "716216",
+              139057
+            ],
+            [
+              "882545",
+              132508
+            ],
+            [
+              "909013",
+              126527
+            ]
+          ]
+        },
+        "date": {
+          "rows": 10655280,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 295,
+          "min_text": "-1",
+          "max_text": "99",
+          "inferred_type": "integer",
+          "numeric_min": -25.0,
+          "numeric_max": 269.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "18",
+              103112
+            ],
+            [
+              "2",
+              102553
+            ],
+            [
+              "17",
+              100640
+            ],
+            [
+              "16",
+              98867
+            ],
+            [
+              "3",
+              92750
+            ]
+          ]
+        },
+        "sum_click": {
+          "rows": 10655280,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 498,
+          "min_text": "1",
+          "max_text": "998",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 6977.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1",
+              5113910
+            ],
+            [
+              "2",
+              1929023
+            ],
+            [
+              "3",
+              965277
+            ],
+            [
+              "4",
+              612858
+            ],
+            [
+              "5",
+              415139
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "relationships": [
+    {
+      "relationship": "assessments_to_courses",
+      "child": "assessments",
+      "child_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "parent": "courses",
+      "parent_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "child_rows": 206,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 22,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 22,
+      "distinct_parent_keys": 22,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 14
+    },
+    {
+      "relationship": "vle_to_courses",
+      "child": "vle",
+      "child_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "parent": "courses",
+      "parent_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "child_rows": 6364,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 22,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 22,
+      "distinct_parent_keys": 22,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 529
+    },
+    {
+      "relationship": "student_info_to_courses",
+      "child": "studentInfo",
+      "child_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "parent": "courses",
+      "parent_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "child_rows": 32593,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 22,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 22,
+      "distinct_parent_keys": 22,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 2498
+    },
+    {
+      "relationship": "student_registration_to_courses",
+      "child": "studentRegistration",
+      "child_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "parent": "courses",
+      "parent_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "child_rows": 32593,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 22,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 22,
+      "distinct_parent_keys": 22,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 2498
+    },
+    {
+      "relationship": "student_registration_to_student_info",
+      "child": "studentRegistration",
+      "child_columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "parent": "studentInfo",
+      "parent_columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "child_rows": 32593,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 32593,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 32593,
+      "distinct_parent_keys": 32593,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 1
+    },
+    {
+      "relationship": "student_assessment_to_assessments",
+      "child": "studentAssessment",
+      "child_columns": [
+        "id_assessment"
+      ],
+      "parent": "assessments",
+      "parent_columns": [
+        "id_assessment"
+      ],
+      "child_rows": 173912,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 188,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 206,
+      "distinct_parent_keys": 206,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 18,
+      "max_child_rows_per_key": 1917
+    },
+    {
+      "relationship": "student_assessment_to_student_info_by_student",
+      "child": "studentAssessment",
+      "child_columns": [
+        "id_student"
+      ],
+      "parent": "studentInfo",
+      "parent_columns": [
+        "id_student"
+      ],
+      "child_rows": 173912,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 23369,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 32593,
+      "distinct_parent_keys": 28785,
+      "parent_key_unique": false,
+      "parent_keys_without_children": 5416,
+      "max_child_rows_per_key": 28
+    },
+    {
+      "relationship": "student_vle_to_student_info",
+      "child": "studentVle",
+      "child_columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "parent": "studentInfo",
+      "parent_columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "child_rows": 10655280,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 29228,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 32593,
+      "distinct_parent_keys": 32593,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 3365,
+      "max_child_rows_per_key": 3078
+    },
+    {
+      "relationship": "student_vle_to_vle_by_site",
+      "child": "studentVle",
+      "child_columns": [
+        "id_site"
+      ],
+      "parent": "vle",
+      "parent_columns": [
+        "id_site"
+      ],
+      "child_rows": 10655280,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 6268,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 6364,
+      "distinct_parent_keys": 6364,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 96,
+      "max_child_rows_per_key": 157590
+    },
+    {
+      "relationship": "student_vle_to_vle_by_site_and_presentation",
+      "child": "studentVle",
+      "child_columns": [
+        "code_module",
+        "code_presentation",
+        "id_site"
+      ],
+      "parent": "vle",
+      "parent_columns": [
+        "code_module",
+        "code_presentation",
+        "id_site"
+      ],
+      "child_rows": 10655280,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 6268,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 6364,
+      "distinct_parent_keys": 6364,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 96,
+      "max_child_rows_per_key": 157590
+    }
+  ],
+  "custom_checks": {
+    "student_info_distinct_students": {
+      "columns": [
+        "distinct_students",
+        "rows"
+      ],
+      "rows": [
+        [
+          28785,
+          32593
+        ]
+      ]
+    },
+    "student_registration_distinct_students": {
+      "columns": [
+        "distinct_students",
+        "rows"
+      ],
+      "rows": [
+        [
+          28785,
+          32593
+        ]
+      ]
+    },
+    "student_info_without_registration": {
+      "columns": [
+        "rows"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "student_registration_without_info": {
+      "columns": [
+        "rows"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "student_assessment_without_registration": {
+      "columns": [
+        "rows"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "score_outside_0_100": {
+      "columns": [
+        "rows"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "unregistered_before_registered": {
+      "columns": [
+        "rows"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "clicks_missing_or_not_positive": {
+      "columns": [
+        "rows"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "vle_week_from_after_week_to": {
+      "columns": [
+        "rows"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "assessment_date_after_presentation_end": {
+      "columns": [
+        "rows"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "assessment_weight_sum_by_presentation_and_kind": {
+      "columns": [
+        "code_module",
+        "code_presentation",
+        "kind",
+        "weight_sum"
+      ],
+      "rows": [
+        [
+          "AAA",
+          "2013J",
+          "Exam",
+          100.0
+        ],
+        [
+          "AAA",
+          "2013J",
+          "NonExam",
+          100.0
+        ],
+        [
+          "AAA",
+          "2014J",
+          "Exam",
+          100.0
+        ],
+        [
+          "AAA",
+          "2014J",
+          "NonExam",
+          100.0
+        ],
+        [
+          "BBB",
+          "2013B",
+          "Exam",
+          100.0
+        ],
+        [
+          "BBB",
+          "2013B",
+          "NonExam",
+          100.0
+        ],
+        [
+          "BBB",
+          "2013J",
+          "Exam",
+          100.0
+        ],
+        [
+          "BBB",
+          "2013J",
+          "NonExam",
+          100.0
+        ],
+        [
+          "BBB",
+          "2014B",
+          "Exam",
+          100.0
+        ],
+        [
+          "BBB",
+          "2014B",
+          "NonExam",
+          100.0
+        ],
+        [
+          "BBB",
+          "2014J",
+          "Exam",
+          100.0
+        ],
+        [
+          "BBB",
+          "2014J",
+          "NonExam",
+          100.0
+        ],
+        [
+          "CCC",
+          "2014B",
+          "Exam",
+          200.0
+        ],
+        [
+          "CCC",
+          "2014B",
+          "NonExam",
+          100.0
+        ],
+        [
+          "CCC",
+          "2014J",
+          "Exam",
+          200.0
+        ],
+        [
+          "CCC",
+          "2014J",
+          "NonExam",
+          100.0
+        ],
+        [
+          "DDD",
+          "2013B",
+          "Exam",
+          100.0
+        ],
+        [
+          "DDD",
+          "2013B",
+          "NonExam",
+          100.0
+        ],
+        [
+          "DDD",
+          "2013J",
+          "Exam",
+          100.0
+        ],
+        [
+          "DDD",
+          "2013J",
+          "NonExam",
+          100.0
+        ],
+        [
+          "DDD",
+          "2014B",
+          "Exam",
+          100.0
+        ],
+        [
+          "DDD",
+          "2014B",
+          "NonExam",
+          100.0
+        ],
+        [
+          "DDD",
+          "2014J",
+          "Exam",
+          100.0
+        ],
+        [
+          "DDD",
+          "2014J",
+          "NonExam",
+          100.0
+        ],
+        [
+          "EEE",
+          "2013J",
+          "Exam",
+          100.0
+        ],
+        [
+          "EEE",
+          "2013J",
+          "NonExam",
+          100.0
+        ],
+        [
+          "EEE",
+          "2014B",
+          "Exam",
+          100.0
+        ],
+        [
+          "EEE",
+          "2014B",
+          "NonExam",
+          100.0
+        ],
+        [
+          "EEE",
+          "2014J",
+          "Exam",
+          100.0
+        ],
+        [
+          "EEE",
+          "2014J",
+          "NonExam",
+          100.0
+        ],
+        [
+          "FFF",
+          "2013B",
+          "Exam",
+          100.0
+        ],
+        [
+          "FFF",
+          "2013B",
+          "NonExam",
+          100.0
+        ],
+        [
+          "FFF",
+          "2013J",
+          "Exam",
+          100.0
+        ],
+        [
+          "FFF",
+          "2013J",
+          "NonExam",
+          100.0
+        ],
+        [
+          "FFF",
+          "2014B",
+          "Exam",
+          100.0
+        ],
+        [
+          "FFF",
+          "2014B",
+          "NonExam",
+          100.0
+        ],
+        [
+          "FFF",
+          "2014J",
+          "Exam",
+          100.0
+        ],
+        [
+          "FFF",
+          "2014J",
+          "NonExam",
+          100.0
+        ],
+        [
+          "GGG",
+          "2013J",
+          "Exam",
+          100.0
+        ],
+        [
+          "GGG",
+          "2013J",
+          "NonExam",
+          0.0
+        ],
+        [
+          "GGG",
+          "2014B",
+          "Exam",
+          100.0
+        ],
+        [
+          "GGG",
+          "2014B",
+          "NonExam",
+          0.0
+        ],
+        [
+          "GGG",
+          "2014J",
+          "Exam",
+          100.0
+        ],
+        [
+          "GGG",
+          "2014J",
+          "NonExam",
+          0.0
+        ]
+      ]
+    },
+    "final_result_vs_unregistration_date": {
+      "columns": [
+        "final_result",
+        "has_unregistration_date",
+        "rows"
+      ],
+      "rows": [
+        [
+          "Distinction",
+          false,
+          3024
+        ],
+        [
+          "Fail",
+          false,
+          7043
+        ],
+        [
+          "Fail",
+          true,
+          9
+        ],
+        [
+          "Pass",
+          false,
+          12361
+        ],
+        [
+          "Withdrawn",
+          false,
+          93
+        ],
+        [
+          "Withdrawn",
+          true,
+          10063
+        ]
+      ]
+    },
+    "assessment_missing_date_by_type": {
+      "columns": [
+        "assessment_type",
+        "rows"
+      ],
+      "rows": [
+        [
+          "Exam",
+          11
+        ]
+      ]
+    },
+    "vle_week_missing_pattern": {
+      "columns": [
+        "week_from_missing",
+        "week_to_missing",
+        "rows"
+      ],
+      "rows": [
+        [
+          false,
+          false,
+          1121
+        ],
+        [
+          true,
+          true,
+          5243
+        ]
+      ]
+    },
+    "assessments_without_submissions": {
+      "columns": [
+        "assessment_type",
+        "code_module",
+        "code_presentation",
+        "assessments"
+      ],
+      "rows": [
+        [
+          "Exam",
+          "AAA",
+          "2013J",
+          1
+        ],
+        [
+          "Exam",
+          "AAA",
+          "2014J",
+          1
+        ],
+        [
+          "Exam",
+          "BBB",
+          "2013B",
+          1
+        ],
+        [
+          "Exam",
+          "BBB",
+          "2013J",
+          1
+        ],
+        [
+          "Exam",
+          "BBB",
+          "2014B",
+          1
+        ],
+        [
+          "Exam",
+          "BBB",
+          "2014J",
+          1
+        ],
+        [
+          "Exam",
+          "CCC",
+          "2014B",
+          1
+        ],
+        [
+          "Exam",
+          "CCC",
+          "2014J",
+          1
+        ],
+        [
+          "Exam",
+          "EEE",
+          "2013J",
+          1
+        ],
+        [
+          "Exam",
+          "EEE",
+          "2014B",
+          1
+        ],
+        [
+          "Exam",
+          "EEE",
+          "2014J",
+          1
+        ],
+        [
+          "Exam",
+          "FFF",
+          "2013B",
+          1
+        ],
+        [
+          "Exam",
+          "FFF",
+          "2013J",
+          1
+        ],
+        [
+          "Exam",
+          "FFF",
+          "2014B",
+          1
+        ],
+        [
+          "Exam",
+          "FFF",
+          "2014J",
+          1
+        ],
+        [
+          "Exam",
+          "GGG",
+          "2013J",
+          1
+        ],
+        [
+          "Exam",
+          "GGG",
+          "2014B",
+          1
+        ],
+        [
+          "Exam",
+          "GGG",
+          "2014J",
+          1
+        ]
+      ]
+    },
+    "submission_after_presentation_end": {
+      "columns": [
+        "rows",
+        "max_days_after_end"
+      ],
+      "rows": [
+        [
+          85,
+          354
+        ]
+      ]
+    },
+    "submission_before_start": {
+      "columns": [
+        "rows",
+        "min_day"
+      ],
+      "rows": [
+        [
+          2057,
+          -11
+        ]
+      ]
+    },
+    "student_vle_duplicate_breakdown": {
+      "columns": [
+        "duplicate_key_groups",
+        "excess_rows",
+        "excess_rows_in_groups_with_same_clicks",
+        "groups_with_different_clicks"
+      ],
+      "rows": [
+        [
+          1614505,
+          2195960,
+          460864,
+          1179074
+        ]
+      ]
+    },
+    "student_vle_duplicate_groups_by_presentation": {
+      "columns": [
+        "code_module",
+        "code_presentation",
+        "duplicate_key_groups"
+      ],
+      "rows": [
+        [
+          "AAA",
+          "2013J",
+          29886
+        ],
+        [
+          "AAA",
+          "2014J",
+          36389
+        ],
+        [
+          "BBB",
+          "2013B",
+          84964
+        ],
+        [
+          "BBB",
+          "2013J",
+          89931
+        ],
+        [
+          "BBB",
+          "2014B",
+          51211
+        ],
+        [
+          "BBB",
+          "2014J",
+          85214
+        ],
+        [
+          "CCC",
+          "2014B",
+          80578
+        ],
+        [
+          "CCC",
+          "2014J",
+          130597
+        ],
+        [
+          "DDD",
+          "2013B",
+          52007
+        ],
+        [
+          "DDD",
+          "2013J",
+          81760
+        ],
+        [
+          "DDD",
+          "2014B",
+          45539
+        ],
+        [
+          "DDD",
+          "2014J",
+          89125
+        ],
+        [
+          "EEE",
+          "2013J",
+          51242
+        ],
+        [
+          "EEE",
+          "2014B",
+          30332
+        ],
+        [
+          "EEE",
+          "2014J",
+          74972
+        ],
+        [
+          "FFF",
+          "2013B",
+          108683
+        ],
+        [
+          "FFF",
+          "2013J",
+          156267
+        ],
+        [
+          "FFF",
+          "2014B",
+          96321
+        ],
+        [
+          "FFF",
+          "2014J",
+          179402
+        ],
+        [
+          "GGG",
+          "2013J",
+          20890
+        ],
+        [
+          "GGG",
+          "2014B",
+          20448
+        ],
+        [
+          "GGG",
+          "2014J",
+          18747
+        ]
+      ]
+    },
+    "enrollments_per_student": {
+      "columns": [
+        "enrollments",
+        "students"
+      ],
+      "rows": [
+        [
+          1,
+          25247
+        ],
+        [
+          2,
+          3293
+        ],
+        [
+          3,
+          221
+        ],
+        [
+          4,
+          23
+        ],
+        [
+          5,
+          1
+        ]
+      ]
+    },
+    "registration_date_missing_by_final_result": {
+      "columns": [
+        "final_result",
+        "rows"
+      ],
+      "rows": [
+        [
+          "Fail",
+          5
+        ],
+        [
+          "Pass",
+          1
+        ],
+        [
+          "Withdrawn",
+          39
+        ]
+      ]
+    },
+    "score_missing_by_is_banked": {
+      "columns": [
+        "is_banked",
+        "rows"
+      ],
+      "rows": [
+        [
+          "0",
+          172
+        ],
+        [
+          "1",
+          1
+        ]
+      ]
+    },
+    "imd_band_missing_by_presentation": {
+      "columns": [
+        "code_module",
+        "code_presentation",
+        "rows"
+      ],
+      "rows": [
+        [
+          "AAA",
+          "2013J",
+          15
+        ],
+        [
+          "AAA",
+          "2014J",
+          8
+        ],
+        [
+          "BBB",
+          "2013B",
+          21
+        ],
+        [
+          "BBB",
+          "2013J",
+          16
+        ],
+        [
+          "BBB",
+          "2014B",
+          13
+        ],
+        [
+          "BBB",
+          "2014J",
+          13
+        ],
+        [
+          "CCC",
+          "2014B",
+          108
+        ],
+        [
+          "CCC",
+          "2014J",
+          146
+        ],
+        [
+          "DDD",
+          "2013B",
+          61
+        ],
+        [
+          "DDD",
+          "2013J",
+          80
+        ],
+        [
+          "DDD",
+          "2014B",
+          58
+        ],
+        [
+          "DDD",
+          "2014J",
+          81
+        ],
+        [
+          "EEE",
+          "2013J",
+          52
+        ],
+        [
+          "EEE",
+          "2014B",
+          18
+        ],
+        [
+          "EEE",
+          "2014J",
+          47
+        ],
+        [
+          "FFF",
+          "2013B",
+          95
+        ],
+        [
+          "FFF",
+          "2013J",
+          101
+        ],
+        [
+          "FFF",
+          "2014B",
+          72
+        ],
+        [
+          "FFF",
+          "2014J",
+          99
+        ],
+        [
+          "GGG",
+          "2013J",
+          3
+        ],
+        [
+          "GGG",
+          "2014B",
+          3
+        ],
+        [
+          "GGG",
+          "2014J",
+          1
+        ]
+      ]
+    },
+    "zero_weight_assessments": {
+      "columns": [
+        "code_module",
+        "assessment_type",
+        "rows"
+      ],
+      "rows": [
+        [
+          "BBB",
+          "TMA",
+          1
+        ],
+        [
+          "FFF",
+          "CMA",
+          28
+        ],
+        [
+          "GGG",
+          "CMA",
+          18
+        ],
+        [
+          "GGG",
+          "TMA",
+          9
+        ]
+      ]
+    },
+    "student_attribute_consistency": {
+      "columns": [
+        "students_with_multiple_enrollments",
+        "gender_varies",
+        "region_varies",
+        "highest_education_varies",
+        "age_band_varies",
+        "disability_varies",
+        "imd_band_varies"
+      ],
+      "rows": [
+        [
+          3538,
+          0,
+          0,
+          0,
+          72,
+          0,
+          0
+        ]
+      ]
+    },
+    "reference_metrics": {
+      "columns": [
+        "total_clicks",
+        "clicks_before_start",
+        "enrollments_with_clicks",
+        "avg_score_all",
+        "avg_score_not_banked"
+      ],
+      "rows": [
+        [
+          39605099,
+          2147947,
+          29228,
+          75.7995729226023,
+          75.81571427740047
+        ]
+      ]
+    },
+    "score_by_assessment_type": {
+      "columns": [
+        "assessment_type",
+        "rows",
+        "rows_with_score",
+        "avg_score"
+      ],
+      "rows": [
+        [
+          "CMA",
+          70527,
+          70527,
+          81.02705346888426
+        ],
+        [
+          "Exam",
+          4959,
+          4959,
+          65.57289776164549
+        ],
+        [
+          "TMA",
+          98426,
+          98253,
+          72.5633924663878
+        ]
+      ]
+    },
+    "late_submission_counts": {
+      "columns": [
+        "total_rows",
+        "rows_with_deadline",
+        "late_rows"
+      ],
+      "rows": [
+        [
+          173912,
+          171047,
+          49318
+        ]
+      ]
+    },
+    "final_result_by_module": {
+      "columns": [
+        "code_module",
+        "final_result",
+        "rows"
+      ],
+      "rows": [
+        [
+          "AAA",
+          "Distinction",
+          44
+        ],
+        [
+          "AAA",
+          "Fail",
+          91
+        ],
+        [
+          "AAA",
+          "Pass",
+          487
+        ],
+        [
+          "AAA",
+          "Withdrawn",
+          126
+        ],
+        [
+          "BBB",
+          "Distinction",
+          677
+        ],
+        [
+          "BBB",
+          "Fail",
+          1767
+        ],
+        [
+          "BBB",
+          "Pass",
+          3077
+        ],
+        [
+          "BBB",
+          "Withdrawn",
+          2388
+        ],
+        [
+          "CCC",
+          "Distinction",
+          498
+        ],
+        [
+          "CCC",
+          "Fail",
+          781
+        ],
+        [
+          "CCC",
+          "Pass",
+          1180
+        ],
+        [
+          "CCC",
+          "Withdrawn",
+          1975
+        ],
+        [
+          "DDD",
+          "Distinction",
+          383
+        ],
+        [
+          "DDD",
+          "Fail",
+          1412
+        ],
+        [
+          "DDD",
+          "Pass",
+          2227
+        ],
+        [
+          "DDD",
+          "Withdrawn",
+          2250
+        ],
+        [
+          "EEE",
+          "Distinction",
+          356
+        ],
+        [
+          "EEE",
+          "Fail",
+          562
+        ],
+        [
+          "EEE",
+          "Pass",
+          1294
+        ],
+        [
+          "EEE",
+          "Withdrawn",
+          722
+        ],
+        [
+          "FFF",
+          "Distinction",
+          670
+        ],
+        [
+          "FFF",
+          "Fail",
+          1711
+        ],
+        [
+          "FFF",
+          "Pass",
+          2978
+        ],
+        [
+          "FFF",
+          "Withdrawn",
+          2403
+        ],
+        [
+          "GGG",
+          "Distinction",
+          396
+        ],
+        [
+          "GGG",
+          "Fail",
+          728
+        ],
+        [
+          "GGG",
+          "Pass",
+          1118
+        ],
+        [
+          "GGG",
+          "Withdrawn",
+          292
+        ]
+      ]
+    }
+  }
+}
