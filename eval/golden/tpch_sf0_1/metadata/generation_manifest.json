@@ -1,0 +1,146 @@
+{
+  "generator": "duckdb tpch extension",
+  "duckdb_version": "1.5.5",
+  "tpch_extension_version": "v1.5.5",
+  "scale_factor": 0.1,
+  "tables": {
+    "region": {
+      "file": "region.csv",
+      "rows": 5,
+      "bytes": 415,
+      "sha256": "2ee5fc9a7b5a3b0ee23b764f84640742f4d03b5ff2d7729adad86b90f3b97755"
+    },
+    "nation": {
+      "file": "nation.csv",
+      "rows": 25,
+      "bytes": 2252,
+      "sha256": "f80cdfba9559f07ae109c33f92bdbee801a1ed7917b205c748383c00c0a5f865"
+    },
+    "supplier": {
+      "file": "supplier.csv",
+      "rows": 1000,
+      "bytes": 141648,
+      "sha256": "44791b3d03837c0f78de880e8d6bc35f2caa6d5d6c2d77a8d7c2639725a621aa"
+    },
+    "customer": {
+      "file": "customer.csv",
+      "rows": 15000,
+      "bytes": 2457922,
+      "sha256": "cc4def67ec984112760eed055ca916f402d41ec3a363d5dd6c24c221db04ea75"
+    },
+    "part": {
+      "file": "part.csv",
+      "rows": 20000,
+      "bytes": 2452948,
+      "sha256": "84fa43245ceb3437c3174151badad359322a3f3a01ac23b6b3f0090daf1ef1b8"
+    },
+    "partsupp": {
+      "file": "partsupp.csv",
+      "rows": 80000,
+      "bytes": 11706886,
+      "sha256": "d68a0ef8e099392476054d71a11ef8a16e4b1a47899aaa1aa38034f01b86654d"
+    },
+    "orders": {
+      "file": "orders.csv",
+      "rows": 150000,
+      "bytes": 17093313,
+      "sha256": "2653cd2c28390fa3022bbc8574f548b41eed40c95b30ade4be1f7591d772a8db"
+    },
+    "lineitem": {
+      "file": "lineitem.csv",
+      "rows": 600572,
+      "bytes": 75561176,
+      "sha256": "abb7b27324bfc46d7eba9b2ec5c47402302ccfd73036b76c041731f7d980a4a7"
+    }
+  },
+  "answers": {
+    "q01": {
+      "file": "q01.csv",
+      "sha256": "324e6321d9165689f4791b97a96e806736441338e400f60a0edd257b5635fccd"
+    },
+    "q02": {
+      "file": "q02.csv",
+      "sha256": "51144eed6a7c33954bfa04154350233fb7e37a751925ed32cd65340d84c73908"
+    },
+    "q03": {
+      "file": "q03.csv",
+      "sha256": "de25ed0cc871ce625b6defcaed89a9e63a4a8aac5d42405ad38c1081a0e90880"
+    },
+    "q04": {
+      "file": "q04.csv",
+      "sha256": "9dec7c154df1e0e3634475dc8d1b9baef65b3be5d90f42a956b7a5a62da2c888"
+    },
+    "q05": {
+      "file": "q05.csv",
+      "sha256": "0b6ff27ab7a1f9bf6d3a91c2976c83220f9b00c7e8946df53df140343c051a3e"
+    },
+    "q06": {
+      "file": "q06.csv",
+      "sha256": "6fc5e8e7d1ed0ac672e4c5f231659a763a02f37a3385bcb7ae80312a93a7c8f2"
+    },
+    "q07": {
+      "file": "q07.csv",
+      "sha256": "e24d485734e38919a0a49c4c90cbf2d36b3fe46c6017f78e069559159d58209b"
+    },
+    "q08": {
+      "file": "q08.csv",
+      "sha256": "530ab3c6aec73bcffb28254ecb1708470e8d250cba115be9e9030328d0e36e03"
+    },
+    "q09": {
+      "file": "q09.csv",
+      "sha256": "a28a281bdf424bc9bb7c097821e0d52f4546fb3ce5d249c935ec16a7a75cd0d7"
+    },
+    "q10": {
+      "file": "q10.csv",
+      "sha256": "68ebc248c612177b316a46f3a791abac3171b91b108d4c94eb8b508bffeb4c4c"
+    },
+    "q11": {
+      "file": "q11.csv",
+      "sha256": "b2997835f2d85e652a8abc49fee4d2f9f0f1919a1065e963411a8d1acb33d6d6"
+    },
+    "q12": {
+      "file": "q12.csv",
+      "sha256": "dd489258d078bf139622a944b61bba715adbbb235ae4aa7cfc968468c480e20a"
+    },
+    "q13": {
+      "file": "q13.csv",
+      "sha256": "5a4de21c52d2b052ae416c5675f0d72f47e64b62032cc0f08a9f05a0931cc9ee"
+    },
+    "q14": {
+      "file": "q14.csv",
+      "sha256": "e5e219b6fd5167e07a51be714856a1e66e29926f51f85de3349beefdc96bf4b8"
+    },
+    "q15": {
+      "file": "q15.csv",
+      "sha256": "3b843bf4220ad655458fd0058d187a300913a6c5c1a02e43ca63f52acc2f9bf8"
+    },
+    "q16": {
+      "file": "q16.csv",
+      "sha256": "932b6d336862541cdc8fb39e1b743da7de47f8e29d9543ea5f2b863214117a6c"
+    },
+    "q17": {
+      "file": "q17.csv",
+      "sha256": "5731c02ffea5da2930c47996589c270de6775c334d4c0852815ff3c7b11be054"
+    },
+    "q18": {
+      "file": "q18.csv",
+      "sha256": "b8c2b0723fbdd7d3cf9d7c4f9a067a0ca5c14d7494e9d6d404e41c32034a162d"
+    },
+    "q19": {
+      "file": "q19.csv",
+      "sha256": "d0f46ba217610cd506d4ae7ea8e7d666dfa928323c4c644d14d2215d36121d2e"
+    },
+    "q20": {
+      "file": "q20.csv",
+      "sha256": "1c622a64d2529b26f50a003ff2a9ce80f17db18fec967e66e1820d14f9596725"
+    },
+    "q21": {
+      "file": "q21.csv",
+      "sha256": "a7095b5aa722e6968fd7d02aa7de3b7a04ef4037e74d62cafd651942f78df80f"
+    },
+    "q22": {
+      "file": "q22.csv",
+      "sha256": "eeccd0fe47b12d16e2ba5cf84d65bc80d2d05b442d3bb913cd6e59bd49d7a0bf"
+    }
+  }
+}
