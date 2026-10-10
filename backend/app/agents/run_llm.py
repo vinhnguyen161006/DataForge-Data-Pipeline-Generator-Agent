@@ -1,11 +1,15 @@
 import asyncio
+
 from pydantic import BaseModel, Field
+
 from app.agents.llm import StructuredLLM
 from app.core.config import get_api_settings
+
 
 class TableDesign(BaseModel):
     name: str = Field(min_length=1)
     grain: str = Field(min_length=1)
+
 
 async def main() -> None:
     settings = get_api_settings()
@@ -27,6 +31,7 @@ async def main() -> None:
     print(result)
     print(type(result))
     print(llm.usage)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
