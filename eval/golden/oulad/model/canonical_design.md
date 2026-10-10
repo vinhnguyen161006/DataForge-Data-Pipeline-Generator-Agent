@@ -238,3 +238,16 @@ Hành vi kỳ vọng: Modeler đưa ra danh sách câu hỏi chứa ít nhất Q
 | 2 | Nhóm duyệt C02, C09, C13 và các ràng buộc ở mục 4.1 | Mỗi mục có trạng thái Approved hoặc Rejected |
 | 3 | Đối chiếu mô tả gốc của OULAD để nâng `SUY LUẬN` lên mức có nguồn | Các mệnh đề khớp được gắn nhãn nguồn |
 | 4 | Người viết Modeler/Codegen xác nhận mô hình đích và các bất biến I1 đến I6 là kiểm tra được | Có phản hồi từ thành viên sở hữu module |
+
+## 10. Cập nhật theo mô tả chính thức của nguồn
+
+Mô tả chính thức của OULAD (xem `dictionary/data_dictionary.md` mục 11) làm thay đổi bốn chỗ trong thiết kế này:
+
+| Mục | Trước | Sau khi đối chiếu |
+|---|---|---|
+| A4, C13 (Withdrawn và ngày hủy) | Quan sát không khớp, chưa rõ bên nào đúng | Nguồn nói sinh viên hủy đăng ký có `Withdrawn`. Dữ liệu vi phạm ở 102 dòng: đây là lỗi dữ liệu cần hỏi nguồn (N2), không phải quy tắc hai bên ngang nhau. Vẫn không đặt test chặn cho đến khi nguồn trả lời |
+| C09 (cộng dồn `studentVle`) | Quyết định suy luận | Mô tả nguồn ngụ ý một bản ghi mỗi (sinh viên, học liệu, ngày). Cộng dồn là một cách xử lý trái với grain được công bố. Trước khi chốt, hỏi nguồn (N1). Đến khi có câu trả lời, mart chỉ giữ bronze và không chốt `fact_vle_daily` |
+| C04 (ngày thi thiếu) | Giữ NULL, không suy ra | Nguồn có quy ước (cuối tuần cuối của presentation). Đây là lựa chọn của nhóm: giữ NULL (an toàn) hoặc áp dụng quy ước của nguồn (cần duyệt, câu hỏi N3) |
+| A7 (bài không có lượt nộp) | Coi là hợp lệ về tham chiếu | Phù hợp với mô tả: lượt nộp thi thiếu khi kết quả không được lưu. Vẫn không sinh test bắt buộc |
+
+Không có mục nào trong bảng trên đổi quy tắc đã duyệt. Đây là cập nhật bằng chứng. Các câu hỏi N1 đến N4 được gửi cho nhóm trước khi thiết kế được duyệt.

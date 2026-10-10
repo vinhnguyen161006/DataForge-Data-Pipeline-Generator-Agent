@@ -1,6 +1,6 @@
 # OULAD — Data Dictionary (tiếng Việt)
 
-**Trạng thái:** `v1.0-draft` — đã đối chiếu với hai lần profiling đầy đủ trên toàn bộ 7 file (script v1 và v2, DuckDB 1.5.5; xem `metadata/profile_report.json`, `metadata/source_manifest.json`). Mọi ô cần số liệu đã được đo. Còn chờ nhóm duyệt các phát hiện ở mục 10 và đối chiếu ý nghĩa cột với tài liệu gốc.
+**Trạng thái:** `v1.1-draft` — đã đối chiếu với mô tả chính thức của nguồn (mục 11) và hai lần profiling đầy đủ trên toàn bộ 7 file (script v1 và v2, DuckDB 1.5.5; xem `metadata/profile_report.json`, `metadata/source_manifest.json`). Mọi ô cần số liệu đã được đo. Còn chờ nhóm duyệt các phát hiện ở mục 10 và đối chiếu ý nghĩa cột với tài liệu gốc.
 **Nguồn:** Open University Learning Analytics Dataset (OULAD) — figshare, giấy phép CC-BY 4.0. Chi tiết provenance xem `README.md`.
 
 ## 0. Cách đọc
@@ -14,7 +14,7 @@
 | `Needs validation` | Còn thiếu bằng chứng hoặc cần nhóm quyết định (hiện chỉ còn thứ tự các mức `highest_education`) |
 | `Unknown` | Chưa có căn cứ |
 
-**Quy ước áp dụng cho toàn tài liệu:** cột "Ý nghĩa" ở mức `Inferred` (ý nghĩa nghiệp vụ lấy từ mô tả công bố của OULAD, chưa đối chiếu lại từng dòng với trang nguồn). Mọi con số trong cột "NULL?", "Khóa", "Miền giá trị" là `Confirmed` trừ khi ghi khác.
+**Quy ước áp dụng cho toàn tài liệu:** cột "Ý nghĩa" là `Confirmed` khi khớp mô tả chính thức của nguồn (đối chiếu ở mục 11); các cột còn lại là `Inferred`. Mọi con số trong cột "NULL?", "Khóa", "Miền giá trị" là `Confirmed` trừ khi ghi khác.
 
 ### Quy ước kiểu dữ liệu và giá trị thiếu
 
@@ -49,7 +49,7 @@ Các số dòng khớp số liệu công bố của nguồn (`studentInfo` = 32.
 | `studentInfo` → `courses` | 32.593 | 0 | 100% | N-1; tối đa 2.498 enrollment/course |
 | `studentRegistration` → `courses` | 32.593 | 0 | 100% | N-1 |
 | `studentRegistration` → `studentInfo` (3 cột) | 32.593 | 0 | 100% | **1-1** (tối đa 1 dòng/khóa, hai bảng có cùng tập khóa) |
-| `studentAssessment` → `assessments` | 173.912 | 0 | 100% | N-1; **18/206 bài không có lượt nộp nào, và cả 18 đều là bài Exam** (chỉ 6/24 bài Exam có điểm trong dữ liệu) |
+| `studentAssessment` → `assessments` | 173.912 | 0 | 100% | N-1; **18/206 bài không có lượt nộp nào, và cả 18 đều là bài Exam** (chỉ 6/24 bài Exam có lượt nộp; mọi lượt nộp Exam đều có điểm) |
 | `studentAssessment` → `studentInfo` theo `id_student` riêng | 173.912 | 0 | 100% | Chỉ là quan hệ yếu vì `id_student` không duy nhất ở `studentInfo`; 23.369 sinh viên có bài nộp |
 | `studentAssessment` → `studentRegistration` qua module-presentation của bài | 173.912 | 0 | 100% | Mọi lượt nộp thuộc sinh viên đã đăng ký đúng module-presentation (`student_assessment_without_registration` = 0) |
 | `studentVle` → `studentInfo` (3 cột) | 10.655.280 | 0 | 100% | N-1; 29.228/32.593 enrollment có dữ liệu VLE (**3.365 enrollment không có dòng click nào**) |
@@ -88,7 +88,7 @@ erDiagram
 | `code_presentation` | Presentation chứa bài | text | VARCHAR | Không (0%) | FK → `courses` | 4 giá trị | FK phải tồn tại | Confirmed |
 | `id_assessment` | Mã bài đánh giá | integer | INTEGER | Không (0%) | PK (206/206 duy nhất); đích FK của `studentAssessment` | 1752 đến 40088 | Ép INTEGER | Confirmed |
 | `assessment_type` | Loại bài: `TMA` (giáo viên chấm), `CMA` (máy chấm), `Exam` (thi) | text | VARCHAR | Không (0%) | — | TMA 106, CMA 76, Exam 24 | Giữ nguyên | Confirmed |
-| `date` | Hạn nộp cuối, số ngày kể từ ngày bắt đầu presentation | integer | INTEGER | **Có: 11 dòng (5,34%), token rỗng; cả 11 đều là bài Exam** | — | 12 đến 261 (75 giá trị khác nhau); không có bài nào vượt `module_presentation_length` | NULL giữ NULL ở silver, không tự điền. Không tự suy ngày thi từ nơi khác | Confirmed |
+| `date` | Hạn nộp cuối, số ngày kể từ ngày bắt đầu presentation | integer | INTEGER | **Có: 11 dòng (5,34%), token rỗng; cả 11 đều là bài Exam** | — | 12 đến 261 (75 giá trị khác nhau); không có bài nào vượt `module_presentation_length` | NULL giữ NULL ở silver, không tự điền. Mô tả chính thức của nguồn ghi ngày thi thiếu được đặt vào cuối tuần cuối của presentation: đây là quy ước của nguồn, chưa là rule làm sạch đã duyệt (xem mục 11, câu hỏi N3) | Confirmed |
 | `weight` | Trọng số bài, đơn vị % | **numeric (có số lẻ)** | DECIMAL(5,2) | Không (0%) | — | 0 đến 100; có giá trị lẻ (7,5; 12,5; 17,5); 56 bài có weight = 0 (FFF CMA 28, GGG CMA 18, GGG TMA 9, BBB TMA 1); 24 bài weight = 100 | Ép DECIMAL, không ép INTEGER (sẽ mất phần lẻ). Xem quy tắc tổng trọng số ở mục 8 | Confirmed |
 
 ## 5. `vle.csv` (6.364 dòng)
@@ -157,11 +157,11 @@ erDiagram
 | # | Phát hiện | Evidence | Quyết định đề xuất | Cần duyệt bởi |
 |---|---|---|---|---|
 | F1 | `studentVle` **không có khóa tự nhiên** theo (enrollment, site, date) | 8.459.320 khóa khác nhau trên 10.655.280 dòng (79,39%); 1.614.505 nhóm trùng khóa (dư 2.195.960 dòng); tối đa 10 dòng/khóa; 787.170 dòng trùng hoàn toàn; **1.179.074 nhóm (73,0% số nhóm trùng khóa) chứa các giá trị `sum_click` khác nhau**; 460.864 dòng dư nằm trong nhóm mà mọi dòng có cùng `sum_click`; dòng lặp xuất hiện ở cả 22 presentation | Không ghi "1 dòng = 1 ngày × 1 học liệu × 1 sinh viên". Không sinh test `unique` cho tổ hợp này. Bronze giữ mọi dòng. **ASSUMPTION:** mọi dòng là bản ghi hợp lệ cần cộng dồn khi tính tổng click (INSUFFICIENT EVIDENCE về nguyên nhân lặp) | Cổng 1 (nghiệp vụ); Tuấn ghi vào thiết kế chuẩn |
-| F2 | `final_result = Withdrawn` không tương đương có `date_unregistration` | Withdrawn có ngày hủy: 10.063; Withdrawn không có ngày hủy: 93; Fail có ngày hủy: 9 | Không đặt rule "Withdrawn ⇔ có ngày hủy". Chỉ báo cáo số ngoại lệ | Cổng 1 |
+| F2 | `final_result = Withdrawn` không khớp `date_unregistration` | Mô tả chính thức ghi sinh viên hủy đăng ký có `final_result = Withdrawn`. Dữ liệu: Withdrawn có ngày hủy 10.063; Withdrawn không có ngày hủy 93; Fail có ngày hủy 9. Đây là vi phạm quy tắc đã công bố, không chỉ là quan sát | Không đặt rule chặn trong test; báo số ngoại lệ và hỏi nguồn (mục 11) | Cổng 1 và hỏi nguồn |
 | F3 | `imd_band` có một nhóm viết khác dạng | `10-20` (3.516 dòng) không có `%`, 9 nhóm còn lại có `%` | Chuẩn hóa ở silver nếu được duyệt, giữ nguyên ở bronze | Cổng 1 |
 | F4 | Quy tắc tổng trọng số không đúng với mọi module | Nhóm không-Exam: tổng = 100 ở 19/22 presentation, **= 0 ở cả 3 presentation của GGG**. Nhóm Exam: tổng = 100 ở 20/22, **= 200 ở CCC 2014B và 2014J** (mỗi presentation có 2 bài Exam, mỗi bài 100) | Không sinh test "tổng weight = 100". Mọi presentation có ít nhất một bài Exam | Cổng 1; dùng làm kịch bản kiểm thử FR-08 |
 | F5 | Có lượt nộp bài sau khi hết khóa và trước khi bắt đầu | 85 lượt nộp sau khi hết khóa (muộn nhất 354 ngày; `date_submitted` max 608 so với độ dài khóa max 269); 2.057 lượt nộp trước ngày bắt đầu (min -11) | Giữ nguyên ở bronze; không tạo test chặn khoảng ngày nộp. Dùng làm ca kiểm thử outlier | Tuấn |
-| F6 | 18 bài đánh giá không có lượt nộp (**cả 18 là Exam**, chỉ 6/24 bài Exam có điểm); 11 bài Exam thiếu `date`; 3.365 enrollment không có click; 96 học liệu không có click | `parent_keys_without_children`, `assessments_without_submissions`, `assessment_missing_date_by_type` | Hợp lệ về tham chiếu, không phải lỗi FK. Không thể xây chỉ số hiệu suất thi cho đa số Exam; không tự điền ngày thi | Cổng 1 |
+| F6 | 18 bài đánh giá không có lượt nộp (**cả 18 là Exam**; 6/24 bài Exam có lượt nộp, mọi lượt nộp Exam đều có điểm); 11 bài Exam thiếu `date`; 3.365 enrollment không có click; 96 học liệu không có click | `parent_keys_without_children`, `assessments_without_submissions`, `assessment_missing_date_by_type` | Hợp lệ về tham chiếu, không phải lỗi FK. Không thể xây chỉ số hiệu suất thi cho đa số Exam; không tự điền ngày thi | Cổng 1 |
 | F7 | Dòng thiếu giá trị đều là chuỗi rỗng | Không có token `?`, `NA`, `NULL`... trong cả 7 file | Mọi rule NULL ở silver chỉ cần xử lý chuỗi rỗng | — |
 
 ## 11. Việc còn lại để lên `v1.0`
@@ -171,3 +171,67 @@ erDiagram
 | 1 | (Xong) Chạy lại `profile_oulad.py` v2 | 12/12 truy vấn mới chạy không lỗi; đo toàn bộ dòng |
 | 2 | Đối chiếu ý nghĩa từng cột với tài liệu mô tả gốc của OULAD trên trang nguồn | Cột nào khớp được nâng "ý nghĩa" lên `Confirmed` |
 | 3 | Duyệt F1 đến F4 với nhóm | Mỗi mục có quyết định Approved hoặc Rejected |
+
+---
+
+## 11. Đối chiếu với mô tả chính thức của nguồn
+
+Nguồn: trang OU Analyse, mục "Data description" (https://research.stem.open.ac.uk/ouanalyse/open-dataset-more/), truy cập 09/10/2026. Trang này mô tả từng cột và đúng là tài liệu chính thức của bộ dữ liệu.
+
+| Bảng.Cột | Mô tả chính thức (tóm tắt) | Kết quả đối chiếu |
+|---|---|---|
+| courses.code_module | Mã định danh module | Khớp |
+| courses.code_presentation | Năm và B (bắt đầu tháng 2) hoặc J (tháng 10) | Khớp |
+| courses.length | Độ dài module-presentation, tính bằng ngày | **Lệch tên:** file thật dùng `module_presentation_length`; giá trị đơn vị ngày khớp. Ghi nhận trong manifest |
+| assessments.code_module, code_presentation, id_assessment | Định danh bài đánh giá | Khớp |
+| assessments.assessment_type | TMA, CMA, Exam | Khớp (3 giá trị) |
+| assessments.date | Ngày nộp cuối, số ngày từ ngày bắt đầu; nếu thiếu ngày thi thì đặt vào cuối tuần cuối của presentation | Khớp đơn vị. **Quy ước thiếu ngày** là quy ước của nguồn; hiện mới là đề xuất chờ duyệt (câu hỏi N3) |
+| assessments.weight | Trọng số theo %; thường Exam 100%, các bài khác cộng lại 100% | Mô tả dùng từ "thường". Dữ liệu lệch ở GGG (không-Exam = 0) và CCC 2014B/J (Exam = 200), đã có trong A2, A3 |
+| vle.id_site, code_module, code_presentation | Định danh học liệu | Khớp |
+| vle.activity_type | Vai trò của học liệu trong module | Khớp (20 giá trị) |
+| vle.week_from, week_to | Tuần dự kiến sử dụng học liệu | Khớp, đơn vị tuần |
+| studentInfo.code_module, code_presentation | Module và đợt học sinh viên đăng ký | Khớp |
+| studentInfo.id_student | Mã định danh duy nhất của sinh viên | Khớp: cùng một sinh viên học nhiều lượt thì có cùng mã; không duy nhất trong bảng lượt học |
+| studentInfo.gender, region, highest_education | Giới tính; vùng sống khi học; trình độ khi vào module | Khớp |
+| studentInfo.imd_band | Nhóm chỉ số thiếu thốn (IMD) nơi sinh viên sống | Khớp. Nguồn viết "Depravation" (lỗi chính tả của nguồn); tên cột dùng "deprivation" |
+| studentInfo.age_band | Nhóm tuổi | Khớp |
+| studentInfo.num_of_prev_attempts | Số lần đã học module này | Khớp |
+| studentInfo.studied_credits | Tổng tín chỉ đang học | Khớp, đơn vị tín chỉ |
+| studentInfo.disability | Có khai báo khuyết tật | Khớp |
+| studentInfo.final_result | Kết quả cuối trong module-presentation | Khớp miền; quan hệ với hủy đăng ký xem F2 |
+| studentRegistration.code_module, code_presentation, id_student | Đăng ký của sinh viên vào module-presentation | Khớp |
+| studentRegistration.date_registration | Ngày đăng ký, tính bằng ngày từ ngày bắt đầu; -30 nghĩa là 30 ngày trước khi bắt đầu | Khớp (dữ liệu có giá trị từ -322 đến 167) |
+| studentRegistration.date_unregistration | Ngày hủy đăng ký; sinh viên hoàn thành để trống; sinh viên hủy có final_result = Withdrawn | Khớp về ý nghĩa, **vi phạm** quy tắc Withdrawn ở 102 dòng (F2) |
+| studentAssessment.id_assessment, id_student | Định danh | Khớp |
+| studentAssessment.date_submitted | Ngày nộp, số ngày từ ngày bắt đầu | Khớp |
+| studentAssessment.is_banked | Cờ cho biết kết quả được chuyển từ presentation trước | Khớp (ý nghĩa từ `Inferred` thành `Confirmed`) |
+| studentAssessment.score | Điểm từ 0 đến 100; dưới 40 là Fail | Khớp miền 0–100. Ngưỡng 40 chưa dùng trong rule nào |
+| studentAssessment (thiếu lượt nộp) | Bài thi cuối không có lượt nộp khi kết quả không được lưu trong hệ thống | Phù hợp với 18 bài Exam không có lượt nộp (cần xác nhận lại với nguồn) |
+| studentVle.code_module, code_presentation, id_student, id_site | Định danh | Khớp |
+| studentVle.date | Ngày tương tác, số ngày từ ngày bắt đầu | Khớp |
+| studentVle.sum_click | Số lần sinh viên tương tác với học liệu **trong ngày đó** | Mô tả ngụ ý mỗi (sinh viên, học liệu, ngày) có một bản ghi. Dữ liệu có 1.614.505 nhóm trùng khóa, **mâu thuẫn** với mô tả. Quyết định cộng dồn (C09) là suy luận và cần hỏi nguồn |
+
+### Câu hỏi gửi nguồn (hoặc nhóm quyết định)
+
+| # | Câu hỏi | Vì sao |
+|---|---|---|
+| N1 | Các dòng `studentVle` trùng (sinh viên, học liệu, ngày) có phải là lỗi xuất dữ liệu không? | Mô tả ngụ ý một bản ghi mỗi ngày; dữ liệu có 1.614.505 nhóm trùng |
+| N2 | Sinh viên hủy đăng ký có luôn là Withdrawn không? 102 dòng vi phạm | Mô tả nói có; dữ liệu có 93 Withdrawn không có ngày hủy và 9 Fail có ngày hủy |
+| N3 | Quy ước đặt ngày thi thiếu vào cuối tuần cuối có áp dụng cho 11 bài Exam thiếu ngày không? | Mô tả có quy ước; dữ liệu có 11 bài thiếu |
+| N4 | `courses.length` trong mô tả là `module_presentation_length` trong file? | Tên cột lệch giữa tài liệu và file |
+
+## 12. Đơn vị của các cột
+
+| Bảng.Cột | Đơn vị | Ghi chú |
+|---|---|---|
+| courses.module_presentation_length | ngày | |
+| assessments.date | ngày kể từ ngày 0 của presentation | Âm nếu trước ngày 0 (không có trong dữ liệu) |
+| assessments.weight | % | Tổng theo module không bắt buộc bằng 100 (xem A2, A3) |
+| vle.week_from, vle.week_to | tuần kể từ ngày 0 | |
+| studentInfo.num_of_prev_attempts | số lần | |
+| studentInfo.studied_credits | tín chỉ | |
+| studentRegistration.date_registration, date_unregistration | ngày kể từ ngày 0; âm là trước ngày 0 | |
+| studentAssessment.date_submitted | ngày kể từ ngày 0 | |
+| studentAssessment.score | điểm, từ 0 đến 100 | |
+| studentVle.date | ngày kể từ ngày 0 | |
+| studentVle.sum_click | số lần click trong ngày | |
