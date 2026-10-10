@@ -1,14 +1,22 @@
 from uuid import UUID
 
+from argon2 import PasswordHasher
+from argon2.exceptions import InvalidHashError, VerifyMismatchError
+
+_password_hasher = PasswordHasher()
+
 
 def hash_password(password: str) -> str:
     """TODO: hash the password with argon2 (argon2-cffi PasswordHasher)."""
-    raise NotImplementedError
+    return _password_hasher.hash(password)
 
 
 def verify_password(password_hash: str, password: str) -> bool:
-    """TODO: verify an argon2 hash; return False on mismatch instead of raising."""
-    raise NotImplementedError
+    """Verify a password, rejecting mismatches and clearly invalid hashes."""
+    try:
+        return _password_hasher.verify(password_hash, password)
+    except (VerifyMismatchError, InvalidHashError):
+        return False
 
 
 def create_access_token(user_id: UUID, secret: str, ttl_minutes: int) -> str:
