@@ -1,6 +1,6 @@
-import uuid
 import hashlib
 import os
+import uuid
 from pathlib import Path
 from typing import BinaryIO
 
@@ -31,13 +31,7 @@ class Storage:
         if version < 1:
             raise ValueError("version must be positive")
         return (
-            self.root
-            / "projects"
-            / str(project_id)
-            / "runs"
-            / str(run_id)
-            / "code"
-            / f"v{version}"
+            self.root / "projects" / str(project_id) / "runs" / str(run_id) / "code" / f"v{version}"
         )
 
     def workspace_dir(self, project_id: uuid.UUID, run_id: uuid.UUID, job_id: uuid.UUID) -> Path:

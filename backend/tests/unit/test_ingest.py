@@ -91,7 +91,7 @@ def test_storage_save_raw_is_atomic_and_does_not_overwrite(tmp_path: Path) -> No
 def test_storage_rejects_destination_outside_root(tmp_path: Path) -> None:
     storage = Storage(tmp_path)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="destination must be inside the storage root"):
         storage.save_raw(tmp_path.parent / "outside.csv", io.BytesIO(b"data"))
 
 
@@ -111,5 +111,5 @@ def test_storage_marks_non_empty_batch_ready(tmp_path: Path) -> None:
 def test_storage_does_not_mark_empty_batch_ready(tmp_path: Path) -> None:
     storage = Storage(tmp_path)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="cannot mark an empty batch ready"):
         storage.mark_ready(uuid.uuid4(), uuid.uuid4())

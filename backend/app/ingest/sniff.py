@@ -116,7 +116,10 @@ def _duckdb_sniff(path: Path, encoding: str) -> dict[str, Any]:
         row = result.fetchone()
         if row is None:
             raise ValueError(f"DuckDB could not sniff CSV: {path}")
-        return {description[0]: value for description, value in zip(result.description, row)}
+        return {
+            description[0]: value
+            for description, value in zip(result.description, row, strict=False)
+        }
     finally:
         connection.close()
 
