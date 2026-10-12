@@ -2,9 +2,11 @@ import uuid
 from datetime import timedelta
 from typing import Any
 
+from sqlalchemy import select
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.db.models import Job, JobQueue
+from app.db.models import Job, JobQueue, JobStatus
 
 
 class JobOwnershipLostError(RuntimeError):
@@ -22,8 +24,48 @@ async def enqueue(
     idempotency_key: str | None = None,
     max_attempts: int = 3,
 ) -> Job:
-    """TODO: insert a job; return the existing job when idempotency_key already exists."""
-    raise NotImplementedError
+    """Insert a queued job within the caller's transaction.
+
+    Return the existing job unchanged when its idempotency key already exists.
+    The caller controls commit and rollback.
+    """
+    if max_attempts < 1:
+        raise ValueError("max_attempts must be at least 1")
+
+    statement = insert(Job).values(
+        queue=queue,
+        kind=kind,
+        payload=payload,
+        run_id=run_id,
+        serial_key=serial_key,
+        idempotency_key=idempotency_key,
+        max_attempts=max_attempts,
+        status=JobStatus.QUEUED,
+        attempts=0,
+        delivered=False,
+    )
+
+    if idempotency_key is not None:
+        statement = statement.on_conflict_do_nothing(
+            index_elements=[Job.idempotency_key],
+        )
+
+    job: Job | None = await session.scalar(statement.returning(Job))
+
+    if job is not None:
+        return job
+
+    if idempotency_key is None:
+        raise RuntimeError("Job insertion returned no row")
+
+    existing: Job | None = await session.scalar(
+        select(Job).where(Job.idempotency_key == idempotency_key)
+    )
+
+    if existing is None:
+        raise RuntimeError("The conflicting job could not be found")
+
+    return existing
 
 
 async def claim_next(
