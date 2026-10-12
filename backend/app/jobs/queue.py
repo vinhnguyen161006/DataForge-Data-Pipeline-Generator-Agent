@@ -262,12 +262,50 @@ async def fail(
     retryable: bool,
     backoff: timedelta = timedelta(seconds=30),
 ) -> None:
-    """TODO: retry or fail only the matching live job attempt.
+    """Retry or fail only the matching live job attempt.
 
     Release ownership without incrementing attempts.
     Raise JobOwnershipLostError when ownership is no longer valid.
     """
-    raise NotImplementedError
+    if backoff < timedelta(0):
+        raise ValueError("backoff must not be negative")
+
+    async with factory.begin() as session:
+        await _lock_job(session, job_id)
+
+        max_attempts: int = (
+            await session.execute(select(Job.max_attempts).where(Job.id == job_id))
+        ).scalar_one()
+
+        should_retry = retryable and attempt < max_attempts
+
+        statement = (
+            update(Job)
+            .where(
+                Job.id == job_id,
+                Job.status == JobStatus.RUNNING,
+                Job.locked_by == worker_id,
+                Job.attempts == attempt,
+                Job.lease_expires_at > func.clock_timestamp(),
+            )
+            .values(
+                status=JobStatus.QUEUED if should_retry else JobStatus.FAILED,
+                run_after=(func.clock_timestamp() + backoff if should_retry else Job.run_after),
+                last_error=error,
+                locked_by=None,
+                lease_expires_at=None,
+                finished_at=None if should_retry else func.clock_timestamp(),
+                result=None,
+                delivered=False,
+            )
+            .returning(Job.id)
+            .execution_options(synchronize_session=False)
+        )
+
+        updated_id: uuid.UUID | None = await session.scalar(statement)
+
+        if updated_id is None:
+            raise JobOwnershipLostError("The worker no longer owns this job attempt")
 
 
 async def reclaim_expired(factory: async_sessionmaker[AsyncSession], queue: JobQueue) -> int:

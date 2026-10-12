@@ -24,6 +24,7 @@ from app.jobs.queue import (
     claim_next,
     complete,
     enqueue,
+    fail,
     heartbeat,
 )
 
@@ -1529,9 +1530,14 @@ async def _start_lifecycle_job(
     serial_key: str | None = None,
     attempts: int = 0,
     last_error: str | None = None,
+    max_attempts: int = 3,
 ) -> Job:
     seeded = await claim_jobs.add(
-        queue=queue, serial_key=serial_key, attempts=attempts, last_error=last_error
+        queue=queue,
+        serial_key=serial_key,
+        attempts=attempts,
+        last_error=last_error,
+        max_attempts=max_attempts,
     )
     claimed = await claim_next(
         claim_jobs.factory, queue=queue, worker_id=worker_id, lease_seconds=lease_seconds
@@ -1557,7 +1563,7 @@ async def _apply_worker_update(
     claim_jobs: ClaimJobs,
     job_id: UUID,
     *,
-    operation: Literal["heartbeat", "complete"],
+    operation: Literal["heartbeat", "complete", "fail"],
     worker_id: str = "lifecycle-worker",
     attempt: int = 1,
 ) -> None:
@@ -1569,13 +1575,22 @@ async def _apply_worker_update(
             attempt=attempt,
             lease_seconds=300,
         )
-    else:
+    elif operation == "complete":
         await complete(
             claim_jobs.factory,
             job_id,
             {"source": "worker-update"},
             worker_id=worker_id,
             attempt=attempt,
+        )
+    else:
+        await fail(
+            claim_jobs.factory,
+            job_id,
+            "Worker execution failed",
+            worker_id=worker_id,
+            attempt=attempt,
+            retryable=True,
         )
 
 
@@ -1648,7 +1663,7 @@ async def test_heartbeat_rejects_nonpositive_lease_without_changing_job(
     assert _job_state(stored) == previous
 
 
-@pytest.mark.parametrize("operation", ["heartbeat", "complete"])
+@pytest.mark.parametrize("operation", ["heartbeat", "complete", "fail"])
 @pytest.mark.parametrize(
     ("worker_id", "attempt_delta"),
     [("another-worker", 0), ("lifecycle-worker", -1), ("lifecycle-worker", 1)],
@@ -1656,7 +1671,7 @@ async def test_heartbeat_rejects_nonpositive_lease_without_changing_job(
 )
 async def test_worker_update_rejects_wrong_claim_identity_without_mutation(
     claim_jobs: ClaimJobs,
-    operation: Literal["heartbeat", "complete"],
+    operation: Literal["heartbeat", "complete", "fail"],
     worker_id: str,
     attempt_delta: int,
 ) -> None:
@@ -1675,10 +1690,10 @@ async def test_worker_update_rejects_wrong_claim_identity_without_mutation(
     assert _job_state(stored) == previous
 
 
-@pytest.mark.parametrize("operation", ["heartbeat", "complete"])
+@pytest.mark.parametrize("operation", ["heartbeat", "complete", "fail"])
 @pytest.mark.parametrize("missing_lease", [False, True], ids=["expired-lease", "null-lease"])
 async def test_worker_update_rejects_expired_or_missing_lease_without_mutation(
-    claim_jobs: ClaimJobs, operation: Literal["heartbeat", "complete"], missing_lease: bool
+    claim_jobs: ClaimJobs, operation: Literal["heartbeat", "complete", "fail"], missing_lease: bool
 ) -> None:
     original = await _start_lifecycle_job(claim_jobs)
     async with claim_jobs.factory.begin() as session:
@@ -1702,11 +1717,11 @@ async def test_worker_update_rejects_expired_or_missing_lease_without_mutation(
     assert _job_state(stored) == previous
 
 
-@pytest.mark.parametrize("operation", ["heartbeat", "complete"])
+@pytest.mark.parametrize("operation", ["heartbeat", "complete", "fail"])
 @pytest.mark.parametrize("job_status", [JobStatus.QUEUED, JobStatus.SUCCEEDED, JobStatus.FAILED])
 async def test_worker_update_rejects_nonrunning_job_without_mutation(
     claim_jobs: ClaimJobs,
-    operation: Literal["heartbeat", "complete"],
+    operation: Literal["heartbeat", "complete", "fail"],
     job_status: JobStatus,
 ) -> None:
     original = await claim_jobs.add(status=job_status, attempts=1)
@@ -1724,9 +1739,9 @@ async def test_worker_update_rejects_nonrunning_job_without_mutation(
     assert _job_state(stored) == previous
 
 
-@pytest.mark.parametrize("operation", ["heartbeat", "complete"])
+@pytest.mark.parametrize("operation", ["heartbeat", "complete", "fail"])
 async def test_worker_update_rejects_missing_job(
-    claim_jobs: ClaimJobs, operation: Literal["heartbeat", "complete"]
+    claim_jobs: ClaimJobs, operation: Literal["heartbeat", "complete", "fail"]
 ) -> None:
     missing_id = uuid4()
     with pytest.raises(JobOwnershipLostError):
@@ -1888,11 +1903,11 @@ async def test_complete_releases_serial_key_for_a_real_next_claim(
     assert previous.lease_expires_at is None
 
 
-@pytest.mark.parametrize("operation", ["heartbeat", "complete"])
+@pytest.mark.parametrize("operation", ["heartbeat", "complete", "fail"])
 @pytest.mark.parametrize("reuse_worker_id", [False, True], ids=["new-worker", "same-worker-id"])
 async def test_worker_update_from_old_attempt_cannot_modify_a_new_claim(
     claim_jobs: ClaimJobs,
-    operation: Literal["heartbeat", "complete"],
+    operation: Literal["heartbeat", "complete", "fail"],
     reuse_worker_id: bool,
 ) -> None:
     """Simulate recovery until reclaim_expired is implemented in D7."""
@@ -2056,9 +2071,9 @@ async def _wait_for_db_deadline(claim_jobs: ClaimJobs, deadline: datetime) -> No
                 timer.cancel()
 
 
-@pytest.mark.parametrize("operation", ["heartbeat", "complete"])
+@pytest.mark.parametrize("operation", ["heartbeat", "complete", "fail"])
 async def test_worker_update_rechecks_lease_after_waiting_for_unchanged_row_lock(
-    claim_jobs: ClaimJobs, operation: Literal["heartbeat", "complete"]
+    claim_jobs: ClaimJobs, operation: Literal["heartbeat", "complete", "fail"]
 ) -> None:
     """Expire the lease while blocked without changing the row during the lock wait."""
     original = await _start_lifecycle_job(claim_jobs)
@@ -2104,6 +2119,474 @@ async def test_worker_update_rechecks_lease_after_waiting_for_unchanged_row_lock
 
     stored = await _read_lifecycle_job(claim_jobs, original.id)
     assert _job_state(stored) == previous
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize(
+    "previous_attempts", [0, 1], ids=["first-attempt", "last-retryable-attempt"]
+)
+async def test_fail_retryable_requeues_with_backoff_and_preserves_attempt_count(
+    claim_jobs: ClaimJobs, queue: JobQueue, previous_attempts: int
+) -> None:
+    original = await _start_lifecycle_job(
+        claim_jobs,
+        queue=queue,
+        serial_key=f"pipeline:{uuid4()}",
+        attempts=previous_attempts,
+        last_error="Previous execution failed",
+    )
+    previous = _job_state(original)
+    error = "Temporary service failure\n" + "diagnostic-detail " * 40
+    backoff = timedelta(seconds=30)
+    before = await claim_jobs.clock()
+
+    await fail(
+        claim_jobs.factory,
+        original.id,
+        error,
+        worker_id="lifecycle-worker",
+        attempt=original.attempts,
+        retryable=True,
+        backoff=backoff,
+    )
+    after = await claim_jobs.clock()
+
+    async with claim_jobs.factory.begin() as observer:
+        stored = await observer.scalar(
+            select(Job).where(Job.id == original.id).with_for_update(nowait=True, of=Job)
+        )
+        assert stored is not None
+        assert before + backoff <= stored.run_after <= after + backoff
+        expected = {
+            **previous,
+            "status": JobStatus.QUEUED,
+            "run_after": stored.run_after,
+            "last_error": error,
+            "locked_by": None,
+            "lease_expires_at": None,
+            "finished_at": None,
+            "result": None,
+            "delivered": False,
+        }
+        assert _job_state(stored) == expected
+        assert stored.attempts == previous_attempts + 1
+        assert stored.max_attempts == 3
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize(
+    ("previous_attempts", "max_attempts", "retryable"),
+    [(0, 3, False), (0, 1, True), (2, 3, True)],
+    ids=["non-retryable", "single-attempt-budget", "exhausted-budget"],
+)
+async def test_fail_terminal_records_error_and_finish_time_without_requeueing(
+    claim_jobs: ClaimJobs,
+    queue: JobQueue,
+    previous_attempts: int,
+    max_attempts: int,
+    retryable: bool,
+) -> None:
+    original = await _start_lifecycle_job(
+        claim_jobs,
+        queue=queue,
+        attempts=previous_attempts,
+        max_attempts=max_attempts,
+        serial_key=f"pipeline:{uuid4()}",
+    )
+    previous = _job_state(original)
+    before = await claim_jobs.clock()
+    await fail(
+        claim_jobs.factory,
+        original.id,
+        "Execution cannot continue",
+        worker_id="lifecycle-worker",
+        attempt=original.attempts,
+        retryable=retryable,
+        backoff=timedelta(hours=1),
+    )
+    after = await claim_jobs.clock()
+
+    async with claim_jobs.factory.begin() as observer:
+        stored = await observer.scalar(
+            select(Job).where(Job.id == original.id).with_for_update(nowait=True, of=Job)
+        )
+        assert stored is not None
+        assert stored.finished_at is not None
+        assert before <= stored.finished_at <= after
+        expected = {
+            **previous,
+            "status": JobStatus.FAILED,
+            "last_error": "Execution cannot continue",
+            "locked_by": None,
+            "lease_expires_at": None,
+            "finished_at": stored.finished_at,
+            "result": None,
+            "delivered": False,
+        }
+        assert _job_state(stored) == expected
+        assert stored.attempts == previous_attempts + 1
+
+    next_claim = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="after-terminal-worker", lease_seconds=60
+    )
+    assert next_claim is None
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize("max_attempts", [1, 3])
+async def test_fail_zero_backoff_retry_cycle_never_exceeds_attempt_budget(
+    claim_jobs: ClaimJobs, queue: JobQueue, max_attempts: int
+) -> None:
+    seeded = await claim_jobs.add(queue=queue, max_attempts=max_attempts)
+
+    for expected_attempt in range(1, max_attempts + 1):
+        worker_id = f"retry-worker-{expected_attempt}"
+        claimed = await claim_next(
+            claim_jobs.factory, queue=queue, worker_id=worker_id, lease_seconds=60
+        )
+        assert claimed is not None
+        assert claimed.id == seeded.id
+        assert claimed.attempts == expected_attempt
+        assert claimed.last_error == (
+            None if expected_attempt == 1 else f"Execution {expected_attempt - 1} failed"
+        )
+
+        await fail(
+            claim_jobs.factory,
+            claimed.id,
+            f"Execution {expected_attempt} failed",
+            worker_id=worker_id,
+            attempt=claimed.attempts,
+            retryable=True,
+            backoff=timedelta(0),
+        )
+        stored = await _read_lifecycle_job(claim_jobs, seeded.id)
+        assert stored.attempts == expected_attempt
+        assert stored.max_attempts == max_attempts
+        assert stored.last_error == f"Execution {expected_attempt} failed"
+        assert stored.locked_by is None
+        assert stored.lease_expires_at is None
+        if expected_attempt < max_attempts:
+            assert stored.status == JobStatus.QUEUED
+            assert stored.finished_at is None
+            assert stored.run_after <= await claim_jobs.clock()
+        else:
+            assert stored.status == JobStatus.FAILED
+            assert stored.finished_at is not None
+
+    exhausted = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="over-budget-worker", lease_seconds=60
+    )
+    assert exhausted is None
+    terminal = await _read_lifecycle_job(claim_jobs, seeded.id)
+    assert terminal.attempts == max_attempts
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_fail_backoff_blocks_claim_until_run_after_becomes_due(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    original = await _start_lifecycle_job(claim_jobs, queue=queue)
+    await fail(
+        claim_jobs.factory,
+        original.id,
+        "Temporary failure",
+        worker_id="lifecycle-worker",
+        attempt=original.attempts,
+        retryable=True,
+        backoff=timedelta(hours=1),
+    )
+    pending = await _read_lifecycle_job(claim_jobs, original.id)
+    unavailable = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="too-early-worker", lease_seconds=60
+    )
+    assert unavailable is None
+    still_pending = await _read_lifecycle_job(claim_jobs, original.id)
+    assert _job_state(still_pending) == _job_state(pending)
+
+    async with claim_jobs.factory.begin() as session:
+        await session.execute(
+            update(Job)
+            .where(Job.id == original.id)
+            .values(run_after=func.clock_timestamp() - timedelta(seconds=1))
+        )
+    claimed_again = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="due-retry-worker", lease_seconds=60
+    )
+    assert claimed_again is not None
+    assert claimed_again.id == original.id
+    assert claimed_again.attempts == original.attempts + 1
+    assert claimed_again.locked_by == "due-retry-worker"
+    assert claimed_again.last_error == "Temporary failure"
+
+
+@pytest.mark.parametrize("retryable", [True, False], ids=["retryable", "terminal"])
+@pytest.mark.parametrize(
+    "backoff",
+    [timedelta(seconds=-1), timedelta(microseconds=-1), timedelta(days=-1)],
+    ids=["negative-second", "negative-microsecond", "negative-day"],
+)
+async def test_fail_rejects_negative_backoff_without_mutation(
+    claim_jobs: ClaimJobs, retryable: bool, backoff: timedelta
+) -> None:
+    original = await _start_lifecycle_job(claim_jobs)
+    previous = _job_state(original)
+
+    with pytest.raises(ValueError, match="backoff must not be negative"):
+        await fail(
+            claim_jobs.factory,
+            original.id,
+            "Invalid backoff",
+            worker_id="lifecycle-worker",
+            attempt=original.attempts,
+            retryable=retryable,
+            backoff=backoff,
+        )
+
+    stored = await _read_lifecycle_job(claim_jobs, original.id)
+    assert _job_state(stored) == previous
+
+
+@pytest.mark.parametrize("retryable", [True, False], ids=["retry", "terminal"])
+async def test_fail_clears_stale_execution_result(claim_jobs: ClaimJobs, retryable: bool) -> None:
+    original = await _start_lifecycle_job(claim_jobs)
+    async with claim_jobs.factory.begin() as session:
+        await session.execute(
+            update(Job).where(Job.id == original.id).values(result={"source": "stale-report"})
+        )
+
+    await fail(
+        claim_jobs.factory,
+        original.id,
+        "Execution failed",
+        worker_id="lifecycle-worker",
+        attempt=original.attempts,
+        retryable=retryable,
+    )
+    stored = await _read_lifecycle_job(claim_jobs, original.id)
+    assert stored.result is None
+    assert stored.last_error == "Execution failed"
+    assert stored.status == (JobStatus.QUEUED if retryable else JobStatus.FAILED)
+    assert stored.attempts == original.attempts
+    assert stored.delivered is False
+
+
+@pytest.mark.parametrize("first_retryable", [True, False], ids=["requeued", "failed"])
+async def test_fail_rejects_duplicate_report_without_overwriting_error(
+    claim_jobs: ClaimJobs, first_retryable: bool
+) -> None:
+    original = await _start_lifecycle_job(claim_jobs)
+    await fail(
+        claim_jobs.factory,
+        original.id,
+        "Accepted failure",
+        worker_id="lifecycle-worker",
+        attempt=original.attempts,
+        retryable=first_retryable,
+        backoff=timedelta(0),
+    )
+    accepted = _job_state(await _read_lifecycle_job(claim_jobs, original.id))
+
+    with pytest.raises(JobOwnershipLostError):
+        await fail(
+            claim_jobs.factory,
+            original.id,
+            "Duplicate failure",
+            worker_id="lifecycle-worker",
+            attempt=original.attempts,
+            retryable=True,
+            backoff=timedelta(0),
+        )
+
+    stored = await _read_lifecycle_job(claim_jobs, original.id)
+    assert _job_state(stored) == accepted
+    assert stored.last_error == "Accepted failure"
+    assert stored.attempts == original.attempts
+
+
+@pytest.mark.parametrize("retryable", [True, False], ids=["retry", "terminal"])
+@pytest.mark.parametrize(
+    ("running_queue", "waiting_queue"),
+    [
+        (JobQueue.SANDBOX, JobQueue.SANDBOX),
+        (JobQueue.SANDBOX, JobQueue.PUBLISHER),
+        (JobQueue.PUBLISHER, JobQueue.SANDBOX),
+        (JobQueue.PUBLISHER, JobQueue.PUBLISHER),
+    ],
+)
+async def test_fail_releases_serial_key_for_another_ready_job(
+    claim_jobs: ClaimJobs,
+    retryable: bool,
+    running_queue: JobQueue,
+    waiting_queue: JobQueue,
+) -> None:
+    key = f"pipeline:{uuid4()}"
+    original = await _start_lifecycle_job(claim_jobs, queue=running_queue, serial_key=key)
+    waiting = await claim_jobs.add(queue=waiting_queue, serial_key=key)
+    blocked = await claim_next(
+        claim_jobs.factory,
+        queue=waiting_queue,
+        worker_id="waiting-failure-worker",
+        lease_seconds=60,
+    )
+    assert blocked is None
+
+    await fail(
+        claim_jobs.factory,
+        original.id,
+        "Release serial key after failure",
+        worker_id="lifecycle-worker",
+        attempt=original.attempts,
+        retryable=retryable,
+        backoff=timedelta(hours=1),
+    )
+    released = await _read_lifecycle_job(claim_jobs, original.id)
+    assert released.status == (JobStatus.QUEUED if retryable else JobStatus.FAILED)
+    assert released.serial_key == key
+    assert released.attempts == original.attempts
+    assert released.locked_by is None
+    assert released.lease_expires_at is None
+
+    next_claim = await claim_next(
+        claim_jobs.factory,
+        queue=waiting_queue,
+        worker_id="waiting-failure-worker",
+        lease_seconds=60,
+    )
+    assert next_claim is not None
+    assert next_claim.id == waiting.id
+    assert next_claim.serial_key == key
+    assert next_claim.attempts == 1
+
+
+@pytest.mark.parametrize("late_retryable", [True, False], ids=["late-retry", "late-terminal"])
+@pytest.mark.parametrize("reuse_worker_id", [False, True], ids=["new-worker", "same-worker-id"])
+async def test_fail_old_attempt_cannot_requeue_or_fail_a_new_retry_claim(
+    claim_jobs: ClaimJobs, late_retryable: bool, reuse_worker_id: bool
+) -> None:
+    original = await _start_lifecycle_job(
+        claim_jobs, worker_id="first-retry-worker", serial_key=f"pipeline:{uuid4()}"
+    )
+    original_attempt = original.attempts
+    await fail(
+        claim_jobs.factory,
+        original.id,
+        "First attempt failed",
+        worker_id="first-retry-worker",
+        attempt=original_attempt,
+        retryable=True,
+        backoff=timedelta(0),
+    )
+
+    current_worker = "first-retry-worker" if reuse_worker_id else "second-retry-worker"
+    current_claim = await claim_next(
+        claim_jobs.factory,
+        queue=JobQueue.SANDBOX,
+        worker_id=current_worker,
+        lease_seconds=60,
+    )
+    assert current_claim is not None
+    assert current_claim.id == original.id
+    assert current_claim.attempts == original_attempt + 1
+    previous = _job_state(current_claim)
+
+    with pytest.raises(JobOwnershipLostError):
+        await fail(
+            claim_jobs.factory,
+            original.id,
+            "Old attempt reported a late failure",
+            worker_id="first-retry-worker",
+            attempt=original_attempt,
+            retryable=late_retryable,
+            backoff=timedelta(0),
+        )
+
+    stored = await _read_lifecycle_job(claim_jobs, original.id)
+    assert _job_state(stored) == previous
+
+    await complete(
+        claim_jobs.factory,
+        current_claim.id,
+        {"source": "current-retry"},
+        worker_id=current_worker,
+        attempt=current_claim.attempts,
+    )
+    accepted = _job_state(await _read_lifecycle_job(claim_jobs, original.id))
+
+    with pytest.raises(JobOwnershipLostError):
+        await fail(
+            claim_jobs.factory,
+            original.id,
+            "Late failure after current attempt succeeded",
+            worker_id="first-retry-worker",
+            attempt=original_attempt,
+            retryable=late_retryable,
+            backoff=timedelta(0),
+        )
+    succeeded = await _read_lifecycle_job(claim_jobs, original.id)
+    assert succeeded.result == {"source": "current-retry"}
+    assert succeeded.status == JobStatus.SUCCEEDED
+    assert _job_state(succeeded) == accepted
+
+
+@pytest.mark.parametrize("retryable", [True, False], ids=["retry", "terminal"])
+async def test_fail_racing_complete_accepts_only_one_outcome(
+    claim_jobs: ClaimJobs, retryable: bool
+) -> None:
+    original = await _start_lifecycle_job(claim_jobs)
+    barrier = asyncio.Barrier(2)
+
+    async def finish() -> None:
+        await barrier.wait()
+        await complete(
+            claim_jobs.factory,
+            original.id,
+            {"source": "completion-winner"},
+            worker_id="lifecycle-worker",
+            attempt=original.attempts,
+        )
+
+    async def report_failure() -> None:
+        await barrier.wait()
+        await fail(
+            claim_jobs.factory,
+            original.id,
+            "Failure winner",
+            worker_id="lifecycle-worker",
+            attempt=original.attempts,
+            retryable=retryable,
+            backoff=timedelta(seconds=30),
+        )
+
+    tasks = [asyncio.create_task(finish()), asyncio.create_task(report_failure())]
+    try:
+        results = await asyncio.wait_for(asyncio.gather(*tasks, return_exceptions=True), timeout=10)
+        assert sum(result is None for result in results) == 1
+        assert sum(isinstance(result, JobOwnershipLostError) for result in results) == 1
+        completion_won = results[0] is None
+    finally:
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+    stored = await _read_lifecycle_job(claim_jobs, original.id)
+    assert stored.attempts == original.attempts
+    assert stored.locked_by is None
+    assert stored.lease_expires_at is None
+    if completion_won:
+        assert stored.status == JobStatus.SUCCEEDED
+        assert stored.result == {"source": "completion-winner"}
+        assert stored.last_error is None
+        assert stored.finished_at is not None
+    else:
+        assert stored.status == (JobStatus.QUEUED if retryable else JobStatus.FAILED)
+        assert stored.result is None
+        assert stored.last_error == "Failure winner"
+        if retryable:
+            assert stored.finished_at is None
+        else:
+            assert stored.finished_at is not None
 
 
 @pytest.mark.skip(reason="TODO")
