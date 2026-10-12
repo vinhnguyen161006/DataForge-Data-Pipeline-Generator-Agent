@@ -308,6 +308,55 @@ async def fail(
             raise JobOwnershipLostError("The worker no longer owns this job attempt")
 
 
-async def reclaim_expired(factory: async_sessionmaker[AsyncSession], queue: JobQueue) -> int:
-    """TODO: return jobs with an expired lease to the queue (or fail them when out of attempts)."""
-    raise NotImplementedError
+async def reclaim_expired(
+    factory: async_sessionmaker[AsyncSession],
+    queue: JobQueue,
+) -> int:
+    """Recover expired running jobs without incrementing attempts."""
+    reclaimed = 0
+
+    async with factory.begin() as session:
+        candidates = (
+            select(Job)
+            .where(
+                Job.queue == queue,
+                Job.status == JobStatus.RUNNING,
+                Job.lease_expires_at <= func.clock_timestamp(),
+            )
+            .order_by(Job.lease_expires_at, Job.id)
+            .with_for_update(skip_locked=True, of=Job)
+        )
+
+        jobs = (await session.scalars(candidates)).all()
+
+        for job in jobs:
+            should_retry = job.attempts < job.max_attempts
+
+            statement = (
+                update(Job)
+                .where(
+                    Job.id == job.id,
+                    Job.queue == queue,
+                    Job.status == JobStatus.RUNNING,
+                    Job.lease_expires_at <= func.clock_timestamp(),
+                )
+                .values(
+                    status=JobStatus.QUEUED if should_retry else JobStatus.FAILED,
+                    run_after=(func.clock_timestamp() if should_retry else Job.run_after),
+                    finished_at=(None if should_retry else func.clock_timestamp()),
+                    locked_by=None,
+                    lease_expires_at=None,
+                    last_error="Job lease expired",
+                    result=None,
+                    delivered=False,
+                )
+                .returning(Job.id)
+                .execution_options(synchronize_session=False)
+            )
+
+            updated_id: uuid.UUID | None = await session.scalar(statement)
+
+            if updated_id is not None:
+                reclaimed += 1
+
+    return reclaimed

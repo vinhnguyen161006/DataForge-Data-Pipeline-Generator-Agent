@@ -3,11 +3,12 @@ from __future__ import annotations
 import asyncio
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy import delete, func, select, text, update
+from sqlalchemy import delete, event, func, select, text, update
+from sqlalchemy.engine import AdaptedConnection
 from sqlalchemy.exc import IntegrityError, StatementError
 
 from app.db.models import (
@@ -26,13 +27,15 @@ from app.jobs.queue import (
     enqueue,
     fail,
     heartbeat,
+    reclaim_expired,
 )
 
 if TYPE_CHECKING:
     from collections.abc import AsyncIterator
     from typing import Literal
 
-    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+    from sqlalchemy.engine import Connection, ExecutionContext
+    from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
 
 pytestmark = pytest.mark.integration
 
@@ -1905,14 +1908,16 @@ async def test_complete_releases_serial_key_for_a_real_next_claim(
 
 @pytest.mark.parametrize("operation", ["heartbeat", "complete", "fail"])
 @pytest.mark.parametrize("reuse_worker_id", [False, True], ids=["new-worker", "same-worker-id"])
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
 async def test_worker_update_from_old_attempt_cannot_modify_a_new_claim(
     claim_jobs: ClaimJobs,
+    queue: JobQueue,
     operation: Literal["heartbeat", "complete", "fail"],
     reuse_worker_id: bool,
 ) -> None:
-    """Simulate recovery until reclaim_expired is implemented in D7."""
+    """Reject a previous attempt after real recovery and a new claim."""
     original = await _start_lifecycle_job(
-        claim_jobs, worker_id="old-claim-worker", serial_key=f"pipeline:{uuid4()}"
+        claim_jobs, queue=queue, worker_id="old-claim-worker", serial_key=f"pipeline:{uuid4()}"
     )
     old_attempt = original.attempts
     async with claim_jobs.factory.begin() as session:
@@ -1921,22 +1926,12 @@ async def test_worker_update_from_old_attempt_cannot_modify_a_new_claim(
             .where(Job.id == original.id)
             .values(lease_expires_at=func.clock_timestamp() - timedelta(seconds=1))
         )
-    async with claim_jobs.factory.begin() as session:
-        await session.execute(
-            update(Job)
-            .where(Job.id == original.id)
-            .values(
-                status=JobStatus.QUEUED,
-                locked_by=None,
-                lease_expires_at=None,
-                run_after=func.clock_timestamp() - timedelta(seconds=1),
-            )
-        )
+    assert await reclaim_expired(claim_jobs.factory, queue) == 1
 
     new_worker_id = "old-claim-worker" if reuse_worker_id else "new-claim-worker"
     new_claim = await claim_next(
         claim_jobs.factory,
-        queue=JobQueue.SANDBOX,
+        queue=queue,
         worker_id=new_worker_id,
         lease_seconds=60,
     )
@@ -1965,10 +1960,10 @@ async def test_worker_update_from_old_attempt_cannot_modify_a_new_claim(
     )
     accepted = _job_state(await _read_lifecycle_job(claim_jobs, original.id))
     with pytest.raises(JobOwnershipLostError):
-        await complete(
-            claim_jobs.factory,
+        await _apply_worker_update(
+            claim_jobs,
             original.id,
-            {"source": "late-old-claim"},
+            operation=operation,
             worker_id="old-claim-worker",
             attempt=old_attempt,
         )
@@ -2589,6 +2584,600 @@ async def test_fail_racing_complete_accepts_only_one_outcome(
             assert stored.finished_at is not None
 
 
-@pytest.mark.skip(reason="TODO")
-async def test_expired_lease_is_reclaimed(database_url: str) -> None:
-    """TODO: a running job with an expired lease is requeued, or failed when out of attempts."""
+async def _expire_recovery_job(claim_jobs: ClaimJobs, job_id: UUID) -> Job:
+    """Commit an expired lease using the database clock."""
+    async with claim_jobs.factory.begin() as session:
+        await session.execute(
+            update(Job)
+            .where(Job.id == job_id)
+            .values(lease_expires_at=func.clock_timestamp() - timedelta(seconds=1))
+        )
+    return await _read_lifecycle_job(claim_jobs, job_id)
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize(
+    ("attempts", "max_attempts"),
+    [(1, 3), (2, 3), (3, 3), (1, 1), (4, 3)],
+    ids=["first-attempt", "one-left", "last-attempt", "single-attempt", "over-budget"],
+)
+async def test_expired_lease_is_reclaimed(
+    claim_jobs: ClaimJobs,
+    queue: JobQueue,
+    attempts: int,
+    max_attempts: int,
+) -> None:
+    """Recover only expired ownership and preserve execution identity."""
+    original = await claim_jobs.add(
+        queue=queue,
+        status=JobStatus.RUNNING,
+        attempts=attempts,
+        max_attempts=max_attempts,
+        serial_key=f"recovery:{uuid4()}",
+        last_error="Previous execution error",
+    )
+    async with claim_jobs.factory.begin() as session:
+        await session.execute(
+            update(Job)
+            .where(Job.id == original.id)
+            .values(
+                idempotency_key=f"recovery:{uuid4()}",
+                result={"source": "stale-output"},
+                delivered=True,
+                finished_at=func.clock_timestamp() - timedelta(hours=1),
+                run_after=func.clock_timestamp() + timedelta(hours=1),
+            )
+        )
+    expired = await _expire_recovery_job(claim_jobs, original.id)
+    before = _job_state(expired)
+    lower = await claim_jobs.clock()
+
+    count = await reclaim_expired(claim_jobs.factory, queue)
+
+    upper = await claim_jobs.clock()
+    stored = await _read_lifecycle_job(claim_jobs, original.id)
+    retrying = attempts < max_attempts
+    assert count == 1
+    assert stored.status == (JobStatus.QUEUED if retrying else JobStatus.FAILED)
+    assert stored.attempts == attempts
+    assert stored.locked_by is None
+    assert stored.lease_expires_at is None
+    assert stored.last_error == "Job lease expired"
+    assert stored.result is None
+    assert stored.delivered is False
+    if retrying:
+        assert lower <= stored.run_after <= upper
+        assert stored.finished_at is None
+    else:
+        assert stored.run_after == expired.run_after
+        assert stored.finished_at is not None
+        assert lower <= stored.finished_at <= upper
+
+    expected = before | {
+        "status": stored.status,
+        "run_after": stored.run_after,
+        "finished_at": stored.finished_at,
+        "locked_by": None,
+        "lease_expires_at": None,
+        "last_error": "Job lease expired",
+        "result": None,
+        "delivered": False,
+    }
+    assert _job_state(stored) == expected
+    assert await reclaim_expired(claim_jobs.factory, queue) == 0
+    assert _job_state(await _read_lifecycle_job(claim_jobs, original.id)) == expected
+
+    next_claim = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="recovered-worker", lease_seconds=60
+    )
+    if retrying:
+        assert next_claim is not None
+        assert next_claim.id == original.id
+        assert next_claim.attempts == attempts + 1
+        assert next_claim.locked_by == "recovered-worker"
+        assert next_claim.finished_at is None
+        assert next_claim.result is None
+    else:
+        assert next_claim is None
+        assert _job_state(await _read_lifecycle_job(claim_jobs, original.id)) == expected
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize(
+    "case",
+    ["live-lease", "missing-lease", "queued", "succeeded", "failed"],
+)
+async def test_reclaim_expired_preserves_ineligible_jobs(
+    claim_jobs: ClaimJobs,
+    queue: JobQueue,
+    case: Literal["live-lease", "missing-lease", "queued", "succeeded", "failed"],
+) -> None:
+    statuses = {
+        "live-lease": JobStatus.RUNNING,
+        "missing-lease": JobStatus.RUNNING,
+        "queued": JobStatus.QUEUED,
+        "succeeded": JobStatus.SUCCEEDED,
+        "failed": JobStatus.FAILED,
+    }
+    original = await claim_jobs.add(
+        queue=queue,
+        status=statuses[case],
+        attempts=1,
+        last_error="Preserved error",
+        serial_key=f"unchanged:{uuid4()}",
+    )
+    if case == "missing-lease":
+        async with claim_jobs.factory.begin() as session:
+            await session.execute(
+                update(Job).where(Job.id == original.id).values(lease_expires_at=None)
+            )
+    elif case in ("queued", "succeeded", "failed"):
+        async with claim_jobs.factory.begin() as session:
+            await session.execute(
+                update(Job)
+                .where(Job.id == original.id)
+                .values(
+                    lease_expires_at=func.clock_timestamp() - timedelta(seconds=1),
+                    locked_by="obsolete-worker",
+                    result={"source": "preserved-result"},
+                    delivered=True,
+                )
+            )
+    previous = _job_state(await _read_lifecycle_job(claim_jobs, original.id))
+
+    assert await reclaim_expired(claim_jobs.factory, queue) == 0
+    assert _job_state(await _read_lifecycle_job(claim_jobs, original.id)) == previous
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_reclaim_expired_returns_zero_without_jobs(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    assert await reclaim_expired(claim_jobs.factory, queue) == 0
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_reclaim_expired_counts_only_matching_expired_jobs(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    other_queue = JobQueue.PUBLISHER if queue == JobQueue.SANDBOX else JobQueue.SANDBOX
+    retrying = await claim_jobs.add(queue=queue, status=JobStatus.RUNNING, attempts=1)
+    terminal = await claim_jobs.add(queue=queue, status=JobStatus.RUNNING, attempts=3)
+    unrelated = await claim_jobs.add(queue=other_queue, status=JobStatus.RUNNING, attempts=1)
+    live = await claim_jobs.add(queue=queue, status=JobStatus.RUNNING, attempts=1)
+    queued = await claim_jobs.add(queue=queue)
+    for job in (retrying, terminal, unrelated):
+        await _expire_recovery_job(claim_jobs, job.id)
+    unchanged = {
+        job.id: _job_state(await _read_lifecycle_job(claim_jobs, job.id))
+        for job in (unrelated, live, queued)
+    }
+
+    assert await reclaim_expired(claim_jobs.factory, queue) == 2
+    assert (await _read_lifecycle_job(claim_jobs, retrying.id)).status == JobStatus.QUEUED
+    assert (await _read_lifecycle_job(claim_jobs, terminal.id)).status == JobStatus.FAILED
+    for job_id, previous in unchanged.items():
+        assert _job_state(await _read_lifecycle_job(claim_jobs, job_id)) == previous
+    assert await reclaim_expired(claim_jobs.factory, queue) == 0
+
+    assert await reclaim_expired(claim_jobs.factory, other_queue) == 1
+    recovered = await _read_lifecycle_job(claim_jobs, unrelated.id)
+    assert recovered.status == JobStatus.QUEUED
+    assert recovered.attempts == unrelated.attempts
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize("max_attempts", [1, 3])
+async def test_reclaim_expired_retry_cycle_stops_at_attempt_budget(
+    claim_jobs: ClaimJobs, queue: JobQueue, max_attempts: int
+) -> None:
+    original = await claim_jobs.add(queue=queue, max_attempts=max_attempts)
+    for attempt in range(1, max_attempts + 1):
+        claimed = await claim_next(
+            claim_jobs.factory,
+            queue=queue,
+            worker_id=f"recovery-attempt-{attempt}",
+            lease_seconds=60,
+        )
+        assert claimed is not None
+        assert claimed.id == original.id
+        assert claimed.attempts == attempt
+        await _expire_recovery_job(claim_jobs, claimed.id)
+
+        assert await reclaim_expired(claim_jobs.factory, queue) == 1
+        stored = await _read_lifecycle_job(claim_jobs, claimed.id)
+        assert stored.attempts == attempt
+        assert stored.status == (JobStatus.QUEUED if attempt < max_attempts else JobStatus.FAILED)
+        assert stored.locked_by is None
+        assert stored.lease_expires_at is None
+
+    assert (
+        await claim_next(
+            claim_jobs.factory, queue=queue, worker_id="extra-attempt", lease_seconds=60
+        )
+        is None
+    )
+    assert await reclaim_expired(claim_jobs.factory, queue) == 0
+
+
+@pytest.mark.parametrize("running_queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize("waiting_queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize("attempts", [1, 3], ids=["requeued", "failed"])
+async def test_reclaim_expired_releases_serial_key_after_commit(
+    claim_jobs: ClaimJobs,
+    running_queue: JobQueue,
+    waiting_queue: JobQueue,
+    attempts: int,
+) -> None:
+    key = f"recovery-serial:{uuid4()}"
+    now = await claim_jobs.clock()
+    running = await claim_jobs.add(
+        queue=running_queue,
+        status=JobStatus.RUNNING,
+        attempts=attempts,
+        serial_key=key,
+        created_at=now,
+    )
+    waiting = await claim_jobs.add(
+        queue=waiting_queue,
+        serial_key=key,
+        created_at=now - timedelta(hours=1),
+    )
+    await _expire_recovery_job(claim_jobs, running.id)
+    assert (
+        await claim_next(
+            claim_jobs.factory,
+            queue=waiting_queue,
+            worker_id="serial-before-recovery",
+            lease_seconds=60,
+        )
+        is None
+    )
+
+    assert await reclaim_expired(claim_jobs.factory, running_queue) == 1
+
+    claimed = await claim_next(
+        claim_jobs.factory,
+        queue=waiting_queue,
+        worker_id="serial-after-recovery",
+        lease_seconds=60,
+    )
+    assert claimed is not None
+    assert claimed.id == waiting.id
+    assert claimed.serial_key == key
+    recovered = await _read_lifecycle_job(claim_jobs, running.id)
+    assert recovered.serial_key == key
+    assert recovered.attempts == attempts
+    assert recovered.status == (JobStatus.QUEUED if attempts < 3 else JobStatus.FAILED)
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize("operation", ["heartbeat", "complete", "fail"])
+@pytest.mark.parametrize("max_attempts", [1, 3], ids=["failed", "queued"])
+async def test_reclaim_expired_rejects_old_worker_before_any_new_claim(
+    claim_jobs: ClaimJobs,
+    queue: JobQueue,
+    operation: Literal["heartbeat", "complete", "fail"],
+    max_attempts: int,
+) -> None:
+    original = await _start_lifecycle_job(claim_jobs, queue=queue, max_attempts=max_attempts)
+    await _expire_recovery_job(claim_jobs, original.id)
+    assert await reclaim_expired(claim_jobs.factory, queue) == 1
+    previous = _job_state(await _read_lifecycle_job(claim_jobs, original.id))
+
+    with pytest.raises(JobOwnershipLostError):
+        await _apply_worker_update(
+            claim_jobs, original.id, operation=operation, attempt=original.attempts
+        )
+
+    assert _job_state(await _read_lifecycle_job(claim_jobs, original.id)) == previous
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize("mixed_budget", [False, True], ids=["all-retry", "mixed-budget"])
+async def test_reclaim_expired_two_reclaimers_process_each_job_once(
+    claim_jobs: ClaimJobs, queue: JobQueue, mixed_budget: bool
+) -> None:
+    jobs: list[Job] = []
+    for position in range(6):
+        attempts = 3 if mixed_budget and position % 2 else 1
+        job = await claim_jobs.add(queue=queue, status=JobStatus.RUNNING, attempts=attempts)
+        await _expire_recovery_job(claim_jobs, job.id)
+        jobs.append(job)
+    barrier = asyncio.Barrier(2)
+
+    async def recover() -> int:
+        await barrier.wait()
+        return await reclaim_expired(claim_jobs.factory, queue)
+
+    tasks = [asyncio.create_task(recover()), asyncio.create_task(recover())]
+    try:
+        counts = await asyncio.wait_for(asyncio.gather(*tasks), timeout=10)
+        assert all(0 <= count <= len(jobs) for count in counts)
+        assert sum(counts) == len(jobs)
+    finally:
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+    previous: dict[UUID, dict[str, object]] = {}
+    for original in jobs:
+        stored = await _read_lifecycle_job(claim_jobs, original.id)
+        assert stored.status == (JobStatus.QUEUED if original.attempts < 3 else JobStatus.FAILED)
+        assert stored.attempts == original.attempts
+        assert stored.locked_by is None
+        assert stored.lease_expires_at is None
+        assert stored.last_error == "Job lease expired"
+        previous[stored.id] = _job_state(stored)
+    assert await reclaim_expired(claim_jobs.factory, queue) == 0
+    for job_id, snapshot in previous.items():
+        assert _job_state(await _read_lifecycle_job(claim_jobs, job_id)) == snapshot
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_reclaim_expired_skips_locked_job_and_counts_only_unlocked_updates(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    locked_job = await claim_jobs.add(queue=queue, status=JobStatus.RUNNING, attempts=1)
+    unlocked_job = await claim_jobs.add(queue=queue, status=JobStatus.RUNNING, attempts=3)
+    expired = await _expire_recovery_job(claim_jobs, locked_job.id)
+    await _expire_recovery_job(claim_jobs, unlocked_job.id)
+    previous = _job_state(expired)
+
+    async with claim_jobs.factory.begin() as blocker:
+        locked_id = await blocker.scalar(
+            select(Job.id).where(Job.id == locked_job.id).with_for_update(of=Job)
+        )
+        assert locked_id == locked_job.id
+        count = await asyncio.wait_for(reclaim_expired(claim_jobs.factory, queue), timeout=10)
+        assert count == 1
+        assert blocker.in_transaction()
+        assert _job_state(await _read_lifecycle_job(claim_jobs, locked_job.id)) == previous
+        assert (await _read_lifecycle_job(claim_jobs, unlocked_job.id)).status == JobStatus.FAILED
+
+    assert await reclaim_expired(claim_jobs.factory, queue) == 1
+    stored = await _read_lifecycle_job(claim_jobs, locked_job.id)
+    assert stored.status == JobStatus.QUEUED
+    assert stored.attempts == locked_job.attempts
+    assert await reclaim_expired(claim_jobs.factory, queue) == 0
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_reclaim_expired_preserves_a_committed_heartbeat_renewal(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    original = await _start_lifecycle_job(claim_jobs, queue=queue)
+    await heartbeat(
+        claim_jobs.factory,
+        original.id,
+        worker_id="lifecycle-worker",
+        attempt=original.attempts,
+        lease_seconds=300,
+    )
+    renewed = await _read_lifecycle_job(claim_jobs, original.id)
+    assert renewed.lease_expires_at is not None
+    assert original.lease_expires_at is not None
+    assert renewed.lease_expires_at > original.lease_expires_at
+    snapshot = _job_state(renewed)
+
+    assert await reclaim_expired(claim_jobs.factory, queue) == 0
+
+    assert _job_state(await _read_lifecycle_job(claim_jobs, original.id)) == snapshot
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize("renewal_commits", [True, False], ids=["commit", "rollback"])
+async def test_reclaim_expired_respects_a_locked_pending_lease_renewal(
+    claim_jobs: ClaimJobs, queue: JobQueue, renewal_commits: bool
+) -> None:
+    """Hold a real lease update open to control its commit or rollback."""
+    original = await _start_lifecycle_job(claim_jobs, queue=queue)
+    expired = await _expire_recovery_job(claim_jobs, original.id)
+    snapshot = _job_state(expired)
+
+    async with claim_jobs.factory() as renewal:
+        await renewal.execute(
+            update(Job)
+            .where(Job.id == original.id)
+            .values(lease_expires_at=func.clock_timestamp() + timedelta(minutes=5))
+        )
+        assert await asyncio.wait_for(reclaim_expired(claim_jobs.factory, queue), timeout=10) == 0
+        assert renewal.in_transaction()
+        assert _job_state(await _read_lifecycle_job(claim_jobs, original.id)) == snapshot
+        if renewal_commits:
+            await renewal.commit()
+        else:
+            await renewal.rollback()
+
+    if renewal_commits:
+        renewed = await _read_lifecycle_job(claim_jobs, original.id)
+        assert renewed.lease_expires_at is not None
+        assert expired.lease_expires_at is not None
+        assert renewed.lease_expires_at > expired.lease_expires_at
+        expected = snapshot | {"lease_expires_at": renewed.lease_expires_at}
+        assert _job_state(renewed) == expected
+        assert await reclaim_expired(claim_jobs.factory, queue) == 0
+        assert _job_state(await _read_lifecycle_job(claim_jobs, original.id)) == expected
+    else:
+        assert _job_state(await _read_lifecycle_job(claim_jobs, original.id)) == snapshot
+        assert await reclaim_expired(claim_jobs.factory, queue) == 1
+        stored = await _read_lifecycle_job(claim_jobs, original.id)
+        assert stored.status == JobStatus.QUEUED
+        assert stored.attempts == original.attempts
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize("operation", ["heartbeat", "complete", "fail"])
+async def test_reclaim_expired_racing_old_worker_update_cannot_accept_expired_owner(
+    claim_jobs: ClaimJobs,
+    queue: JobQueue,
+    operation: Literal["heartbeat", "complete", "fail"],
+) -> None:
+    original = await _start_lifecycle_job(claim_jobs, queue=queue)
+    await _expire_recovery_job(claim_jobs, original.id)
+    barrier = asyncio.Barrier(2)
+
+    async def recover() -> int:
+        await barrier.wait()
+        return await reclaim_expired(claim_jobs.factory, queue)
+
+    async def update_worker() -> None:
+        await barrier.wait()
+        with pytest.raises(JobOwnershipLostError):
+            await _apply_worker_update(
+                claim_jobs, original.id, operation=operation, attempt=original.attempts
+            )
+
+    recovery_task = asyncio.create_task(recover())
+    worker_task = asyncio.create_task(update_worker())
+    try:
+        recovery_count, _ = await asyncio.wait_for(
+            asyncio.gather(recovery_task, worker_task), timeout=10
+        )
+        assert recovery_count in (0, 1)
+    finally:
+        for task in (recovery_task, worker_task):
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(recovery_task, worker_task, return_exceptions=True)
+
+    assert recovery_count + await reclaim_expired(claim_jobs.factory, queue) == 1
+    stored = await _read_lifecycle_job(claim_jobs, original.id)
+    assert stored.status == JobStatus.QUEUED
+    assert stored.attempts == original.attempts
+    assert stored.locked_by is None
+    assert stored.lease_expires_at is None
+    assert stored.last_error == "Job lease expired"
+    assert stored.result is None
+    assert stored.delivered is False
+    assert stored.finished_at is None
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize("operation", ["heartbeat", "complete", "fail"])
+@pytest.mark.parametrize("max_attempts", [1, 3], ids=["failed", "queued"])
+async def test_worker_update_waiting_on_reclaimer_lock_rechecks_ownership(
+    claim_jobs: ClaimJobs,
+    database_engine: AsyncEngine,
+    queue: JobQueue,
+    operation: Literal["heartbeat", "complete", "fail"],
+    max_attempts: int,
+) -> None:
+    """Pause after PostgreSQL locks recovery candidates, then start a worker update."""
+    original = await _start_lifecycle_job(claim_jobs, queue=queue, max_attempts=max_attempts)
+    expired = await _expire_recovery_job(claim_jobs, original.id)
+    previous = _job_state(expired)
+    locked = asyncio.Event()
+    resume = asyncio.Event()
+    blocker_pid: int | None = None
+    paused = False
+
+    def pause_after_candidate_lock(
+        connection: Connection,
+        cursor: object,
+        statement: str,
+        parameters: object,
+        context: ExecutionContext,
+        executemany: bool,
+    ) -> None:
+        nonlocal blocker_pid, paused
+        if paused or "FOR UPDATE OF jobs SKIP LOCKED" not in statement:
+            return
+        paused = True
+        value = connection.scalar(text("SELECT pg_backend_pid()"))
+        assert isinstance(value, int)
+        blocker_pid = value
+        adapted = cast("object", connection.connection.dbapi_connection)
+        assert isinstance(adapted, AdaptedConnection)
+        locked.set()
+        adapted.run_async(lambda _: resume.wait())
+
+    event.listen(database_engine.sync_engine, "after_cursor_execute", pause_after_candidate_lock)
+    recovery_task: asyncio.Task[int] | None = None
+    worker_task: asyncio.Task[None] | None = None
+    try:
+        recovery_task = asyncio.create_task(reclaim_expired(claim_jobs.factory, queue))
+        await asyncio.wait_for(locked.wait(), timeout=10)
+        assert blocker_pid is not None
+        assert _job_state(await _read_lifecycle_job(claim_jobs, original.id)) == previous
+        assert await asyncio.wait_for(reclaim_expired(claim_jobs.factory, queue), timeout=10) == 0
+        worker_task = asyncio.create_task(
+            _apply_worker_update(
+                claim_jobs, original.id, operation=operation, attempt=original.attempts
+            )
+        )
+        await _wait_for_lifecycle_lock(
+            claim_jobs, blocker_pid=blocker_pid, operation_task=worker_task
+        )
+
+        resume.set()
+        assert await asyncio.wait_for(recovery_task, timeout=10) == 1
+        with pytest.raises(JobOwnershipLostError):
+            await asyncio.wait_for(worker_task, timeout=10)
+    finally:
+        resume.set()
+        pending = [task for task in (recovery_task, worker_task) if task is not None]
+        for task in pending:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(*pending, return_exceptions=True)
+        event.remove(
+            database_engine.sync_engine, "after_cursor_execute", pause_after_candidate_lock
+        )
+
+    stored = await _read_lifecycle_job(claim_jobs, original.id)
+    assert stored.status == (JobStatus.FAILED if max_attempts == 1 else JobStatus.QUEUED)
+    assert stored.attempts == original.attempts
+    assert stored.locked_by is None
+    assert stored.lease_expires_at is None
+    assert stored.last_error == "Job lease expired"
+    assert stored.result is None
+    assert stored.delivered is False
+    if max_attempts == 1:
+        assert stored.finished_at is not None
+    else:
+        assert stored.finished_at is None
+    assert await reclaim_expired(claim_jobs.factory, queue) == 0
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_reclaim_expired_rolls_back_entire_batch_on_storage_failure(
+    claim_jobs: ClaimJobs, database_engine: AsyncEngine, queue: JobQueue
+) -> None:
+    """Fail the second real update so the first update must also roll back."""
+    first = await claim_jobs.add(queue=queue, status=JobStatus.RUNNING, attempts=1)
+    second = await claim_jobs.add(queue=queue, status=JobStatus.RUNNING, attempts=3)
+    snapshots: dict[UUID, dict[str, object]] = {}
+    for job in (first, second):
+        expired = await _expire_recovery_job(claim_jobs, job.id)
+        snapshots[job.id] = _job_state(expired)
+    updates = 0
+
+    def fail_second_update(
+        connection: Connection,
+        cursor: object,
+        statement: str,
+        parameters: object,
+        context: ExecutionContext,
+        executemany: bool,
+    ) -> None:
+        nonlocal updates
+        if statement.startswith("UPDATE jobs SET") and "last_error" in statement:
+            updates += 1
+            if updates == 2:
+                raise RuntimeError("Recovery storage failure")
+
+    event.listen(database_engine.sync_engine, "before_cursor_execute", fail_second_update)
+    try:
+        with pytest.raises(RuntimeError, match="Recovery storage failure"):
+            await reclaim_expired(claim_jobs.factory, queue)
+        assert updates == 2
+    finally:
+        event.remove(database_engine.sync_engine, "before_cursor_execute", fail_second_update)
+
+    for job_id, previous in snapshots.items():
+        assert _job_state(await _read_lifecycle_job(claim_jobs, job_id)) == previous
+    assert await asyncio.wait_for(reclaim_expired(claim_jobs.factory, queue), timeout=10) == 2
+    assert (await _read_lifecycle_job(claim_jobs, first.id)).status == JobStatus.QUEUED
+    assert (await _read_lifecycle_job(claim_jobs, second.id)).status == JobStatus.FAILED
