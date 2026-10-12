@@ -5,6 +5,7 @@ import os
 import platform
 from datetime import UTC, datetime
 from pathlib import Path
+from statistics import median
 from time import perf_counter
 from uuid import uuid4
 
@@ -125,7 +126,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--rows", type=positive_int, default=1_000_000)
     parser.add_argument("--threads", type=positive_int, default=1)
     parser.add_argument("--memory-limit", default="512MB")
-    parser.add_argument("--output-dir", type=Path, default=Path("../data/spikes/duckdb/e3"))
+    parser.add_argument("--output-dir", type=Path)
     parser.add_argument(
         "--database",
         type=Path,
@@ -141,7 +142,19 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Request the required metrics through custom_profiling_settings.",
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--benchmark",
+        action="store_true",
+        help="Run warmup and repeated measurements on a separate connection.",
+    )
+    parser.add_argument("--warmup", type=positive_int, default=1)
+    parser.add_argument("--repeats", type=positive_int, default=5)
+    args = parser.parse_args()
+    if args.output_dir is None:
+        args.output_dir = Path(
+            "../data/spikes/duckdb/e4" if args.benchmark else "../data/spikes/duckdb/e3"
+        )
+    return args
 
 
 def write_json(path: Path, value: object) -> None:
@@ -316,6 +329,165 @@ def memory_observations(samples: list[ProfileSample]) -> dict[str, object]:
     }
 
 
+def file_digest(path: Path) -> str:
+    """Identify the database file outside the query timing window."""
+    digest = hashlib.sha256()
+    with path.open("rb") as source:
+        while chunk := source.read(1024 * 1024):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
+def benchmark_query(
+    connection: duckdb.DuckDBPyConnection,
+    output_dir: Path,
+    *,
+    warmup: int,
+    repeats: int,
+    explicit_metrics: bool,
+    expected_result_sha256: str,
+) -> tuple[dict[str, object], list[ProfileSample]]:
+    """Exclude warmup and retain each repeated measurement on one connection."""
+    if warmup < 1 or repeats < 1:
+        raise ValueError("Warmup and repeats must be positive")
+
+    warmup_samples: list[ProfileSample] = []
+    for index in range(warmup):
+        warmup_samples.append(
+            capture_profile(
+                connection,
+                output_dir,
+                f"benchmark-warmup-{index + 1}",
+                explicit_metrics=explicit_metrics,
+                expected_result_sha256=expected_result_sha256,
+            )
+        )
+    write_json(
+        output_dir / "benchmark-warmup.json",
+        [sample.model_dump() for sample in warmup_samples],
+    )
+
+    measured: list[ProfileSample] = []
+    for index in range(repeats):
+        measured.append(
+            capture_profile(
+                connection,
+                output_dir,
+                f"benchmark-trial-{index + 1}",
+                explicit_metrics=explicit_metrics,
+                expected_result_sha256=expected_result_sha256,
+            )
+        )
+
+    python_times = [sample.python_elapsed_seconds for sample in measured]
+    latencies = [
+        sample.metrics.latency for sample in measured if sample.metrics.latency is not None
+    ]
+    summary: dict[str, object] = {
+        "schema_version": 1,
+        "run_id": output_dir.name,
+        "query_id": "sample-amount-groupby-v1",
+        "query_sha256": measured[0].query_sha256,
+        "result_sha256": measured[0].result_sha256,
+        "warmup_count": warmup,
+        "requested_repeats": repeats,
+        "measured_count": len(measured),
+        "latency_sample_count": len(latencies),
+        "all_required_metrics_present": all(not sample.missing_metrics for sample in measured),
+        "python_elapsed_samples_seconds": python_times,
+        "duckdb_latency_samples_seconds": [sample.metrics.latency for sample in measured],
+        "median_python_elapsed_seconds": median(python_times),
+        "median_duckdb_latency_seconds": (median(latencies) if len(latencies) == repeats else None),
+        "rows_scanned_samples": [sample.metrics.cumulative_rows_scanned for sample in measured],
+        "peak_buffer_samples_bytes": [
+            sample.metrics.system_peak_buffer_memory for sample in measured
+        ],
+        "missing_metrics_by_sample": {sample.label: sample.missing_metrics for sample in measured},
+        "profile_paths": [sample.profile_path for sample in measured],
+        "profiling_enabled": True,
+        "metric_mode": "explicit" if explicit_metrics else "default",
+        "connection_policy": "separate benchmark connection reused after warmup",
+        "cache_policy": "connection warmed by warmup queries; OS cache uncontrolled",
+        "timing_scope": (
+            "execute plus fetch; excludes preparation, connection opening, JSON parsing"
+        ),
+        "memory_scope": "DuckDB buffer peak on a reused instance; not worker RSS",
+        "buffer_peak_reset_status": "not_established",
+    }
+    write_json(
+        output_dir / "benchmark-samples.json",
+        [sample.model_dump() for sample in measured],
+    )
+    write_json(output_dir / "benchmark-summary.json", summary)
+    return summary, measured
+
+
+def handoff_record(
+    output_dir: Path,
+    database_path: Path,
+    database_sha256: str,
+    source_rows: int,
+    config: dict[str, object],
+    summary: dict[str, object],
+    measured: list[ProfileSample],
+) -> dict[str, object]:
+    """Propose a versioned record without changing the worker API contract."""
+    return {
+        "schema_version": 1,
+        "contract_status": "proposal",
+        "run_id": output_dir.name,
+        "model_id": None,
+        "query_id": "sample-amount-groupby-v1",
+        "query_sha256": measured[0].query_sha256,
+        "result_sha256": measured[0].result_sha256,
+        "workload_kind": "select_fetch_all",
+        "engine": {"name": "duckdb", "version": duckdb.__version__},
+        "environment": {
+            "python_version": platform.python_version(),
+            "platform": platform.platform(),
+            "architecture": platform.machine(),
+            "process_id": os.getpid(),
+        },
+        "dataset": {
+            "database_path": str(database_path.resolve()),
+            "file_sha256": database_sha256,
+            "source_rows": source_rows,
+            "identity_scope": "physical database file; not semantic dataset equivalence",
+        },
+        "config": config,
+        "method": {
+            "warmup_count": summary["warmup_count"],
+            "requested_repeats": summary["requested_repeats"],
+            "profiling_enabled": summary["profiling_enabled"],
+            "metric_mode": summary["metric_mode"],
+            "connection_policy": summary["connection_policy"],
+            "cache_policy": summary["cache_policy"],
+            "timing_scope": summary["timing_scope"],
+            "memory_scope": summary["memory_scope"],
+            "buffer_peak_reset_status": summary["buffer_peak_reset_status"],
+        },
+        "units": {
+            "samples[*].python_elapsed_seconds": "seconds",
+            "samples[*].metrics.latency": "seconds",
+            "samples[*].metrics.cumulative_rows_scanned": "rows",
+            "samples[*].metrics.system_peak_buffer_memory": "bytes",
+        },
+        "summary": summary,
+        "samples": [
+            {"sample_index": index + 1} | sample.model_dump()
+            for index, sample in enumerate(measured)
+        ],
+        "limitations": [
+            "Profiling instrumentation is enabled in all measured samples.",
+            "Buffer peaks can retain history from warmup and previous queries.",
+            "OS cache is not controlled by this experiment.",
+            "Result hashes validate this deterministic query, not arbitrary rewrite equivalence.",
+            "SELECT measurements do not establish dbt materialization performance.",
+            "The worker memory contract and any RSS requirement still need team agreement.",
+        ],
+    }
+
+
 def run_experiment(args: argparse.Namespace, output_dir: Path) -> dict[str, object]:
     """Prepare a database, close preparation, and profile separate connections."""
     database_path = (
@@ -403,6 +575,43 @@ def run_experiment(args: argparse.Namespace, output_dir: Path) -> dict[str, obje
             )
         write_json(output_dir / "memory-study.json", memory_observations(samples))
 
+    benchmark_summary: dict[str, object] | None = None
+    if args.benchmark:
+        database_sha256 = file_digest(database_path)
+        with duckdb.connect(
+            database=str(database_path), read_only=True, config=config
+        ) as benchmark_connection:
+            benchmark_settings = benchmark_connection.execute(
+                "SELECT current_setting('threads'), current_setting('memory_limit')"
+            ).fetchone()
+            if benchmark_settings is None:
+                raise RuntimeError("DuckDB did not return benchmark settings")
+            benchmark_summary, measured = benchmark_query(
+                benchmark_connection,
+                output_dir,
+                warmup=args.warmup,
+                repeats=args.repeats,
+                explicit_metrics=args.explicit_metrics,
+                expected_result_sha256=expected_result,
+            )
+        write_json(
+            output_dir / "benchmark-record.json",
+            handoff_record(
+                output_dir,
+                database_path,
+                database_sha256,
+                actual_rows,
+                {
+                    "threads_requested": args.threads,
+                    "threads_effective": benchmark_settings[0],
+                    "memory_limit_requested": args.memory_limit,
+                    "memory_limit_effective": benchmark_settings[1],
+                },
+                benchmark_summary,
+                measured,
+            ),
+        )
+
     write_json(output_dir / "samples.json", [sample.model_dump() for sample in samples])
     return {
         "recorded_at_utc": datetime.now(UTC).isoformat(),
@@ -437,6 +646,8 @@ def run_experiment(args: argparse.Namespace, output_dir: Path) -> dict[str, obje
         },
         "scans": [scan.model_dump() for scan in fresh.scans],
         "memory_study_enabled": args.memory_study,
+        "benchmark_enabled": args.benchmark,
+        "benchmark": benchmark_summary,
         "memory_scope": "DuckDB buffer manager; worker RSS is not measured",
         "timing_scope": "execute plus fetch; database creation and connection opening excluded",
         "metric_mapping": {
