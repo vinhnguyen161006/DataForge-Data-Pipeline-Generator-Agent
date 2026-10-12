@@ -7,6 +7,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from app.db.models import Job, JobQueue
 
 
+class JobOwnershipLostError(RuntimeError):
+    """The worker no longer owns the specified job attempt."""
+
+
 async def enqueue(
     session: AsyncSession,
     *,
@@ -38,16 +42,33 @@ async def claim_next(
 
 
 async def heartbeat(
-    factory: async_sessionmaker[AsyncSession], job_id: uuid.UUID, worker_id: str, lease_seconds: int
+    factory: async_sessionmaker[AsyncSession],
+    job_id: uuid.UUID,
+    *,
+    worker_id: str,
+    attempt: int,
+    lease_seconds: int,
 ) -> None:
-    """TODO: extend lease_expires_at while this worker still owns the job."""
+    """TODO: extend the lease only for the matching live job attempt.
+
+    Raise JobOwnershipLostError when ownership is no longer valid.
+    """
     raise NotImplementedError
 
 
 async def complete(
-    factory: async_sessionmaker[AsyncSession], job_id: uuid.UUID, result: dict[str, Any]
+    factory: async_sessionmaker[AsyncSession],
+    job_id: uuid.UUID,
+    result: dict[str, Any],
+    *,
+    worker_id: str,
+    attempt: int,
 ) -> None:
-    """TODO: mark the job succeeded, store result, release the lease."""
+    """TODO: complete only the matching live job attempt.
+
+    Store the result, release ownership, and set finished_at.
+    Raise JobOwnershipLostError when ownership is no longer valid.
+    """
     raise NotImplementedError
 
 
@@ -56,10 +77,16 @@ async def fail(
     job_id: uuid.UUID,
     error: str,
     *,
+    worker_id: str,
+    attempt: int,
     retryable: bool,
     backoff: timedelta = timedelta(seconds=30),
 ) -> None:
-    """TODO: requeue with backoff while attempts remain and error is retryable, else fail."""
+    """TODO: retry or fail only the matching live job attempt.
+
+    Release ownership without incrementing attempts.
+    Raise JobOwnershipLostError when ownership is no longer valid.
+    """
     raise NotImplementedError
 
 
