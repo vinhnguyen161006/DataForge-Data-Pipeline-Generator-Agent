@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
 
 import pytest
-from sqlalchemy import delete, func, select, text
+from sqlalchemy import delete, func, select, text, update
 from sqlalchemy.exc import IntegrityError
 
 from app.db.models import (
@@ -511,6 +511,7 @@ class ClaimJobs:
         run_after: datetime | None = None,
         job_id: UUID | None = None,
         last_error: str | None = None,
+        serial_key: str | None = None,
     ) -> Job:
         """Commit a test job so independent claim connections can see it."""
         selected_id = job_id if job_id is not None else uuid4()
@@ -523,6 +524,7 @@ class ClaimJobs:
                 queue=queue,
                 kind="profile",
                 payload={"test_job": str(selected_id)},
+                serial_key=serial_key,
                 status=status,
                 attempts=attempts,
                 max_attempts=max_attempts,
@@ -1033,9 +1035,482 @@ async def test_claim_returns_none_when_all_candidates_are_locked(claim_jobs: Cla
     assert available.attempts == 1
 
 
-@pytest.mark.skip(reason="TODO")
-async def test_serial_key_blocks_parallel_runs_of_one_pipeline(database_url: str) -> None:
-    """TODO: with one running job for a serial_key, a second job with that key stays queued."""
+@pytest.mark.parametrize(
+    ("running_queue", "waiting_queue"),
+    [
+        (JobQueue.SANDBOX, JobQueue.SANDBOX),
+        (JobQueue.SANDBOX, JobQueue.PUBLISHER),
+        (JobQueue.PUBLISHER, JobQueue.SANDBOX),
+        (JobQueue.PUBLISHER, JobQueue.PUBLISHER),
+    ],
+)
+async def test_serial_key_blocks_parallel_runs_of_one_pipeline(
+    claim_jobs: ClaimJobs, running_queue: JobQueue, waiting_queue: JobQueue
+) -> None:
+    key = f"pipeline:{uuid4()}"
+    running = await claim_jobs.add(
+        queue=running_queue, status=JobStatus.RUNNING, attempts=1, serial_key=key
+    )
+    waiting = await claim_jobs.add(queue=waiting_queue, serial_key=key)
+
+    claimed = await claim_next(
+        claim_jobs.factory, queue=waiting_queue, worker_id="serial-worker", lease_seconds=60
+    )
+    assert claimed is None
+
+    async with claim_jobs.factory() as observer:
+        stored_running = await observer.get(Job, running.id)
+        stored_waiting = await observer.get(Job, waiting.id)
+        assert stored_running is not None
+        assert stored_running.status == JobStatus.RUNNING
+        assert stored_running.attempts == 1
+        assert stored_running.locked_by == running.locked_by
+        assert stored_running.lease_expires_at == running.lease_expires_at
+        assert stored_waiting is not None
+        assert stored_waiting.status == JobStatus.QUEUED
+        assert stored_waiting.attempts == 0
+        assert stored_waiting.locked_by is None
+        assert stored_waiting.lease_expires_at is None
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_serial_key_allows_only_one_of_two_queued_jobs_to_be_claimed(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    key = f"pipeline:{uuid4()}"
+    old_time = datetime(2000, 1, 1, tzinfo=UTC)
+    first = await claim_jobs.add(queue=queue, serial_key=key, created_at=old_time)
+    second = await claim_jobs.add(
+        queue=queue, serial_key=key, created_at=old_time + timedelta(seconds=1)
+    )
+
+    first_claim = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="serial-first", lease_seconds=60
+    )
+    second_claim = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="serial-second", lease_seconds=60
+    )
+    assert first_claim is not None
+    assert first_claim.id == first.id
+    assert first_claim.serial_key == key
+    assert first_claim.attempts == 1
+    assert second_claim is None
+
+    async with claim_jobs.factory() as observer:
+        stored = await observer.get(Job, second.id)
+        assert stored is not None
+        assert stored.status == JobStatus.QUEUED
+        assert stored.attempts == 0
+        assert stored.locked_by is None
+        assert stored.lease_expires_at is None
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize("available_has_key", [False, True], ids=["null-key", "different-key"])
+async def test_serial_key_blocked_oldest_job_does_not_hide_available_work(
+    claim_jobs: ClaimJobs, queue: JobQueue, available_has_key: bool
+) -> None:
+    key = f"pipeline:{uuid4()}"
+    old_time = datetime(2000, 1, 1, tzinfo=UTC)
+    await claim_jobs.add(queue=queue, status=JobStatus.RUNNING, attempts=1, serial_key=key)
+    blocked = await claim_jobs.add(queue=queue, serial_key=key, created_at=old_time)
+    available_key = f"{key}:another" if available_has_key else None
+    available = await claim_jobs.add(
+        queue=queue,
+        serial_key=available_key,
+        created_at=old_time + timedelta(seconds=1),
+    )
+
+    claimed = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="available-worker", lease_seconds=60
+    )
+    assert claimed is not None
+    assert claimed.id == available.id
+    assert claimed.serial_key == available_key
+
+    async with claim_jobs.factory() as observer:
+        untouched = await observer.get(Job, blocked.id)
+        assert untouched is not None
+        assert untouched.status == JobStatus.QUEUED
+        assert untouched.attempts == 0
+        assert untouched.locked_by is None
+        assert untouched.lease_expires_at is None
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_serial_key_distinct_keys_can_be_claimed_concurrently(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    prefix = f"pipeline:{uuid4()}"
+    first = await claim_jobs.add(queue=queue, serial_key=f"{prefix}:1")
+    second = await claim_jobs.add(queue=queue, serial_key=f"{prefix}:2")
+    results = await _claim_with_two_workers(claim_jobs, queue)
+
+    assert {job.id for job in results if job is not None} == {first.id, second.id}
+    assert all(job is not None for job in results)
+    async with claim_jobs.factory() as observer:
+        jobs = list(await observer.scalars(select(Job).where(Job.id.in_([first.id, second.id]))))
+        assert len(jobs) == 2
+        assert {job.serial_key for job in jobs} == {first.serial_key, second.serial_key}
+        assert all(job.status == JobStatus.RUNNING for job in jobs)
+        assert all(job.attempts == 1 for job in jobs)
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_serial_key_expired_running_job_keeps_key_until_recovery(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    key = f"pipeline:{uuid4()}"
+    running = await claim_jobs.add(
+        queue=queue, status=JobStatus.RUNNING, attempts=1, serial_key=key
+    )
+    waiting = await claim_jobs.add(queue=queue, serial_key=key)
+    async with claim_jobs.factory.begin() as session:
+        await session.execute(
+            update(Job)
+            .where(Job.id == running.id)
+            .values(lease_expires_at=func.clock_timestamp() - timedelta(seconds=1))
+        )
+
+    claimed = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="expired-key-worker", lease_seconds=60
+    )
+    assert claimed is None
+
+    async with claim_jobs.factory() as observer:
+        stored_running = await observer.get(Job, running.id)
+        stored_waiting = await observer.get(Job, waiting.id)
+        assert stored_running is not None
+        assert stored_running.status == JobStatus.RUNNING
+        assert stored_running.attempts == 1
+        assert stored_running.locked_by == running.locked_by
+        assert stored_waiting is not None
+        assert stored_waiting.status == JobStatus.QUEUED
+        assert stored_waiting.attempts == 0
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize(
+    "released_status",
+    [JobStatus.SUCCEEDED, JobStatus.FAILED, JobStatus.QUEUED],
+    ids=["complete-state", "fail-state", "reclaim-state"],
+)
+async def test_serial_key_is_released_when_running_status_is_removed(
+    claim_jobs: ClaimJobs, queue: JobQueue, released_status: JobStatus
+) -> None:
+    """Simulate release states; lifecycle integration will be added in D5 through D7."""
+    key = f"pipeline:{uuid4()}"
+    running = await claim_jobs.add(
+        queue=queue, status=JobStatus.RUNNING, attempts=1, serial_key=key
+    )
+    waiting = await claim_jobs.add(queue=queue, serial_key=key)
+    blocked = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="before-release-worker", lease_seconds=60
+    )
+    assert blocked is None
+
+    async with claim_jobs.factory.begin() as session:
+        await session.execute(
+            update(Job)
+            .where(Job.id == running.id)
+            .values(
+                status=released_status,
+                locked_by=None,
+                lease_expires_at=None,
+                finished_at=(
+                    func.clock_timestamp() if released_status != JobStatus.QUEUED else None
+                ),
+                run_after=func.clock_timestamp() + timedelta(hours=1),
+            )
+        )
+
+    claimed = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="after-release-worker", lease_seconds=60
+    )
+    assert claimed is not None
+    assert claimed.id == waiting.id
+    assert claimed.serial_key == key
+    assert claimed.attempts == 1
+    async with claim_jobs.factory() as observer:
+        previous = await observer.get(Job, running.id)
+        assert previous is not None
+        assert previous.status == released_status
+        assert previous.attempts == 1
+        assert previous.locked_by is None
+        assert previous.lease_expires_at is None
+
+
+async def test_serial_key_empty_string_is_a_shared_key(claim_jobs: ClaimJobs) -> None:
+    await claim_jobs.add(status=JobStatus.RUNNING, attempts=1, serial_key="")
+    waiting = await claim_jobs.add(serial_key="")
+    claimed = await claim_next(
+        claim_jobs.factory,
+        queue=JobQueue.SANDBOX,
+        worker_id="empty-key-worker",
+        lease_seconds=60,
+    )
+    assert claimed is None
+    async with claim_jobs.factory() as observer:
+        stored = await observer.get(Job, waiting.id)
+        assert stored is not None
+        assert stored.status == JobStatus.QUEUED
+        assert stored.attempts == 0
+
+
+async def test_serial_key_unique_index_rejects_a_second_running_row_across_queues(
+    claim_jobs: ClaimJobs,
+) -> None:
+    key = f"pipeline:{uuid4()}"
+    running = await claim_jobs.add(
+        queue=JobQueue.SANDBOX,
+        status=JobStatus.RUNNING,
+        attempts=1,
+        serial_key=key,
+    )
+    waiting = await claim_jobs.add(queue=JobQueue.PUBLISHER, serial_key=key)
+
+    with pytest.raises(IntegrityError, match="uq_jobs_running_serial_key"):
+        async with claim_jobs.factory.begin() as session:
+            await session.execute(
+                update(Job)
+                .where(Job.id == waiting.id)
+                .values(
+                    status=JobStatus.RUNNING,
+                    attempts=1,
+                    locked_by="index-violation-worker",
+                    lease_expires_at=func.clock_timestamp() + timedelta(seconds=60),
+                )
+            )
+
+    async with claim_jobs.factory() as observer:
+        stored_running = await observer.get(Job, running.id)
+        stored_waiting = await observer.get(Job, waiting.id)
+        assert stored_running is not None
+        assert stored_running.status == JobStatus.RUNNING
+        assert stored_waiting is not None
+        assert stored_waiting.status == JobStatus.QUEUED
+        assert stored_waiting.attempts == 0
+        assert stored_waiting.locked_by is None
+        assert stored_waiting.lease_expires_at is None
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_serial_key_two_claiming_workers_commit_only_one_running_job(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    key = f"pipeline:{uuid4()}"
+    first = await claim_jobs.add(queue=queue, serial_key=key)
+    second = await claim_jobs.add(queue=queue, serial_key=key)
+    results = await _claim_with_two_workers(claim_jobs, queue)
+    winners = [job for job in results if job is not None]
+
+    assert len(winners) == 1
+    assert sum(job is None for job in results) == 1
+    assert winners[0].id in {first.id, second.id}
+    async with claim_jobs.factory() as observer:
+        jobs = list(await observer.scalars(select(Job).where(Job.id.in_([first.id, second.id]))))
+        running = [job for job in jobs if job.status == JobStatus.RUNNING]
+        queued = [job for job in jobs if job.status == JobStatus.QUEUED]
+        assert len(running) == 1
+        assert len(queued) == 1
+        assert running[0].id == winners[0].id
+        assert running[0].attempts == 1
+        assert queued[0].attempts == 0
+        assert queued[0].locked_by is None
+        assert queued[0].lease_expires_at is None
+
+
+async def _wait_for_serial_index_blocker(
+    claim_jobs: ClaimJobs,
+    *,
+    blocker_pid: int,
+    claim_task: asyncio.Task[Job | None],
+) -> int:
+    """Wait until a claim UPDATE is blocked by the uncommitted running serial key."""
+    async with asyncio.timeout(10):
+        while True:
+            if claim_task.done():
+                claim_task.result()
+                pytest.fail("The claim finished before reaching the serial-key index conflict")
+
+            async with claim_jobs.factory() as observer:
+                waiter_pid = await observer.scalar(
+                    text(
+                        "SELECT pid FROM pg_stat_activity "
+                        "WHERE datname = current_database() "
+                        "AND wait_event_type = 'Lock' "
+                        "AND query LIKE 'UPDATE jobs SET%' "
+                        "AND :blocker_pid = ANY(pg_blocking_pids(pid)) "
+                        "LIMIT 1"
+                    ),
+                    {"blocker_pid": blocker_pid},
+                )
+            if isinstance(waiter_pid, int):
+                return waiter_pid
+            await asyncio.sleep(0.01)
+
+
+@pytest.mark.parametrize("waiting_queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+@pytest.mark.parametrize(
+    "first_commits", [True, False], ids=["winner-commits", "winner-rolls-back"]
+)
+async def test_serial_key_index_race_rolls_back_loser_or_allows_claim_after_rollback(
+    claim_jobs: ClaimJobs, waiting_queue: JobQueue, first_commits: bool
+) -> None:
+    key = f"pipeline:{uuid4()}"
+    old_time = datetime(2000, 1, 1, tzinfo=UTC)
+    first = await claim_jobs.add(queue=JobQueue.SANDBOX, serial_key=key, created_at=old_time)
+    waiting = await claim_jobs.add(
+        queue=waiting_queue, serial_key=key, created_at=old_time + timedelta(seconds=1)
+    )
+    independent = await claim_jobs.add(
+        queue=waiting_queue,
+        serial_key=f"{key}:independent",
+        created_at=old_time + timedelta(seconds=2),
+    )
+    claim_task: asyncio.Task[Job | None] | None = None
+
+    try:
+        async with claim_jobs.factory() as owner:
+            blocker_pid = await owner.scalar(text("SELECT pg_backend_pid()"))
+            assert isinstance(blocker_pid, int)
+            locked = await owner.scalar(
+                select(Job).where(Job.id == first.id).with_for_update(of=Job)
+            )
+            assert locked is not None
+            now = await owner.scalar(select(func.clock_timestamp()))
+            assert isinstance(now, datetime)
+            locked.status = JobStatus.RUNNING
+            locked.attempts = 1
+            locked.locked_by = "uncommitted-key-owner"
+            locked.lease_expires_at = now + timedelta(minutes=5)
+            await owner.flush()
+
+            claim_task = asyncio.create_task(
+                claim_next(
+                    claim_jobs.factory,
+                    queue=waiting_queue,
+                    worker_id="serial-race-worker",
+                    lease_seconds=60,
+                )
+            )
+            waiter_pid = await _wait_for_serial_index_blocker(
+                claim_jobs, blocker_pid=blocker_pid, claim_task=claim_task
+            )
+            assert waiter_pid != blocker_pid
+
+            if first_commits:
+                await owner.commit()
+            else:
+                await owner.rollback()
+
+            result = await asyncio.wait_for(claim_task, timeout=10)
+            if first_commits:
+                assert result is None
+            else:
+                assert result is not None
+                assert result.id == waiting.id
+                assert result.attempts == 1
+                assert result.locked_by == "serial-race-worker"
+
+        async with claim_jobs.factory() as observer:
+            first_stored = await observer.get(Job, first.id)
+            waiting_stored = await observer.get(Job, waiting.id)
+            independent_stored = await observer.get(Job, independent.id)
+            assert first_stored is not None
+            assert waiting_stored is not None
+            assert independent_stored is not None
+            assert independent_stored.status == JobStatus.QUEUED
+            assert independent_stored.attempts == 0
+            if first_commits:
+                assert first_stored.status == JobStatus.RUNNING
+                assert first_stored.attempts == 1
+                assert waiting_stored.status == JobStatus.QUEUED
+                assert waiting_stored.attempts == 0
+                assert waiting_stored.locked_by is None
+                assert waiting_stored.lease_expires_at is None
+            else:
+                assert first_stored.status == JobStatus.QUEUED
+                assert first_stored.attempts == 0
+                assert first_stored.locked_by is None
+                assert first_stored.lease_expires_at is None
+                assert waiting_stored.status == JobStatus.RUNNING
+                assert waiting_stored.attempts == 1
+
+            running_count = await observer.scalar(
+                select(func.count())
+                .select_from(Job)
+                .where(Job.serial_key == key, Job.status == JobStatus.RUNNING)
+            )
+            assert running_count == 1
+
+        next_poll = await claim_next(
+            claim_jobs.factory,
+            queue=waiting_queue,
+            worker_id="next-poll-worker",
+            lease_seconds=60,
+        )
+        assert next_poll is not None
+        assert next_poll.id == independent.id
+        assert next_poll.attempts == 1
+    finally:
+        if claim_task is not None:
+            if not claim_task.done():
+                claim_task.cancel()
+            await asyncio.gather(claim_task, return_exceptions=True)
+
+
+class DriverConstraintError(Exception):
+    """Represent driver metadata for an unrelated database error."""
+
+    def __init__(self, sqlstate: str, constraint_name: str) -> None:
+        super().__init__("Unrelated database constraint violation")
+        self.sqlstate = sqlstate
+        self.constraint_name = constraint_name
+
+
+@pytest.mark.parametrize(
+    ("sqlstate", "constraint_name"),
+    [
+        ("23505", "uq_jobs_idempotency_key"),
+        ("23503", "fk_jobs_run_id_pipeline_runs"),
+        ("23503", "uq_jobs_running_serial_key"),
+    ],
+    ids=["other-unique-index", "foreign-key", "wrong-sqlstate"],
+)
+async def test_serial_key_claim_propagates_unrelated_integrity_errors(
+    claim_jobs: ClaimJobs,
+    monkeypatch: pytest.MonkeyPatch,
+    sqlstate: str,
+    constraint_name: str,
+) -> None:
+    original = await claim_jobs.add(serial_key=f"pipeline:{uuid4()}")
+    driver_error = DriverConstraintError(sqlstate, constraint_name)
+    adapted_error = RuntimeError("Adapted database error")
+    adapted_error.__cause__ = driver_error
+    failure = IntegrityError("UPDATE jobs", None, adapted_error)
+
+    async def reject_flush(_session: AsyncSession, _objects: object = None) -> None:
+        raise failure
+
+    with monkeypatch.context() as patch:
+        patch.setattr(claim_jobs.factory.class_, "flush", reject_flush)
+        with pytest.raises(IntegrityError) as captured:
+            await claim_next(
+                claim_jobs.factory,
+                queue=JobQueue.SANDBOX,
+                worker_id="unexpected-error-worker",
+                lease_seconds=60,
+            )
+        assert captured.value is failure
+
+    async with claim_jobs.factory() as observer:
+        stored = await observer.get(Job, original.id)
+        assert stored is not None
+        assert stored.status == JobStatus.QUEUED
+        assert stored.attempts == 0
+        assert stored.locked_by is None
+        assert stored.lease_expires_at is None
 
 
 @pytest.mark.skip(reason="TODO")
