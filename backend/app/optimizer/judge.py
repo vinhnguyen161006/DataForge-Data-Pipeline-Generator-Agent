@@ -29,13 +29,32 @@ class Judgement(BaseModel):
 
 
 def judge(outcome: CandidateOutcome) -> Judgement:
-    """TODO: deterministic verdict, checked in order: run error, timeout, wrong result, not faster.
+    if outcome.run_error is not None:
+        return Judgement(decision=RewriteDecision.RUN_ERROR, outcome=outcome)
 
-    Never call an LLM here (FR-12).
-    """
-    raise NotImplementedError
+    if outcome.timed_out:
+        return Judgement(decision=RewriteDecision.TIMEOUT, outcome=outcome)
+
+    if outcome.equivalence is None or not outcome.equivalence.equivalent:
+        return Judgement(decision=RewriteDecision.WRONG_RESULT, outcome=outcome)
+
+    if outcome.speed is None or not outcome.speed.faster:
+        return Judgement(decision=RewriteDecision.NOT_FASTER, outcome=outcome)
+
+    return Judgement(decision=RewriteDecision.KEPT, outcome=outcome)
 
 
 def select_best(original_sql: str, judgements: list[Judgement]) -> str:
-    """TODO: fastest kept rewrite, or the original SQL when every candidate was rejected."""
-    raise NotImplementedError
+    valid_judgements = [
+        j for j in judgements 
+        if j.decision == RewriteDecision.KEPT and j.outcome.speed is not None
+    ]
+    
+    if not valid_judgements:
+        return original_sql
+        
+    best_judgement = min(
+        valid_judgements,
+        key=lambda j: j.outcome.speed.candidate_median
+    )
+    return best_judgement.outcome.candidate_sql
