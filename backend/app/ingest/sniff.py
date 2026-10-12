@@ -112,9 +112,7 @@ def _duckdb_sniff(path: Path, encoding: str) -> dict[str, Any]:
 
     connection = duckdb.connect()
     try:
-        result = connection.execute(
-            "SELECT * FROM sniff_csv(?, encoding=?)", [str(path), encoding]
-        )
+        result = connection.execute("SELECT * FROM sniff_csv(?, encoding=?)", [str(path), encoding])
         row = result.fetchone()
         if row is None:
             raise ValueError(f"DuckDB could not sniff CSV: {path}")
