@@ -2,16 +2,32 @@ import uuid
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 
 from app.agents.schemas import DataDesign
 from app.db.models import ProjectRole, ReviewMode, RunStatus
 from app.ingest.sniff import CsvReadConfig
 
 
+def normalize_email(email: str) -> str:
+    """Normalize account email addresses consistently."""
+    return email.strip().lower()
+
+
 class RegisterRequest(BaseModel):
-    email: str
-    password: str
+    email: str = Field(
+        min_length=3,
+        max_length=320,
+        pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$",
+    )
+    password: str = Field(min_length=15, max_length=1024)
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def normalize_email_input(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            return normalize_email(value)
+        return value
 
 
 class TokenResponse(BaseModel):
