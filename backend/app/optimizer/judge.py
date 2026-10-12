@@ -1,4 +1,5 @@
 from enum import StrEnum
+from typing import cast
 
 from pydantic import BaseModel
 
@@ -46,15 +47,14 @@ def judge(outcome: CandidateOutcome) -> Judgement:
 
 def select_best(original_sql: str, judgements: list[Judgement]) -> str:
     valid_judgements = [
-        j for j in judgements 
-        if j.decision == RewriteDecision.KEPT and j.outcome.speed is not None
+        j for j in judgements if j.decision == RewriteDecision.KEPT and j.outcome.speed is not None
     ]
-    
+
     if not valid_judgements:
         return original_sql
-        
+
     best_judgement = min(
         valid_judgements,
-        key=lambda j: j.outcome.speed.candidate_median
+        key=lambda j: cast("SpeedVerdict", j.outcome.speed).candidate_median,
     )
     return best_judgement.outcome.candidate_sql
