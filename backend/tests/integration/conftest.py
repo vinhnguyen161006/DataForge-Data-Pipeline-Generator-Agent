@@ -1,5 +1,5 @@
 from __future__ import annotations
-from collections.abc import AsyncIterator
+
 from typing import TYPE_CHECKING
 
 import pytest
@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.session import make_engine, make_sessionmaker
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
     from sqlalchemy.ext.asyncio import AsyncEngine, async_sessionmaker
 
 

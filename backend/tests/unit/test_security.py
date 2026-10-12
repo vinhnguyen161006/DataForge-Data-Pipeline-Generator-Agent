@@ -53,7 +53,7 @@ def test_same_password_produces_different_valid_hashes(password: str) -> None:
     second_hash = hash_password(password)
 
     assert first_hash != second_hash
-    assert verify_password(first_hash, password) is True  #
+    assert verify_password(first_hash, password) is True
     assert verify_password(second_hash, password) is True
 
 

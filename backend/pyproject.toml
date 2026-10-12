@@ -76,6 +76,7 @@ runtime-evaluated-base-classes = [
 
 [tool.mypy]
 python_version = "3.11"
+explicit_package_bases = true
 plugins = ["pydantic.mypy"]
 strict = true
 warn_unreachable = true

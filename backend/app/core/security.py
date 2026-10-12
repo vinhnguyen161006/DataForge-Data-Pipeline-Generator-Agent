@@ -10,7 +10,7 @@ _password_hasher = PasswordHasher()
 
 
 def hash_password(password: str) -> str:
-    """TODO: hash the password with argon2 (argon2-cffi PasswordHasher)."""
+    """Hash a password using Argon2 with a newly generated salt."""
     return _password_hasher.hash(password)
 
 
