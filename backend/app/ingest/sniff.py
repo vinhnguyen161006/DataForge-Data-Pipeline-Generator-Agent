@@ -1,4 +1,5 @@
 import csv
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -82,6 +83,7 @@ def sniff_csv(path: Path, preview_rows: int = 10) -> SniffResult:
     """Infer a reusable CSV configuration and return a bounded preview."""
     if preview_rows < 0:
         raise ValueError("preview_rows must be non-negative")
+    _set_csv_field_limit()
     encoding, warnings = detect_encoding(path)
     sniffed = _duckdb_sniff(path, encoding)
     config = CsvReadConfig(
@@ -103,6 +105,16 @@ def _sql_literal(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
 
 
+def _set_csv_field_limit() -> None:
+    limit = sys.maxsize
+    while True:
+        try:
+            csv.field_size_limit(limit)
+            return
+        except OverflowError:
+            limit //= 2
+
+
 def _sql_list(values: list[str]) -> str:
     return "[" + ", ".join(_sql_literal(value) for value in values) + "]"
 
@@ -112,7 +124,10 @@ def _duckdb_sniff(path: Path, encoding: str) -> dict[str, Any]:
 
     connection = duckdb.connect()
     try:
-        result = connection.execute("SELECT * FROM sniff_csv(?, encoding=?)", [str(path), encoding])
+        duckdb_encoding = "utf-8" if encoding == "utf-8-sig" else encoding
+        result = connection.execute(
+            "SELECT * FROM sniff_csv(?, encoding=?)", [str(path), duckdb_encoding]
+        )
         row = result.fetchone()
         if row is None:
             raise ValueError(f"DuckDB could not sniff CSV: {path}")
