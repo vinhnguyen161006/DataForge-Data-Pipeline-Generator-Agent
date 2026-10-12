@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING
 from uuid import UUID, uuid4
@@ -18,9 +19,11 @@ from app.db.models import (
     Project,
     User,
 )
-from app.jobs.queue import enqueue
+from app.jobs.queue import claim_next, enqueue
 
 if TYPE_CHECKING:
+    from collections.abc import AsyncIterator
+
     from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 pytestmark = pytest.mark.integration
@@ -486,9 +489,548 @@ async def test_enqueue_concurrent_same_key_respects_first_transaction_outcome(
             await cleanup.execute(delete(Job).where(Job.idempotency_key == key))
 
 
-@pytest.mark.skip(reason="TODO")
-async def test_two_workers_never_claim_the_same_job(database_url: str) -> None:
-    """TODO: two sessions call claim_next concurrently on one queued job; exactly one wins."""
+@dataclass
+class ClaimJobs:
+    factory: async_sessionmaker[AsyncSession]
+    job_ids: list[UUID] = field(default_factory=list)
+
+    async def clock(self) -> datetime:
+        async with self.factory() as session:
+            value = await session.scalar(select(func.clock_timestamp()))
+        assert isinstance(value, datetime)
+        return value
+
+    async def add(
+        self,
+        *,
+        queue: JobQueue = JobQueue.SANDBOX,
+        status: JobStatus = JobStatus.QUEUED,
+        attempts: int = 0,
+        max_attempts: int = 3,
+        created_at: datetime | None = None,
+        run_after: datetime | None = None,
+        job_id: UUID | None = None,
+        last_error: str | None = None,
+    ) -> Job:
+        """Commit a test job so independent claim connections can see it."""
+        selected_id = job_id if job_id is not None else uuid4()
+        self.job_ids.append(selected_id)
+        async with self.factory.begin() as session:
+            now = await session.scalar(select(func.clock_timestamp()))
+            assert isinstance(now, datetime)
+            job = Job(
+                id=selected_id,
+                queue=queue,
+                kind="profile",
+                payload={"test_job": str(selected_id)},
+                status=status,
+                attempts=attempts,
+                max_attempts=max_attempts,
+                created_at=created_at if created_at is not None else now,
+                run_after=run_after if run_after is not None else now - timedelta(seconds=1),
+                last_error=last_error,
+            )
+            if status == JobStatus.RUNNING:
+                job.locked_by = "existing-claim-worker"
+                job.lease_expires_at = now + timedelta(minutes=5)
+            if status in (JobStatus.SUCCEEDED, JobStatus.FAILED):
+                job.finished_at = now
+            session.add(job)
+            await session.flush()
+        return job
+
+
+@pytest.fixture
+async def claim_jobs(
+    session_factory: async_sessionmaker[AsyncSession],
+) -> AsyncIterator[ClaimJobs]:
+    """Own committed test jobs without deleting or claiming unrelated queued work."""
+    async with session_factory() as observer:
+        queued_id = await observer.scalar(
+            select(Job.id).where(Job.status == JobStatus.QUEUED).limit(1)
+        )
+    assert queued_id is None, "Claim tests require a test database with no pre-existing queued jobs"
+    scenario = ClaimJobs(session_factory)
+    try:
+        yield scenario
+    finally:
+        if scenario.job_ids:
+            async with session_factory.begin() as cleanup:
+                await cleanup.execute(delete(Job).where(Job.id.in_(scenario.job_ids)))
+
+
+async def _claim_with_two_workers(claim_jobs: ClaimJobs, queue: JobQueue) -> list[Job | None]:
+    barrier = asyncio.Barrier(2)
+
+    async def claim(worker_id: str) -> Job | None:
+        await barrier.wait()
+        return await claim_next(
+            claim_jobs.factory,
+            queue=queue,
+            worker_id=worker_id,
+            lease_seconds=60,
+        )
+
+    tasks = [
+        asyncio.create_task(claim("claim-worker-0")),
+        asyncio.create_task(claim("claim-worker-1")),
+    ]
+    try:
+        results = await asyncio.wait_for(asyncio.gather(*tasks), timeout=10)
+        return list(results)
+    finally:
+        for task in tasks:
+            if not task.done():
+                task.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_claim_empty_queue_returns_none(claim_jobs: ClaimJobs, queue: JobQueue) -> None:
+    result = await asyncio.wait_for(
+        claim_next(claim_jobs.factory, queue=queue, worker_id="claim-worker", lease_seconds=60),
+        timeout=10,
+    )
+    assert result is None
+
+
+@pytest.mark.parametrize(
+    ("queue", "lease_seconds"),
+    [(JobQueue.SANDBOX, 30), (JobQueue.PUBLISHER, 90)],
+)
+async def test_claim_commits_ownership_and_returns_readable_job(
+    claim_jobs: ClaimJobs, queue: JobQueue, lease_seconds: int
+) -> None:
+    original = await claim_jobs.add(queue=queue)
+    before = await claim_jobs.clock()
+    claimed = await asyncio.wait_for(
+        claim_next(
+            claim_jobs.factory,
+            queue=queue,
+            worker_id="claim-owner",
+            lease_seconds=lease_seconds,
+        ),
+        timeout=10,
+    )
+    after = await claim_jobs.clock()
+
+    assert claimed is not None
+    assert claimed.id == original.id
+    assert claimed.queue == queue
+    assert claimed.kind == original.kind
+    assert claimed.payload == original.payload
+    assert claimed.status == JobStatus.RUNNING
+    assert claimed.attempts == 1
+    assert claimed.max_attempts == original.max_attempts
+    assert claimed.locked_by == "claim-owner"
+    assert claimed.lease_expires_at is not None
+    assert claimed.lease_expires_at.tzinfo is not None
+    assert before + timedelta(seconds=lease_seconds) <= claimed.lease_expires_at
+    assert claimed.lease_expires_at <= after + timedelta(seconds=lease_seconds)
+    assert claimed.created_at == original.created_at
+    assert claimed.run_after == original.run_after
+    assert claimed.serial_key is None
+    assert claimed.idempotency_key is None
+    assert claimed.run_id is None
+    assert claimed.result is None
+    assert claimed.last_error is None
+    assert claimed.finished_at is None
+    assert claimed.delivered is False
+
+    async with claim_jobs.factory.begin() as observer:
+        stored = await observer.scalar(
+            select(Job).where(Job.id == original.id).with_for_update(nowait=True, of=Job)
+        )
+        assert stored is not None
+        assert stored.status == JobStatus.RUNNING
+        assert stored.attempts == 1
+        assert stored.locked_by == "claim-owner"
+        assert stored.lease_expires_at == claimed.lease_expires_at
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_claim_only_selects_the_requested_queue(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    old_time = datetime(2000, 1, 1, tzinfo=UTC)
+    other_queue = JobQueue.PUBLISHER if queue == JobQueue.SANDBOX else JobQueue.SANDBOX
+    unrelated = await claim_jobs.add(queue=other_queue, created_at=old_time)
+    expected = await claim_jobs.add(queue=queue, created_at=old_time + timedelta(seconds=1))
+
+    claimed = await claim_next(
+        claim_jobs.factory, queue=queue, worker_id="claim-worker", lease_seconds=60
+    )
+    assert claimed is not None
+    assert claimed.id == expected.id
+
+    async with claim_jobs.factory() as observer:
+        untouched = await observer.get(Job, unrelated.id)
+        assert untouched is not None
+        assert untouched.status == JobStatus.QUEUED
+        assert untouched.attempts == 0
+        assert untouched.locked_by is None
+        assert untouched.lease_expires_at is None
+
+
+@pytest.mark.parametrize(
+    ("job_status", "attempts", "max_attempts", "future"),
+    [
+        (JobStatus.QUEUED, 0, 3, True),
+        (JobStatus.QUEUED, 1, 1, False),
+        (JobStatus.QUEUED, 3, 3, False),
+        (JobStatus.QUEUED, 4, 3, False),
+        (JobStatus.RUNNING, 1, 3, False),
+        (JobStatus.SUCCEEDED, 1, 3, False),
+        (JobStatus.FAILED, 1, 3, False),
+    ],
+    ids=["future", "budget-one", "budget-three", "over-budget", "running", "succeeded", "failed"],
+)
+async def test_claim_skips_ineligible_older_jobs(
+    claim_jobs: ClaimJobs,
+    job_status: JobStatus,
+    attempts: int,
+    max_attempts: int,
+    future: bool,
+) -> None:
+    old_time = datetime(2000, 1, 1, tzinfo=UTC)
+    now = await claim_jobs.clock()
+    run_after = now + timedelta(hours=1) if future else now - timedelta(seconds=1)
+    ineligible = await claim_jobs.add(
+        status=job_status,
+        attempts=attempts,
+        max_attempts=max_attempts,
+        created_at=old_time,
+        run_after=run_after,
+    )
+    eligible = await claim_jobs.add(created_at=old_time + timedelta(seconds=1))
+
+    claimed = await claim_next(
+        claim_jobs.factory,
+        queue=JobQueue.SANDBOX,
+        worker_id="claim-worker",
+        lease_seconds=60,
+    )
+    assert claimed is not None
+    assert claimed.id == eligible.id
+    remaining = await claim_next(
+        claim_jobs.factory,
+        queue=JobQueue.SANDBOX,
+        worker_id="claim-worker-again",
+        lease_seconds=60,
+    )
+    assert remaining is None
+
+    async with claim_jobs.factory() as observer:
+        untouched = await observer.get(Job, ineligible.id)
+        assert untouched is not None
+        assert untouched.status == job_status
+        assert untouched.attempts == attempts
+        assert untouched.max_attempts == max_attempts
+        assert untouched.run_after == run_after
+        assert untouched.locked_by == ineligible.locked_by
+        assert untouched.lease_expires_at == ineligible.lease_expires_at
+
+
+async def test_claim_uses_final_available_attempt_and_retains_previous_error(
+    claim_jobs: ClaimJobs,
+) -> None:
+    original = await claim_jobs.add(
+        attempts=2, max_attempts=3, last_error="Previous execution failed"
+    )
+    claimed = await claim_next(
+        claim_jobs.factory,
+        queue=JobQueue.SANDBOX,
+        worker_id="last-attempt-worker",
+        lease_seconds=60,
+    )
+
+    assert claimed is not None
+    assert claimed.id == original.id
+    assert claimed.attempts == 3
+    assert claimed.max_attempts == 3
+    assert claimed.status == JobStatus.RUNNING
+    assert claimed.last_error == "Previous execution failed"
+    assert claimed.finished_at is None
+    second = await claim_next(
+        claim_jobs.factory,
+        queue=JobQueue.SANDBOX,
+        worker_id="another-worker",
+        lease_seconds=60,
+    )
+    assert second is None
+    async with claim_jobs.factory() as observer:
+        stored = await observer.get(Job, original.id)
+        assert stored is not None
+        assert stored.attempts == 3
+        assert stored.locked_by == "last-attempt-worker"
+
+
+async def test_claim_orders_by_creation_time_before_id(claim_jobs: ClaimJobs) -> None:
+    smaller_id, larger_id = sorted([uuid4(), uuid4()])
+    old_time = datetime(2000, 1, 1, tzinfo=UTC)
+    newer = await claim_jobs.add(job_id=smaller_id, created_at=old_time + timedelta(seconds=1))
+    older = await claim_jobs.add(job_id=larger_id, created_at=old_time)
+
+    first = await claim_next(
+        claim_jobs.factory, queue=JobQueue.SANDBOX, worker_id="worker-1", lease_seconds=60
+    )
+    second = await claim_next(
+        claim_jobs.factory, queue=JobQueue.SANDBOX, worker_id="worker-2", lease_seconds=60
+    )
+    assert first is not None
+    assert second is not None
+    assert first.id == older.id
+    assert second.id == newer.id
+
+
+async def test_claim_orders_equal_creation_times_by_id(claim_jobs: ClaimJobs) -> None:
+    smaller_id, larger_id = sorted([uuid4(), uuid4()])
+    same_time = datetime(2000, 1, 1, tzinfo=UTC)
+    await claim_jobs.add(job_id=larger_id, created_at=same_time)
+    await claim_jobs.add(job_id=smaller_id, created_at=same_time)
+
+    first = await claim_next(
+        claim_jobs.factory, queue=JobQueue.SANDBOX, worker_id="worker-1", lease_seconds=60
+    )
+    second = await claim_next(
+        claim_jobs.factory, queue=JobQueue.SANDBOX, worker_id="worker-2", lease_seconds=60
+    )
+    assert first is not None
+    assert second is not None
+    assert first.id == smaller_id
+    assert second.id == larger_id
+
+
+async def test_claim_cannot_see_a_job_until_its_seed_transaction_commits(
+    claim_jobs: ClaimJobs,
+) -> None:
+    job_id = uuid4()
+    claim_jobs.job_ids.append(job_id)
+    async with claim_jobs.factory() as writer:
+        writer.add(
+            Job(id=job_id, queue=JobQueue.SANDBOX, kind="profile", payload={"committed": False})
+        )
+        await writer.flush()
+
+        invisible = await asyncio.wait_for(
+            claim_next(
+                claim_jobs.factory,
+                queue=JobQueue.SANDBOX,
+                worker_id="before-commit-worker",
+                lease_seconds=60,
+            ),
+            timeout=10,
+        )
+        assert invisible is None
+        await writer.commit()
+
+    visible = await claim_next(
+        claim_jobs.factory,
+        queue=JobQueue.SANDBOX,
+        worker_id="after-commit-worker",
+        lease_seconds=60,
+    )
+    assert visible is not None
+    assert visible.id == job_id
+    assert visible.attempts == 1
+    assert visible.locked_by == "after-commit-worker"
+
+
+@pytest.mark.parametrize(
+    ("worker_id", "message"),
+    [
+        ("", "worker_id must not be empty"),
+        ("   ", "worker_id must not be empty"),
+        ("\t", "worker_id must not be empty"),
+        ("w" * 129, "worker_id must not exceed 128 characters"),
+    ],
+    ids=["empty", "spaces", "tab", "too-long"],
+)
+async def test_claim_rejects_invalid_worker_id_without_changing_job(
+    claim_jobs: ClaimJobs, worker_id: str, message: str
+) -> None:
+    original = await claim_jobs.add()
+    with pytest.raises(ValueError, match=message):
+        await claim_next(
+            claim_jobs.factory,
+            queue=JobQueue.SANDBOX,
+            worker_id=worker_id,
+            lease_seconds=60,
+        )
+
+    async with claim_jobs.factory() as observer:
+        stored = await observer.get(Job, original.id)
+        assert stored is not None
+        assert stored.status == JobStatus.QUEUED
+        assert stored.attempts == 0
+        assert stored.locked_by is None
+        assert stored.lease_expires_at is None
+
+
+@pytest.mark.parametrize("lease_seconds", [0, -1, -300])
+async def test_claim_rejects_nonpositive_lease_without_changing_job(
+    claim_jobs: ClaimJobs, lease_seconds: int
+) -> None:
+    original = await claim_jobs.add()
+    with pytest.raises(ValueError, match="lease_seconds must be positive"):
+        await claim_next(
+            claim_jobs.factory,
+            queue=JobQueue.SANDBOX,
+            worker_id="claim-worker",
+            lease_seconds=lease_seconds,
+        )
+
+    async with claim_jobs.factory() as observer:
+        stored = await observer.get(Job, original.id)
+        assert stored is not None
+        assert stored.status == JobStatus.QUEUED
+        assert stored.attempts == 0
+        assert stored.locked_by is None
+        assert stored.lease_expires_at is None
+
+
+async def test_claim_accepts_worker_id_at_column_length_limit(claim_jobs: ClaimJobs) -> None:
+    original = await claim_jobs.add()
+    worker_id = "w" * 128
+    claimed = await claim_next(
+        claim_jobs.factory, queue=JobQueue.SANDBOX, worker_id=worker_id, lease_seconds=60
+    )
+    assert claimed is not None
+    assert claimed.id == original.id
+    assert claimed.locked_by == worker_id
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_two_workers_never_claim_the_same_job(claim_jobs: ClaimJobs, queue: JobQueue) -> None:
+    original = await claim_jobs.add(queue=queue)
+    results = await _claim_with_two_workers(claim_jobs, queue)
+    winners = [job for job in results if job is not None]
+
+    assert len(winners) == 1
+    assert sum(job is None for job in results) == 1
+    assert winners[0].id == original.id
+    for worker_index, result in enumerate(results):
+        if result is not None:
+            assert result.locked_by == f"claim-worker-{worker_index}"
+            assert result.attempts == 1
+
+    async with claim_jobs.factory() as observer:
+        stored = await observer.get(Job, original.id)
+        assert stored is not None
+        assert stored.status == JobStatus.RUNNING
+        assert stored.attempts == 1
+        assert stored.locked_by == winners[0].locked_by
+        assert stored.lease_expires_at == winners[0].lease_expires_at
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_claim_two_workers_receive_distinct_jobs(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    first = await claim_jobs.add(queue=queue)
+    second = await claim_jobs.add(queue=queue)
+    expected_ids = {first.id, second.id}
+    results = await _claim_with_two_workers(claim_jobs, queue)
+
+    for worker_index, result in enumerate(results):
+        assert result is not None
+        assert result.locked_by == f"claim-worker-{worker_index}"
+        assert result.status == JobStatus.RUNNING
+        assert result.attempts == 1
+    assert {job.id for job in results if job is not None} == expected_ids
+
+    async with claim_jobs.factory() as observer:
+        stored = list(await observer.scalars(select(Job).where(Job.id.in_(expected_ids))))
+        assert len(stored) == 2
+        assert {job.locked_by for job in stored} == {"claim-worker-0", "claim-worker-1"}
+        assert all(job.status == JobStatus.RUNNING for job in stored)
+        assert all(job.attempts == 1 for job in stored)
+        assert all(job.lease_expires_at is not None for job in stored)
+
+
+@pytest.mark.parametrize("queue", [JobQueue.SANDBOX, JobQueue.PUBLISHER])
+async def test_claim_skips_locked_oldest_job_before_lock_is_released(
+    claim_jobs: ClaimJobs, queue: JobQueue
+) -> None:
+    old_time = datetime(2000, 1, 1, tzinfo=UTC)
+    oldest = await claim_jobs.add(queue=queue, created_at=old_time)
+    next_job = await claim_jobs.add(queue=queue, created_at=old_time + timedelta(seconds=1))
+
+    async with claim_jobs.factory() as blocker:
+        locked = await blocker.scalar(
+            select(Job).where(Job.id == oldest.id).with_for_update(of=Job)
+        )
+        assert locked is not None
+        assert blocker.in_transaction()
+
+        claimed = await asyncio.wait_for(
+            claim_next(
+                claim_jobs.factory,
+                queue=queue,
+                worker_id="skip-locked-worker",
+                lease_seconds=60,
+            ),
+            timeout=10,
+        )
+
+        assert blocker.in_transaction()
+        assert claimed is not None
+        assert claimed.id == next_job.id
+        assert claimed.attempts == 1
+        async with claim_jobs.factory() as observer:
+            untouched = await observer.get(Job, oldest.id)
+            assert untouched is not None
+            assert untouched.status == JobStatus.QUEUED
+            assert untouched.attempts == 0
+            assert untouched.locked_by is None
+            assert untouched.lease_expires_at is None
+        await blocker.rollback()
+
+    next_claim = await claim_next(
+        claim_jobs.factory,
+        queue=queue,
+        worker_id="released-lock-worker",
+        lease_seconds=60,
+    )
+    assert next_claim is not None
+    assert next_claim.id == oldest.id
+    assert next_claim.attempts == 1
+
+
+async def test_claim_returns_none_when_all_candidates_are_locked(claim_jobs: ClaimJobs) -> None:
+    original = await claim_jobs.add()
+    async with claim_jobs.factory() as blocker:
+        locked = await blocker.scalar(
+            select(Job).where(Job.id == original.id).with_for_update(of=Job)
+        )
+        assert locked is not None
+        unavailable = await asyncio.wait_for(
+            claim_next(
+                claim_jobs.factory,
+                queue=JobQueue.SANDBOX,
+                worker_id="waiting-worker",
+                lease_seconds=60,
+            ),
+            timeout=10,
+        )
+        assert unavailable is None
+        assert blocker.in_transaction()
+        async with claim_jobs.factory() as observer:
+            untouched = await observer.get(Job, original.id)
+            assert untouched is not None
+            assert untouched.status == JobStatus.QUEUED
+            assert untouched.attempts == 0
+        await blocker.rollback()
+
+    available = await claim_next(
+        claim_jobs.factory,
+        queue=JobQueue.SANDBOX,
+        worker_id="after-release-worker",
+        lease_seconds=60,
+    )
+    assert available is not None
+    assert available.id == original.id
+    assert available.attempts == 1
 
 
 @pytest.mark.skip(reason="TODO")

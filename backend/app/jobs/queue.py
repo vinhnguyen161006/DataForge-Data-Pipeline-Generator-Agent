@@ -1,12 +1,15 @@
 import uuid
 from datetime import timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.db.models import Job, JobQueue, JobStatus
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 class JobOwnershipLostError(RuntimeError):
@@ -75,12 +78,50 @@ async def claim_next(
     worker_id: str,
     lease_seconds: int,
 ) -> Job | None:
-    """TODO: claim the oldest runnable job with UPDATE ... FOR UPDATE SKIP LOCKED.
+    """Claim the oldest runnable job without a serial key.
 
-    Skip jobs whose serial_key already has a running job; treat a violation of
-    uq_jobs_running_serial_key as "nothing claimed" and let the next poll retry.
+    Commit ownership before returning the job.
+    Serial-key scheduling will be added in D4.
     """
-    raise NotImplementedError
+    if not worker_id.strip():
+        raise ValueError("worker_id must not be empty")
+
+    if len(worker_id) > 128:
+        raise ValueError("worker_id must not exceed 128 characters")
+
+    if lease_seconds <= 0:
+        raise ValueError("lease_seconds must be positive")
+
+    async with factory.begin() as session:
+        statement = (
+            select(Job)
+            .where(
+                Job.queue == queue,
+                Job.status == JobStatus.QUEUED,
+                Job.run_after <= func.clock_timestamp(),
+                Job.attempts < Job.max_attempts,
+                Job.serial_key.is_(None),
+            )
+            .order_by(Job.created_at, Job.id)
+            .limit(1)
+            .with_for_update(skip_locked=True, of=Job)
+        )
+
+        job: Job | None = await session.scalar(statement)
+
+        if job is None:
+            return None
+
+        db_now: datetime = (await session.execute(select(func.clock_timestamp()))).scalar_one()
+
+        job.status = JobStatus.RUNNING
+        job.attempts += 1
+        job.locked_by = worker_id
+        job.lease_expires_at = db_now + timedelta(seconds=lease_seconds)
+
+        await session.flush()
+
+    return job
 
 
 async def heartbeat(
