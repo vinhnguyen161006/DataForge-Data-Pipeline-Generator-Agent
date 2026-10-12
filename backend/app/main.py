@@ -6,16 +6,20 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import auth, batches, exports, health, projects, runs
 from app.core.config import get_api_settings
+from app.db.session import make_engine, make_sessionmaker
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    """TODO: create engine/sessionmaker, open AsyncPostgresSaver and build the graph.
+    """Manage database resources for the application lifetime."""
+    settings = get_api_settings()
+    engine = make_engine(settings.app_database_url)
 
-    Then call recover_pending_runs and start a background loop running
-    deliver_finished_jobs; close everything on shutdown.
-    """
-    yield
+    try:
+        app.state.sessionmaker = make_sessionmaker(engine)
+        yield
+    finally:
+        await engine.dispose()
 
 
 def create_app() -> FastAPI:

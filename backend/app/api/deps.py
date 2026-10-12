@@ -3,14 +3,17 @@ from collections.abc import AsyncIterator, Callable, Coroutine
 from typing import Any
 
 from fastapi import Request
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from app.db.models import ProjectRole, User
 
 
 async def get_session(request: Request) -> AsyncIterator[AsyncSession]:
-    """TODO: yield a session from request.app.state.sessionmaker."""
-    raise NotImplementedError
+    """Provide a request session and close it after dependency use."""
+    factory: async_sessionmaker[AsyncSession] = request.app.state.sessionmaker
+
+    async with factory() as session:
+        yield session
 
 
 async def get_current_user(request: Request) -> User:
