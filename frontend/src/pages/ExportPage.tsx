@@ -1,4 +1,4 @@
-export function ExportPage() {
+export function ExportPage({ projectId, runId }: { projectId: string; runId: string }) {
   return (
     <section className="page">
       <h2>Export</h2>

@@ -1,0 +1,242 @@
+{
+  "courses": {
+    "file": "courses.csv",
+    "bytes": 526,
+    "sha256": "4f16eee7454b15e109b0a21a0e43be820e6846ed6f9301bb7feb5ab5ad737a75",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "crlf",
+    "raw_header": "\"code_module\",\"code_presentation\",\"module_presentation_length\"",
+    "delimiter_counts_in_header": {
+      ",": 2,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "code_module",
+      "code_presentation",
+      "module_presentation_length"
+    ],
+    "expected_columns": [
+      "code_module",
+      "code_presentation",
+      "module_presentation_length"
+    ],
+    "header_matches_expected": true,
+    "rows": 22
+  },
+  "assessments": {
+    "file": "assessments.csv",
+    "bytes": 8200,
+    "sha256": "8cc738fb88ad760571d6f2a23059bfee0ffcae3bcd830514c9cbd5c6d5a046f1",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "crlf",
+    "raw_header": "\"code_module\",\"code_presentation\",\"id_assessment\",\"assessment_type\",\"date\",\"weight\"",
+    "delimiter_counts_in_header": {
+      ",": 5,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "code_module",
+      "code_presentation",
+      "id_assessment",
+      "assessment_type",
+      "date",
+      "weight"
+    ],
+    "expected_columns": [
+      "code_module",
+      "code_presentation",
+      "id_assessment",
+      "assessment_type",
+      "date",
+      "weight"
+    ],
+    "header_matches_expected": true,
+    "rows": 206
+  },
+  "vle": {
+    "file": "vle.csv",
+    "bytes": 260126,
+    "sha256": "d1b28303dea802ad87b4484e1196e878e06824850b9a4fe8aa34693439fe87e9",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "crlf",
+    "raw_header": "\"id_site\",\"code_module\",\"code_presentation\",\"activity_type\",\"week_from\",\"week_to\"",
+    "delimiter_counts_in_header": {
+      ",": 5,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "id_site",
+      "code_module",
+      "code_presentation",
+      "activity_type",
+      "week_from",
+      "week_to"
+    ],
+    "expected_columns": [
+      "id_site",
+      "code_module",
+      "code_presentation",
+      "activity_type",
+      "week_from",
+      "week_to"
+    ],
+    "header_matches_expected": true,
+    "rows": 6364
+  },
+  "studentInfo": {
+    "file": "studentInfo.csv",
+    "bytes": 3461652,
+    "sha256": "7e6f3e474a5eee00639d2a414a6c7e928745823c2d2c2563ca1780145f99b0d6",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "crlf",
+    "raw_header": "\"code_module\",\"code_presentation\",\"id_student\",\"gender\",\"region\",\"highest_education\",\"imd_band\",\"age_band\",\"num_of_prev_attempts\",\"studied_credits\",\"disability\",\"final_result\"",
+    "delimiter_counts_in_header": {
+      ",": 11,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "code_module",
+      "code_presentation",
+      "id_student",
+      "gender",
+      "region",
+      "highest_education",
+      "imd_band",
+      "age_band",
+      "num_of_prev_attempts",
+      "studied_credits",
+      "disability",
+      "final_result"
+    ],
+    "expected_columns": [
+      "code_module",
+      "code_presentation",
+      "id_student",
+      "gender",
+      "region",
+      "highest_education",
+      "imd_band",
+      "age_band",
+      "num_of_prev_attempts",
+      "studied_credits",
+      "disability",
+      "final_result"
+    ],
+    "header_matches_expected": true,
+    "rows": 32593
+  },
+  "studentRegistration": {
+    "file": "studentRegistration.csv",
+    "bytes": 1109984,
+    "sha256": "0d32676285372aaf2e7a80304e5b274b4fba24313e2ca4c04317225e1ec90170",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "crlf",
+    "raw_header": "\"code_module\",\"code_presentation\",\"id_student\",\"date_registration\",\"date_unregistration\"",
+    "delimiter_counts_in_header": {
+      ",": 4,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "code_module",
+      "code_presentation",
+      "id_student",
+      "date_registration",
+      "date_unregistration"
+    ],
+    "expected_columns": [
+      "code_module",
+      "code_presentation",
+      "id_student",
+      "date_registration",
+      "date_unregistration"
+    ],
+    "header_matches_expected": true,
+    "rows": 32593
+  },
+  "studentAssessment": {
+    "file": "studentAssessment.csv",
+    "bytes": 5690310,
+    "sha256": "fd5320786328d05af841ee7dd4b5871b9dada3b9fe9d6a3642b2f42635510a6e",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "crlf",
+    "raw_header": "\"id_assessment\",\"id_student\",\"date_submitted\",\"is_banked\",\"score\"",
+    "delimiter_counts_in_header": {
+      ",": 4,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "id_assessment",
+      "id_student",
+      "date_submitted",
+      "is_banked",
+      "score"
+    ],
+    "expected_columns": [
+      "id_assessment",
+      "id_student",
+      "date_submitted",
+      "is_banked",
+      "score"
+    ],
+    "header_matches_expected": true,
+    "rows": 173912
+  },
+  "studentVle": {
+    "file": "studentVle.csv",
+    "bytes": 453836331,
+    "sha256": "52668253d876c5becbcb72185977152700cecab2942aca807fecc3dd54b937f0",
+    "valid_utf8": true,
+    "has_utf8_bom": false,
+    "non_ascii_bytes": 0,
+    "line_endings": "crlf",
+    "raw_header": "\"code_module\",\"code_presentation\",\"id_student\",\"id_site\",\"date\",\"sum_click\"",
+    "delimiter_counts_in_header": {
+      ",": 5,
+      ";": 0,
+      "\t": 0,
+      "|": 0
+    },
+    "columns": [
+      "code_module",
+      "code_presentation",
+      "id_student",
+      "id_site",
+      "date",
+      "sum_click"
+    ],
+    "expected_columns": [
+      "code_module",
+      "code_presentation",
+      "id_student",
+      "id_site",
+      "date",
+      "sum_click"
+    ],
+    "header_matches_expected": true,
+    "rows": 10655280
+  }
+}
