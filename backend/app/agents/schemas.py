@@ -5,16 +5,24 @@ from pydantic import BaseModel, Field
 
 class Justified(BaseModel):
     rationale: str = Field(min_length=1, description="Short justification for this choice")
-    open_questions: list[str] = Field(description="Unresolved questions that may require human input for this choice; use [] if none", default_factory=list)
+    open_questions: list[str] = Field(
+        description="Unresolved questions for human review; use [] if none",
+        default_factory=list,
+    )
 
 
 class FactTable(Justified):
     name: str
-    grain: str = Field(min_length=1, description="Exactly what one row represents, including its identifying scope")
+    grain: str = Field(
+        min_length=1, description="Exactly what one row represents, including its identifying scope"
+    )
     source_tables: list[str]
     measures: list[str]
     dimension_keys: list[str]
-    rationale: str = Field(min_length=1, description="Why this fact table and its grain fit the business requirements",)
+    rationale: str = Field(
+        min_length=1,
+        description="Why this fact table and its grain fit the business requirements",
+    )
 
 
 class DimensionTable(Justified):

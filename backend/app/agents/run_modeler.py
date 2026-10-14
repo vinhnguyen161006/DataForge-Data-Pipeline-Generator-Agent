@@ -1,10 +1,10 @@
-from app.profiler.schemas import DataProfile, ColumnProfile, TableProfile
 import asyncio
 from pathlib import Path
 
 from app.agents.llm import StructuredLLM
 from app.agents.schemas import ModelerOutput
 from app.core.config import get_api_settings
+from app.profiler.schemas import ColumnProfile, DataProfile, TableProfile
 
 profile = DataProfile(
     tables=[
@@ -50,6 +50,7 @@ profile = DataProfile(
         "Synthetic OULAD profile for a prompt spike; counts are illustrative.",
     ],
 )
+
 
 async def main() -> None:
     settings = get_api_settings()
