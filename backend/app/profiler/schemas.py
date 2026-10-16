@@ -37,6 +37,7 @@ class TableProfile(BaseModel):
     source_file: str
     row_count: int
     columns: list[ColumnProfile]
+    candidate_key_groups: list[list[str]] = Field(default_factory=list)
 
 
 class DataProfile(BaseModel):
