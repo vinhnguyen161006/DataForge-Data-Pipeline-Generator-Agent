@@ -319,7 +319,6 @@ scripts/check_conventions.py   cưỡng chế "không comment" + "code chỉ ASC
 infra/postgres/init.sh      tạo 4 database + role (publisher ghi, metabase_reader chỉ đọc)
 docker-compose.yml          postgres, qdrant, metabase, migrate, backend, sandbox-worker, publisher, airflow-*
 .github/workflows/ci.yml    conventions, backend-lint, backend-test, frontend, images, security
-.github/dependabot.yml      cập nhật hằng tuần; dbt-core + dbt-duckdb + duckdb gom một nhóm
 .pre-commit-config.yaml     ruff, uv-lock, check_conventions
 ARCHITECT.md                ranh giới tiến trình, phụ thuộc package, chủ sở hữu schema từng DB
 SECURITY.md                 kênh báo lỗ hổng
