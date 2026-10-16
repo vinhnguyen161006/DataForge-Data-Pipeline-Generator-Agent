@@ -102,9 +102,7 @@ def find_relationship_candidates(tables: list[TableProfile]) -> list[Relationshi
             if child_column.row_count == 0 or parent_column.row_count == 0:
                 continue
             match_ratio = (
-                1.0
-                if parent_column.distinct_count >= child_column.distinct_count
-                else 0.0
+                1.0 if parent_column.distinct_count >= child_column.distinct_count else 0.0
             )
             orphan_count = max(0, child_column.distinct_count - parent_column.distinct_count)
             relationships.append(
