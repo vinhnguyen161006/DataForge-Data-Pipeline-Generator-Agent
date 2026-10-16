@@ -1,0 +1,469 @@
+{
+  "dataset": "oulad",
+  "files": {
+    "courses": "courses.csv",
+    "assessments": "assessments.csv",
+    "vle": "vle.csv",
+    "studentInfo": "studentInfo.csv",
+    "studentRegistration": "studentRegistration.csv",
+    "studentAssessment": "studentAssessment.csv",
+    "studentVle": "studentVle.csv"
+  },
+  "expected_columns": {
+    "courses": [
+      "code_module",
+      "code_presentation",
+      "module_presentation_length"
+    ],
+    "assessments": [
+      "code_module",
+      "code_presentation",
+      "id_assessment",
+      "assessment_type",
+      "date",
+      "weight"
+    ],
+    "vle": [
+      "id_site",
+      "code_module",
+      "code_presentation",
+      "activity_type",
+      "week_from",
+      "week_to"
+    ],
+    "studentInfo": [
+      "code_module",
+      "code_presentation",
+      "id_student",
+      "gender",
+      "region",
+      "highest_education",
+      "imd_band",
+      "age_band",
+      "num_of_prev_attempts",
+      "studied_credits",
+      "disability",
+      "final_result"
+    ],
+    "studentRegistration": [
+      "code_module",
+      "code_presentation",
+      "id_student",
+      "date_registration",
+      "date_unregistration"
+    ],
+    "studentAssessment": [
+      "id_assessment",
+      "id_student",
+      "date_submitted",
+      "is_banked",
+      "score"
+    ],
+    "studentVle": [
+      "code_module",
+      "code_presentation",
+      "id_student",
+      "id_site",
+      "date",
+      "sum_click"
+    ]
+  },
+  "candidate_keys": {
+    "courses": [
+      [
+        "code_module",
+        "code_presentation"
+      ]
+    ],
+    "assessments": [
+      [
+        "id_assessment"
+      ]
+    ],
+    "vle": [
+      [
+        "id_site"
+      ]
+    ],
+    "studentInfo": [
+      [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ]
+    ],
+    "studentRegistration": [
+      [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ]
+    ],
+    "studentAssessment": [
+      [
+        "id_assessment",
+        "id_student"
+      ]
+    ],
+    "studentVle": [
+      [
+        "code_module",
+        "code_presentation",
+        "id_student",
+        "id_site",
+        "date"
+      ]
+    ]
+  },
+  "relationships": [
+    [
+      "assessments_to_courses",
+      "assessments",
+      [
+        "code_module",
+        "code_presentation"
+      ],
+      "courses",
+      [
+        "code_module",
+        "code_presentation"
+      ]
+    ],
+    [
+      "vle_to_courses",
+      "vle",
+      [
+        "code_module",
+        "code_presentation"
+      ],
+      "courses",
+      [
+        "code_module",
+        "code_presentation"
+      ]
+    ],
+    [
+      "student_info_to_courses",
+      "studentInfo",
+      [
+        "code_module",
+        "code_presentation"
+      ],
+      "courses",
+      [
+        "code_module",
+        "code_presentation"
+      ]
+    ],
+    [
+      "student_registration_to_courses",
+      "studentRegistration",
+      [
+        "code_module",
+        "code_presentation"
+      ],
+      "courses",
+      [
+        "code_module",
+        "code_presentation"
+      ]
+    ],
+    [
+      "student_registration_to_student_info",
+      "studentRegistration",
+      [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "studentInfo",
+      [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ]
+    ],
+    [
+      "student_assessment_to_assessments",
+      "studentAssessment",
+      [
+        "id_assessment"
+      ],
+      "assessments",
+      [
+        "id_assessment"
+      ]
+    ],
+    [
+      "student_assessment_to_student_info_by_student",
+      "studentAssessment",
+      [
+        "id_student"
+      ],
+      "studentInfo",
+      [
+        "id_student"
+      ]
+    ],
+    [
+      "student_vle_to_student_info",
+      "studentVle",
+      [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "studentInfo",
+      [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ]
+    ],
+    [
+      "student_vle_to_vle_by_site",
+      "studentVle",
+      [
+        "id_site"
+      ],
+      "vle",
+      [
+        "id_site"
+      ]
+    ],
+    [
+      "student_vle_to_vle_by_site_and_presentation",
+      "studentVle",
+      [
+        "code_module",
+        "code_presentation",
+        "id_site"
+      ],
+      "vle",
+      [
+        "code_module",
+        "code_presentation",
+        "id_site"
+      ]
+    ]
+  ],
+  "null_tokens": [
+    "",
+    "?",
+    "NA",
+    "N/A",
+    "NULL",
+    "null",
+    "NaN"
+  ],
+  "custom_checks": {
+    "student_info_distinct_students": [
+      "SELECT count(DISTINCT \"id_student\") AS distinct_students, count(*) AS rows",
+      "FROM \"studentInfo\""
+    ],
+    "student_registration_distinct_students": [
+      "SELECT count(DISTINCT \"id_student\") AS distinct_students, count(*) AS rows",
+      "FROM \"studentRegistration\""
+    ],
+    "student_info_without_registration": [
+      "SELECT count(*) AS rows FROM \"studentInfo\" s",
+      "WHERE NOT EXISTS (",
+      "SELECT 1 FROM \"studentRegistration\" r",
+      "WHERE r.\"code_module\" = s.\"code_module\"",
+      "AND r.\"code_presentation\" = s.\"code_presentation\"",
+      "AND r.\"id_student\" = s.\"id_student\")"
+    ],
+    "student_registration_without_info": [
+      "SELECT count(*) AS rows FROM \"studentRegistration\" r",
+      "WHERE NOT EXISTS (",
+      "SELECT 1 FROM \"studentInfo\" s",
+      "WHERE r.\"code_module\" = s.\"code_module\"",
+      "AND r.\"code_presentation\" = s.\"code_presentation\"",
+      "AND r.\"id_student\" = s.\"id_student\")"
+    ],
+    "student_assessment_without_registration": [
+      "SELECT count(*) AS rows",
+      "FROM \"studentAssessment\" sa",
+      "JOIN \"assessments\" a ON a.\"id_assessment\" = sa.\"id_assessment\"",
+      "WHERE NOT EXISTS (",
+      "SELECT 1 FROM \"studentRegistration\" r",
+      "WHERE r.\"code_module\" = a.\"code_module\"",
+      "AND r.\"code_presentation\" = a.\"code_presentation\"",
+      "AND r.\"id_student\" = sa.\"id_student\")"
+    ],
+    "score_outside_0_100": [
+      "SELECT count(*) AS rows FROM \"studentAssessment\"",
+      "WHERE TRY_CAST(\"score\" AS DOUBLE) < 0 OR TRY_CAST(\"score\" AS DOUBLE) > 100"
+    ],
+    "unregistered_before_registered": [
+      "SELECT count(*) AS rows FROM \"studentRegistration\"",
+      "WHERE TRY_CAST(\"date_unregistration\" AS BIGINT) < TRY_CAST(\"date_registration\" AS BIGINT)"
+    ],
+    "clicks_missing_or_not_positive": [
+      "SELECT count(*) AS rows FROM \"studentVle\"",
+      "WHERE TRY_CAST(\"sum_click\" AS BIGINT) IS NULL OR TRY_CAST(\"sum_click\" AS BIGINT) <= 0"
+    ],
+    "vle_week_from_after_week_to": [
+      "SELECT count(*) AS rows FROM \"vle\"",
+      "WHERE TRY_CAST(\"week_from\" AS BIGINT) > TRY_CAST(\"week_to\" AS BIGINT)"
+    ],
+    "assessment_date_after_presentation_end": [
+      "SELECT count(*) AS rows",
+      "FROM \"assessments\" a",
+      "JOIN \"courses\" c",
+      "ON c.\"code_module\" = a.\"code_module\" AND c.\"code_presentation\" = a.\"code_presentation\"",
+      "WHERE TRY_CAST(a.\"date\" AS BIGINT) > TRY_CAST(c.\"module_presentation_length\" AS BIGINT)"
+    ],
+    "assessment_weight_sum_by_presentation_and_kind": [
+      "SELECT \"code_module\", \"code_presentation\",",
+      "CASE WHEN \"assessment_type\" = 'Exam' THEN 'Exam' ELSE 'NonExam' END AS kind,",
+      "sum(TRY_CAST(\"weight\" AS DOUBLE)) AS weight_sum",
+      "FROM \"assessments\"",
+      "GROUP BY 1, 2, 3",
+      "ORDER BY 1, 2, 3"
+    ],
+    "final_result_vs_unregistration_date": [
+      "SELECT s.\"final_result\" AS final_result,",
+      "TRY_CAST(r.\"date_unregistration\" AS BIGINT) IS NOT NULL AS has_unregistration_date,",
+      "count(*) AS rows",
+      "FROM \"studentInfo\" s",
+      "JOIN \"studentRegistration\" r",
+      "ON r.\"code_module\" = s.\"code_module\"",
+      "AND r.\"code_presentation\" = s.\"code_presentation\"",
+      "AND r.\"id_student\" = s.\"id_student\"",
+      "GROUP BY 1, 2",
+      "ORDER BY 1, 2"
+    ],
+    "assessment_missing_date_by_type": [
+      "SELECT \"assessment_type\", count(*) AS rows FROM \"assessments\" WHERE (\"date\" IS NULL OR \"date\" IN ('', '?', 'NA', 'N/A', 'NULL', 'null', 'NaN')) GROUP BY 1 ORDER BY 1"
+    ],
+    "vle_week_missing_pattern": [
+      "SELECT (\"week_from\" IS NULL OR \"week_from\" IN ('', '?', 'NA', 'N/A', 'NULL', 'null', 'NaN')) AS week_from_missing, (\"week_to\" IS NULL OR \"week_to\" IN ('', '?', 'NA', 'N/A', 'NULL', 'null', 'NaN')) AS week_to_missing, count(*) AS rows FROM \"vle\" GROUP BY 1, 2 ORDER BY 1, 2"
+    ],
+    "assessments_without_submissions": [
+      "SELECT a.\"assessment_type\", a.\"code_module\", a.\"code_presentation\", count(*) AS assessments",
+      "FROM \"assessments\" a",
+      "WHERE NOT EXISTS (",
+      "SELECT 1 FROM \"studentAssessment\" sa WHERE sa.\"id_assessment\" = a.\"id_assessment\")",
+      "GROUP BY 1, 2, 3",
+      "ORDER BY 1, 2, 3"
+    ],
+    "submission_after_presentation_end": [
+      "SELECT count(*) AS rows,",
+      "max(TRY_CAST(sa.\"date_submitted\" AS BIGINT) - TRY_CAST(c.\"module_presentation_length\" AS BIGINT)) AS max_days_after_end",
+      "FROM \"studentAssessment\" sa",
+      "JOIN \"assessments\" a ON a.\"id_assessment\" = sa.\"id_assessment\"",
+      "JOIN \"courses\" c",
+      "ON c.\"code_module\" = a.\"code_module\" AND c.\"code_presentation\" = a.\"code_presentation\"",
+      "WHERE TRY_CAST(sa.\"date_submitted\" AS BIGINT) > TRY_CAST(c.\"module_presentation_length\" AS BIGINT)"
+    ],
+    "submission_before_start": [
+      "SELECT count(*) AS rows, min(TRY_CAST(\"date_submitted\" AS BIGINT)) AS min_day",
+      "FROM \"studentAssessment\"",
+      "WHERE TRY_CAST(\"date_submitted\" AS BIGINT) < 0"
+    ],
+    "student_vle_duplicate_breakdown": [
+      "SELECT count(*) AS duplicate_key_groups,",
+      "sum(n - 1) AS excess_rows,",
+      "sum(CASE WHEN distinct_clicks = 1 THEN n - 1 ELSE 0 END) AS excess_rows_in_groups_with_same_clicks,",
+      "sum(CASE WHEN distinct_clicks > 1 THEN 1 ELSE 0 END) AS groups_with_different_clicks",
+      "FROM (",
+      "SELECT count(*) AS n, count(DISTINCT \"sum_click\") AS distinct_clicks",
+      "FROM \"studentVle\"",
+      "GROUP BY \"code_module\", \"code_presentation\", \"id_student\", \"id_site\", \"date\"",
+      "HAVING count(*) > 1)"
+    ],
+    "student_vle_duplicate_groups_by_presentation": [
+      "SELECT \"code_module\", \"code_presentation\", count(*) AS duplicate_key_groups",
+      "FROM (",
+      "SELECT \"code_module\", \"code_presentation\"",
+      "FROM \"studentVle\"",
+      "GROUP BY \"code_module\", \"code_presentation\", \"id_student\", \"id_site\", \"date\"",
+      "HAVING count(*) > 1)",
+      "GROUP BY 1, 2",
+      "ORDER BY 1, 2"
+    ],
+    "enrollments_per_student": [
+      "SELECT n AS enrollments, count(*) AS students",
+      "FROM (SELECT \"id_student\", count(*) AS n FROM \"studentInfo\" GROUP BY 1)",
+      "GROUP BY 1",
+      "ORDER BY 1"
+    ],
+    "registration_date_missing_by_final_result": [
+      "SELECT s.\"final_result\", count(*) AS rows",
+      "FROM \"studentRegistration\" r",
+      "JOIN \"studentInfo\" s",
+      "ON r.\"code_module\" = s.\"code_module\"",
+      "AND r.\"code_presentation\" = s.\"code_presentation\"",
+      "AND r.\"id_student\" = s.\"id_student\"",
+      "WHERE r.\"date_registration\" IS NULL OR r.\"date_registration\" = ''",
+      "GROUP BY 1",
+      "ORDER BY 1"
+    ],
+    "score_missing_by_is_banked": [
+      "SELECT \"is_banked\", count(*) AS rows FROM \"studentAssessment\" WHERE (\"score\" IS NULL OR \"score\" IN ('', '?', 'NA', 'N/A', 'NULL', 'null', 'NaN')) GROUP BY 1 ORDER BY 1"
+    ],
+    "imd_band_missing_by_presentation": [
+      "SELECT \"code_module\", \"code_presentation\", count(*) AS rows FROM \"studentInfo\" WHERE (\"imd_band\" IS NULL OR \"imd_band\" IN ('', '?', 'NA', 'N/A', 'NULL', 'null', 'NaN')) GROUP BY 1, 2 ORDER BY 1, 2"
+    ],
+    "zero_weight_assessments": [
+      "SELECT \"code_module\", \"assessment_type\", count(*) AS rows",
+      "FROM \"assessments\"",
+      "WHERE TRY_CAST(\"weight\" AS DOUBLE) = 0",
+      "GROUP BY 1, 2",
+      "ORDER BY 1, 2"
+    ],
+    "student_attribute_consistency": [
+      "SELECT count(*) AS students_with_multiple_enrollments,",
+      "sum(CASE WHEN g > 1 THEN 1 ELSE 0 END) AS gender_varies,",
+      "sum(CASE WHEN r > 1 THEN 1 ELSE 0 END) AS region_varies,",
+      "sum(CASE WHEN e > 1 THEN 1 ELSE 0 END) AS highest_education_varies,",
+      "sum(CASE WHEN a > 1 THEN 1 ELSE 0 END) AS age_band_varies,",
+      "sum(CASE WHEN d > 1 THEN 1 ELSE 0 END) AS disability_varies,",
+      "sum(CASE WHEN i > 1 THEN 1 ELSE 0 END) AS imd_band_varies",
+      "FROM (",
+      "SELECT \"id_student\",",
+      "count(DISTINCT \"gender\") AS g,",
+      "count(DISTINCT \"region\") AS r,",
+      "count(DISTINCT \"highest_education\") AS e,",
+      "count(DISTINCT \"age_band\") AS a,",
+      "count(DISTINCT \"disability\") AS d,",
+      "count(DISTINCT \"imd_band\") AS i",
+      "FROM \"studentInfo\"",
+      "GROUP BY 1",
+      "HAVING count(*) > 1)"
+    ],
+    "reference_metrics": [
+      "SELECT (SELECT sum(TRY_CAST(\"sum_click\" AS BIGINT)) FROM \"studentVle\") AS total_clicks,",
+      "(SELECT sum(TRY_CAST(\"sum_click\" AS BIGINT)) FROM \"studentVle\"",
+      "WHERE TRY_CAST(\"date\" AS BIGINT) < 0) AS clicks_before_start,",
+      "(SELECT count(*) FROM (",
+      "SELECT DISTINCT \"code_module\", \"code_presentation\", \"id_student\" FROM \"studentVle\")) AS enrollments_with_clicks,",
+      "(SELECT avg(TRY_CAST(\"score\" AS DOUBLE)) FROM \"studentAssessment\") AS avg_score_all,",
+      "(SELECT avg(TRY_CAST(\"score\" AS DOUBLE)) FROM \"studentAssessment\"",
+      "WHERE \"is_banked\" = '0') AS avg_score_not_banked"
+    ],
+    "score_by_assessment_type": [
+      "SELECT a.\"assessment_type\", count(*) AS rows,",
+      "sum(CASE WHEN TRY_CAST(sa.\"score\" AS DOUBLE) IS NOT NULL THEN 1 ELSE 0 END) AS rows_with_score,",
+      "avg(TRY_CAST(sa.\"score\" AS DOUBLE)) AS avg_score",
+      "FROM \"studentAssessment\" sa",
+      "JOIN \"assessments\" a ON a.\"id_assessment\" = sa.\"id_assessment\"",
+      "GROUP BY 1",
+      "ORDER BY 1"
+    ],
+    "late_submission_counts": [
+      "SELECT count(*) AS total_rows,",
+      "sum(CASE WHEN TRY_CAST(a.\"date\" AS BIGINT) IS NOT NULL THEN 1 ELSE 0 END) AS rows_with_deadline,",
+      "sum(CASE WHEN TRY_CAST(sa.\"date_submitted\" AS BIGINT) > TRY_CAST(a.\"date\" AS BIGINT) THEN 1 ELSE 0 END) AS late_rows",
+      "FROM \"studentAssessment\" sa",
+      "JOIN \"assessments\" a ON a.\"id_assessment\" = sa.\"id_assessment\""
+    ],
+    "final_result_by_module": [
+      "SELECT \"code_module\", \"final_result\", count(*) AS rows",
+      "FROM \"studentInfo\"",
+      "GROUP BY 1, 2",
+      "ORDER BY 1, 2"
+    ]
+  }
+}
