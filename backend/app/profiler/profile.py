@@ -102,9 +102,7 @@ def find_relationship_candidates(tables: list[TableProfile]) -> list[Relationshi
             if child_column.row_count == 0 or parent_column.row_count == 0:
                 continue
             match_ratio = (
-                1.0
-                if parent_column.distinct_count >= child_column.distinct_count
-                else 0.0
+                1.0 if parent_column.distinct_count >= child_column.distinct_count else 0.0
             )
             orphan_count = max(0, child_column.distinct_count - parent_column.distinct_count)
             relationships.append(
@@ -168,9 +166,7 @@ def profile_files(files: list[tuple[Path, CsvReadConfig]], *, threads: int = 2) 
                 connection, table, _view_for(table, table_specs)
             )
         key_candidates = [
-            candidate
-            for table in profiles
-            for candidate in find_key_candidates(table)
+            candidate for table in profiles for candidate in find_key_candidates(table)
         ]
         relationships = _find_relationships_sql(connection, profiles, table_specs)
         return DataProfile(
@@ -296,9 +292,7 @@ def _find_key_groups(
         for combination in itertools.combinations(columns, size):
             names = [column.name for column in combination]
             expressions = ", ".join(quote_identifier(name) for name in names)
-            null_predicate = " OR ".join(
-                f"{quote_identifier(name)} IS NULL" for name in names
-            )
+            null_predicate = " OR ".join(f"{quote_identifier(name)} IS NULL" for name in names)
             result = connection.execute(
                 f"""
                 SELECT count(*), count(DISTINCT ({expressions}))
