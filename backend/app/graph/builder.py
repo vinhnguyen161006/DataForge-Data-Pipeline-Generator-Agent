@@ -3,13 +3,16 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
 from app.graph import nodes
+from app.graph.context import GraphContext
 from app.graph.state import PipelineState
 
-PipelineGraph = CompiledStateGraph[PipelineState, None, PipelineState, PipelineState]
+PipelineGraph = CompiledStateGraph[PipelineState, GraphContext, PipelineState, PipelineState]
 
 
 def build_graph(checkpointer: BaseCheckpointSaver[str]) -> PipelineGraph:
-    graph: StateGraph[PipelineState, None, PipelineState, PipelineState] = StateGraph(PipelineState)
+    graph: StateGraph[PipelineState, GraphContext, PipelineState, PipelineState] = StateGraph(
+        PipelineState, context_schema=GraphContext
+    )
 
     graph.add_node("profile", nodes.profile_node)
     graph.add_node("modeler", nodes.modeler_node)
@@ -23,7 +26,7 @@ def build_graph(checkpointer: BaseCheckpointSaver[str]) -> PipelineGraph:
     graph.add_node("dashboard", nodes.dashboard_node)
 
     graph.add_edge(START, "profile")
-    graph.add_edge("profile", "modeler")
+    graph.add_conditional_edges("profile", nodes.route_after_profile)
     graph.add_conditional_edges("modeler", nodes.route_after_modeler)
     graph.add_edge("clarify", "modeler")
     graph.add_conditional_edges("design_gate", nodes.route_after_design_gate)

@@ -1,27 +1,41 @@
 from typing import Any, Literal
 
+from langgraph.runtime import Runtime
+
+from app.graph.context import GraphContext
 from app.graph.state import PipelineState
 
 
-async def profile_node(state: PipelineState) -> dict[str, Any]:
-    """TODO: enqueue a sandbox "profile" job, interrupt until the job result is delivered."""
+async def profile_node(state: PipelineState, runtime: Runtime[GraphContext]) -> dict[str, Any]:
+    """TODO: enqueue a sandbox "profile" job, interrupt until the job result is delivered.
+
+    Enqueue with idempotency_key "profile:<run_id>" and commit before interrupting with
+    JobWait, because the node re-runs from the top on resume. The resume value is a
+    JobOutcome; a succeeded result is validated as DataProfile, a failure sets `error`.
+    """
     raise NotImplementedError
 
 
-async def modeler_node(state: PipelineState) -> dict[str, Any]:
-    """TODO: call agents.modeler.propose_design; persist a DesignVersion or pending questions."""
+async def modeler_node(state: PipelineState, runtime: Runtime[GraphContext]) -> dict[str, Any]:
+    """TODO: call runtime.context.propose_design; persist a DesignVersion or pending questions.
+
+    A design is stored as the next DesignVersion with content_hash from
+    runtime.context.hash_design and resets `design_approved`; questions go to `questions`.
+    """
     raise NotImplementedError
 
 
 async def clarify_node(state: PipelineState) -> dict[str, Any]:
-    """TODO: interrupt with the Modeler questions; resume value is the Engineer's answers."""
+    """TODO: interrupt with ClarificationRequest; append the ClarificationReply answers."""
     raise NotImplementedError
 
 
-async def design_gate_node(state: PipelineState) -> dict[str, Any]:
-    """TODO: gate 1 (FR-06): interrupt with the design; resume value is approve / edit / return.
+async def design_gate_node(state: PipelineState, runtime: Runtime[GraphContext]) -> dict[str, Any]:
+    """TODO: gate 1 (FR-06): interrupt with DesignGateRequest; resume value is DesignGateReply.
 
-    Record an Approval bound to the design content hash.
+    An edited design becomes a new DesignVersion (edited_by_user). Record an Approval
+    bound to the hash of the design actually decided on, skipping an identical record
+    left by a re-run.
     """
     raise NotImplementedError
 
@@ -63,6 +77,11 @@ async def publish_node(state: PipelineState) -> dict[str, Any]:
 
 async def dashboard_node(state: PipelineState) -> dict[str, Any]:
     """TODO: enqueue a publisher "metabase_sync" job, wait, store the dashboard URL."""
+    raise NotImplementedError
+
+
+def route_after_profile(state: PipelineState) -> Literal["modeler", "__end__"]:
+    """TODO: end the run when the profile job failed; otherwise go to the Modeler."""
     raise NotImplementedError
 
 

@@ -8,6 +8,7 @@ class PipelineState(TypedDict, total=False):
     request_text: str
 
     profile: dict[str, Any]
+    questions: list[dict[str, Any]]
     clarification_answers: list[dict[str, str]]
     design_version_id: str
     design: dict[str, Any]
