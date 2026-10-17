@@ -1,49 +1,197 @@
+import uuid
 from typing import Any, Literal
 
 from langgraph.runtime import Runtime
+from langgraph.types import interrupt
 
+from app.agents.schemas import DataDesign
+from app.db.models import ApprovalDecision, DesignVersion, JobQueue, JobStatus
+from app.graph import design_store
 from app.graph.context import GraphContext
+from app.graph.design_store import DesignNotApprovedError
+from app.graph.interrupts import (
+    ClarificationReply,
+    ClarificationRequest,
+    DesignGateReply,
+    DesignGateRequest,
+    JobOutcome,
+    JobWait,
+)
 from app.graph.state import PipelineState
+from app.jobs import queue
+from app.profiler.schemas import DataProfile
+
+PROFILE_JOB_KIND = "profile"
+
+
+class InvalidDesignError(ValueError):
+    """A Modeler output or an edited design failed the cross-field design checks."""
+
+    def __init__(self, problems: list[str]):
+        self.problems = problems
+        super().__init__("; ".join(problems))
+
+
+def _ensure_valid(problems: list[str]) -> None:
+    if problems:
+        raise InvalidDesignError(problems)
 
 
 async def profile_node(state: PipelineState, runtime: Runtime[GraphContext]) -> dict[str, Any]:
-    """TODO: enqueue a sandbox "profile" job, interrupt until the job result is delivered.
+    """Run the profiler in the sandbox and wait for its DataProfile.
 
-    Enqueue with idempotency_key "profile:<run_id>" and commit before interrupting with
-    JobWait, because the node re-runs from the top on resume. The resume value is a
-    JobOutcome; a succeeded result is validated as DataProfile, a failure sets `error`.
+    The node re-runs from the top on resume, so the job is enqueued idempotently and
+    committed before interrupting.
     """
-    raise NotImplementedError
+    run_id = uuid.UUID(state["run_id"])
+    async with runtime.context.sessionmaker.begin() as session:
+        payload = await design_store.profile_job_payload(session, uuid.UUID(state["batch_id"]))
+        job = await queue.enqueue(
+            session,
+            queue=JobQueue.SANDBOX,
+            kind=PROFILE_JOB_KIND,
+            payload=payload,
+            run_id=run_id,
+            idempotency_key=f"{PROFILE_JOB_KIND}:{run_id}",
+        )
+        job_id = job.id
+    wait = JobWait(job_id=job_id, job_kind=PROFILE_JOB_KIND)
+    outcome = JobOutcome.model_validate(interrupt(wait.model_dump(mode="json")))
+    if outcome.status is JobStatus.FAILED:
+        return {"error": f"Profiling failed: {outcome.error or 'unknown error'}"}
+    profile = DataProfile.model_validate(outcome.result)
+    return {"profile": profile.model_dump(mode="json")}
 
 
 async def modeler_node(state: PipelineState, runtime: Runtime[GraphContext]) -> dict[str, Any]:
-    """TODO: call runtime.context.propose_design; persist a DesignVersion or pending questions.
+    """Ask the Modeler for a design or for questions (FR-04, FR-05).
 
-    A design is stored as the next DesignVersion with content_hash from
-    runtime.context.hash_design and resets `design_approved`; questions go to `questions`.
+    Only the DataProfile reaches the Modeler. A returned design is passed back together
+    with the Engineer's feedback so the next proposal revises it.
     """
-    raise NotImplementedError
+    context = runtime.context
+    feedback = state.get("design_feedback")
+    returned = DataDesign.model_validate(state["design"]) if feedback else None
+    output = await context.propose_design(
+        request_text=state["request_text"],
+        profile=DataProfile.model_validate(state["profile"]),
+        answers=state.get("clarification_answers", []),
+        returned_design=returned,
+        reviewer_feedback=feedback,
+    )
+    _ensure_valid(context.check_modeler_output(output))
+    if output.design is None:
+        return {"questions": [question.model_dump(mode="json") for question in output.questions]}
+
+    content = output.design.model_dump(mode="json")
+    async with context.sessionmaker.begin() as session:
+        version = await design_store.add_design_version(
+            session,
+            run_id=uuid.UUID(state["run_id"]),
+            content=content,
+            content_hash=context.hash_design(content),
+            edited_by_user=False,
+        )
+        version_id = version.id
+    return {
+        "design": content,
+        "design_version_id": str(version_id),
+        "design_approved": False,
+        "design_feedback": None,
+        "questions": [],
+    }
 
 
 async def clarify_node(state: PipelineState) -> dict[str, Any]:
-    """TODO: interrupt with ClarificationRequest; append the ClarificationReply answers."""
-    raise NotImplementedError
+    request = ClarificationRequest.model_validate({"questions": state["questions"]})
+    reply = ClarificationReply.model_validate(interrupt(request.model_dump(mode="json")))
+    answers = [answer.model_dump() for answer in reply.answers]
+    return {
+        "clarification_answers": [*state.get("clarification_answers", []), *answers],
+        "questions": [],
+    }
+
+
+async def _presented_design(runtime: Runtime[GraphContext], version_id: str) -> DesignVersion:
+    async with runtime.context.sessionmaker() as session:
+        presented = await session.get(DesignVersion, uuid.UUID(version_id))
+    if presented is None:
+        raise LookupError(f"Design version {version_id} does not exist")
+    return presented
+
+
+async def _decided_version(
+    runtime: Runtime[GraphContext], presented: DesignVersion, reply: DesignGateReply
+) -> DesignVersion:
+    if reply.edited_design is None:
+        return presented
+    context = runtime.context
+    _ensure_valid(context.check_design(reply.edited_design))
+    content = reply.edited_design.model_dump(mode="json")
+    content_hash = context.hash_design(content)
+    async with context.sessionmaker.begin() as session:
+        existing = await design_store.find_edit_of(session, presented, content_hash)
+        if existing is not None:
+            return existing
+        return await design_store.add_design_version(
+            session,
+            run_id=presented.run_id,
+            content=content,
+            content_hash=content_hash,
+            edited_by_user=True,
+        )
 
 
 async def design_gate_node(state: PipelineState, runtime: Runtime[GraphContext]) -> dict[str, Any]:
-    """TODO: gate 1 (FR-06): interrupt with DesignGateRequest; resume value is DesignGateReply.
+    """Gate 1 (FR-06): the Engineer approves, edits then approves, or returns the design.
 
-    An edited design becomes a new DesignVersion (edited_by_user). Record an Approval
-    bound to the hash of the design actually decided on, skipping an identical record
-    left by a re-run.
+    The approval binds to the hash of the design actually decided on. A presented
+    version gets at most one decision, so a re-run after a crash does not record twice.
     """
-    raise NotImplementedError
+    presented = await _presented_design(runtime, state["design_version_id"])
+    request = DesignGateRequest(
+        design_version_id=presented.id,
+        version=presented.version,
+        design=DataDesign.model_validate(presented.content),
+        edited_by_user=presented.edited_by_user,
+    )
+    reply = DesignGateReply.model_validate(interrupt(request.model_dump(mode="json")))
+    decided = await _decided_version(runtime, presented, reply)
+    approved = reply.decision == "approve"
+
+    async with runtime.context.sessionmaker.begin() as session:
+        if await design_store.find_decision_on(session, presented) is None:
+            session.add(
+                design_store.design_decision(
+                    project_id=uuid.UUID(state["project_id"]),
+                    presented=presented,
+                    decided=decided,
+                    approver_id=reply.user_id,
+                    decision=ApprovalDecision.APPROVED if approved else ApprovalDecision.RETURNED,
+                    comment=reply.comment,
+                )
+            )
+
+    if not approved:
+        return {"design_approved": False, "design_feedback": reply.comment}
+    return {
+        "design": decided.content,
+        "design_version_id": str(decided.id),
+        "design_approved": True,
+        "design_feedback": None,
+    }
 
 
-async def codegen_node(state: PipelineState) -> dict[str, Any]:
-    """TODO: refuse unless the design is approved; retrieve examples, generate, assemble a
-    CodeVersion.
+async def codegen_node(state: PipelineState, runtime: Runtime[GraphContext]) -> dict[str, Any]:
+    """TODO: retrieve examples, generate, assemble a CodeVersion.
+
+    Refuses first, from both the state and the stored approval, unless the current
+    design passed gate 1 (FR-06).
     """
+    if not state.get("design_approved"):
+        raise DesignNotApprovedError("Code generation requires an approved design")
+    async with runtime.context.sessionmaker() as session:
+        await design_store.assert_design_approved(session, uuid.UUID(state["design_version_id"]))
     raise NotImplementedError
 
 
@@ -81,18 +229,16 @@ async def dashboard_node(state: PipelineState) -> dict[str, Any]:
 
 
 def route_after_profile(state: PipelineState) -> Literal["modeler", "__end__"]:
-    """TODO: end the run when the profile job failed; otherwise go to the Modeler."""
-    raise NotImplementedError
+    return "__end__" if state.get("error") else "modeler"
 
 
 def route_after_modeler(state: PipelineState) -> Literal["clarify", "design_gate"]:
-    """TODO: go to clarify when the Modeler returned questions."""
-    raise NotImplementedError
+    return "clarify" if state.get("questions") else "design_gate"
 
 
 def route_after_design_gate(state: PipelineState) -> Literal["codegen", "modeler"]:
-    """TODO: codegen only when approved; otherwise back to the Modeler with feedback."""
-    raise NotImplementedError
+    """Codegen only after approval; a returned design goes back to the Modeler (FR-06)."""
+    return "codegen" if state.get("design_approved") else "modeler"
 
 
 def route_after_execute(state: PipelineState) -> Literal["optimize", "codegen", "__end__"]:

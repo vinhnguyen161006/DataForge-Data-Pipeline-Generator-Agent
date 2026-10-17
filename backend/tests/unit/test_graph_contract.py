@@ -4,15 +4,6 @@ import uuid
 import pytest
 from pydantic import ValidationError
 
-from app.agents.schemas import (
-    CardSpec,
-    DashboardRequirements,
-    DataDesign,
-    FactTable,
-    KeyDefinition,
-    MetricDefinition,
-    UpdatePolicy,
-)
 from app.db.models import JobStatus, RunStatus
 from app.graph.interrupts import (
     WAITING_STATUS,
@@ -24,52 +15,7 @@ from app.graph.interrupts import (
     Pending,
     pending_adapter,
 )
-
-
-def minimal_design() -> DataDesign:
-    return DataDesign(
-        facts=[
-            FactTable(
-                name="fct_registration",
-                grain="one student registration in one module presentation",
-                source_tables=["studentRegistration"],
-                measures=["registrations"],
-                dimension_keys=["id_student"],
-                rationale="The request asks for registration counts",
-            )
-        ],
-        dimensions=[],
-        keys=[
-            KeyDefinition(
-                table="studentRegistration",
-                columns=["code_module", "code_presentation", "id_student"],
-                kind="composite",
-                rationale="Unique in the profile",
-            )
-        ],
-        relationships=[],
-        metrics=[
-            MetricDefinition(
-                name="registrations",
-                definition="Number of registrations",
-                expression="count(*)",
-                fact_table="fct_registration",
-                rationale="Directly requested",
-            )
-        ],
-        cleaning_rules=[],
-        update_policy=UpdatePolicy(required_files=["studentRegistration.csv"], rationale="One"),
-        dashboard=DashboardRequirements(
-            metrics=["registrations"],
-            dimensions=[],
-            filters=[],
-            cards=[
-                CardSpec(key="kpi_reg", title="Registrations", type="kpi", metric="registrations")
-            ],
-            rationale="Single KPI",
-        ),
-        constraints=[],
-    )
+from tests.designs import minimal_design
 
 
 def test_pending_payloads_round_trip_by_kind() -> None:

@@ -1,17 +1,22 @@
+import asyncio
 import logging
 from collections.abc import AsyncIterator, Callable
-from contextlib import AbstractAsyncContextManager, asynccontextmanager
+from contextlib import AbstractAsyncContextManager, asynccontextmanager, suppress
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from langgraph.checkpoint.base import BaseCheckpointSaver
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from app.agents.llm import StructuredLLM
 from app.api.routes import auth, batches, exports, health, projects, runs
 from app.core.config import ApiSettings, get_api_settings
 from app.core.logging import configure_logging
 from app.db.checkpointer import open_postgres_checkpointer
 from app.db.session import make_engine, make_sessionmaker
-from app.graph.builder import build_graph
+from app.graph.builder import PipelineGraph, build_graph
+from app.graph.context import GraphContext, make_graph_context
+from app.services.runs import job_delivery_loop
 
 CheckpointerFactory = Callable[[str], AbstractAsyncContextManager[BaseCheckpointSaver[str]]]
 Lifespan = Callable[[FastAPI], AbstractAsyncContextManager[None]]
@@ -19,23 +24,57 @@ Lifespan = Callable[[FastAPI], AbstractAsyncContextManager[None]]
 logger = logging.getLogger(__name__)
 
 
+def make_llm(settings: ApiSettings) -> StructuredLLM:
+    return StructuredLLM(
+        api_key=settings.gemini_api_key.get_secret_value(), model=settings.gemini_model
+    )
+
+
+@asynccontextmanager
+async def job_delivery(
+    settings: ApiSettings,
+    sessionmaker: async_sessionmaker[AsyncSession],
+    graph: PipelineGraph,
+    context: GraphContext,
+) -> AsyncIterator[None]:
+    """Run the job delivery loop for the lifetime of the block, unless disabled."""
+    if not settings.job_delivery_enabled:
+        yield
+        return
+    task = asyncio.create_task(
+        job_delivery_loop(
+            sessionmaker, graph, context, interval_seconds=settings.job_delivery_interval_seconds
+        )
+    )
+    try:
+        yield
+    finally:
+        task.cancel()
+        with suppress(asyncio.CancelledError):
+            await task
+
+
 def make_lifespan(settings: ApiSettings, open_checkpointer: CheckpointerFactory) -> Lifespan:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         """Own the process-wide resources and release them on shutdown.
 
-        Exposes app.state.sessionmaker and app.state.graph to request dependencies.
-
-        TODO: call recover_pending_runs on startup and run deliver_finished_jobs in a background
-        loop once app.services.runs implements them (FR-21).
+        Exposes app.state.sessionmaker, app.state.graph and app.state.graph_context to
+        request dependencies, and runs the job delivery loop that also recovers runs left
+        unfinished by a restart (FR-21).
         """
         engine = make_engine(settings.app_database_url)
         try:
             async with open_checkpointer(settings.checkpoint_database_url) as checkpointer:
-                app.state.sessionmaker = make_sessionmaker(engine)
-                app.state.graph = build_graph(checkpointer)
-                logger.info("api resources ready")
-                yield
+                sessionmaker = make_sessionmaker(engine)
+                graph = build_graph(checkpointer)
+                context = make_graph_context(sessionmaker, make_llm(settings))
+                app.state.sessionmaker = sessionmaker
+                app.state.graph = graph
+                app.state.graph_context = context
+                async with job_delivery(settings, sessionmaker, graph, context):
+                    logger.info("api resources ready")
+                    yield
         finally:
             await engine.dispose()
             logger.info("api resources released")
