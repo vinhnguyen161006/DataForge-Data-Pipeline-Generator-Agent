@@ -355,7 +355,7 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 - [ ] Thử mở PR thật vào repo thử, xác nhận hệ thống không tự merge.
 - [ ] Xuất **bảng phân loại toàn bộ rewrite bị loại** theo 4 lý do từ nhật ký `judge`; đối chiếu với Ánh để số trong báo cáo khớp lần chạy thật.
 - [ ] CI toàn bộ xanh (6 job), build lại image Airflow và backend, `dbt --version` và import DAG trong image.
-- [ ] Rà lại **mọi phiên bản đã ghim** (không còn `latest`), digest image trong Dockerfile, Dependabot nhóm dbt-core + dbt-duckdb + duckdb.
+- [ ] Rà lại **mọi phiên bản đã ghim** (không còn `latest`), digest image trong Dockerfile; dbt-core + dbt-duckdb + duckdb chỉ nâng cùng lúc.
 
 ### Chốt tuần 6 (nghiệm thu cuối)
 - 4 tình huống bắt buộc: #1 [ ]  #2 [ ]  #3 [ ]  #4 [ ]

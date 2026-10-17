@@ -1,0 +1,2549 @@
+{
+  "dataset": "tpch_sf1",
+  "duckdb_version": "1.5.5",
+  "max_rows_per_file": null,
+  "null_like_tokens_checked": [
+    "",
+    "?",
+    "NA",
+    "N/A",
+    "NULL",
+    "null",
+    "NaN"
+  ],
+  "tables": {
+    "region": {
+      "rows": 5,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "r_regionkey"
+          ],
+          "rows": 5,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 5,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "r_regionkey": {
+          "rows": 5,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 5,
+          "min_text": "0",
+          "max_text": "4",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 4.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "0": 1,
+            "1": 1,
+            "2": 1,
+            "3": 1,
+            "4": 1
+          }
+        },
+        "r_name": {
+          "rows": 5,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 5,
+          "min_text": "AFRICA",
+          "max_text": "MIDDLE EAST",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "AFRICA": 1,
+            "AMERICA": 1,
+            "ASIA": 1,
+            "EUROPE": 1,
+            "MIDDLE EAST": 1
+          }
+        },
+        "r_comment": {
+          "rows": 5,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 5,
+          "min_text": " foxes boost furiously along the carefully dogged tithes. slyly regular orbits according to the special epit",
+          "max_text": "s are. furiously even pinto bea",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 3,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            " foxes boost furiously along the carefully dogged tithes. slyly regular orbits according to the special epit": 1,
+            "ar packages. regular excuses among the ironic requests cajole fluffily blithely final requests. furiously express p": 1,
+            "c, special dependencies around ": 1,
+            "e dolphins are furiously about the carefully ": 1,
+            "s are. furiously even pinto bea": 1
+          }
+        }
+      }
+    },
+    "nation": {
+      "rows": 25,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "n_nationkey"
+          ],
+          "rows": 25,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 25,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "n_nationkey": {
+          "rows": 25,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 25,
+          "min_text": "0",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 24.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "0": 1,
+            "1": 1,
+            "10": 1,
+            "11": 1,
+            "12": 1,
+            "13": 1,
+            "14": 1,
+            "15": 1,
+            "16": 1,
+            "17": 1,
+            "18": 1,
+            "19": 1,
+            "2": 1,
+            "20": 1,
+            "21": 1,
+            "22": 1,
+            "23": 1,
+            "24": 1,
+            "3": 1,
+            "4": 1,
+            "5": 1,
+            "6": 1,
+            "7": 1,
+            "8": 1,
+            "9": 1
+          }
+        },
+        "n_name": {
+          "rows": 25,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 25,
+          "min_text": "ALGERIA",
+          "max_text": "VIETNAM",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "ALGERIA": 1,
+            "ARGENTINA": 1,
+            "BRAZIL": 1,
+            "CANADA": 1,
+            "CHINA": 1,
+            "EGYPT": 1,
+            "ETHIOPIA": 1,
+            "FRANCE": 1,
+            "GERMANY": 1,
+            "INDIA": 1,
+            "INDONESIA": 1,
+            "IRAN": 1,
+            "IRAQ": 1,
+            "JAPAN": 1,
+            "JORDAN": 1,
+            "KENYA": 1,
+            "MOROCCO": 1,
+            "MOZAMBIQUE": 1,
+            "PERU": 1,
+            "ROMANIA": 1,
+            "RUSSIA": 1,
+            "SAUDI ARABIA": 1,
+            "UNITED KINGDOM": 1,
+            "UNITED STATES": 1,
+            "VIETNAM": 1
+          }
+        },
+        "n_regionkey": {
+          "rows": 25,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 5,
+          "min_text": "0",
+          "max_text": "4",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 4.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "0": 5,
+            "1": 5,
+            "2": 5,
+            "3": 5,
+            "4": 5
+          }
+        },
+        "n_comment": {
+          "rows": 25,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 25,
+          "min_text": " beans after the carefully regular accounts r",
+          "max_text": "usly ironic, pending foxes. even, special instructions nag. sly, final foxes detect slyly fluffily ",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 6,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            " beans after the carefully regular accounts r": 1,
+            " quickly final packages. furiously i": 1,
+            "asymptotes use fluffily quickly bold instructions. slyly bold dependencies sleep carefully pending accounts": 1,
+            "carefully pending courts sleep above the ironic, regular theo": 1,
+            "ckly special packages cajole slyly. unusual, unusual theodolites mold furiously. slyly sile": 1,
+            "ct blithely: blithely express accounts nag carefully. silent packages haggle carefully abo": 1,
+            "d deposits sleep quickly according to the dogged, regular dolphins. special excuses haggle furiously special reque": 1,
+            "furiously idle platelets nag. express asymptotes s": 1,
+            "furiously regular requests. platelets affix furious": 1,
+            "instructions wake quickly. final deposits haggle. final, silent theodolites ": 1,
+            "lly across the quickly even pinto beans. caref": 1,
+            "ly final foxes. blithely ironic accounts haggle. regular foxes about the regular deposits are furiously ir": 1,
+            "ly ironic requests along the slyly bold ideas hang after the blithely special notornis; blithely even accounts": 1,
+            "lyly special foxes. slyly regular deposits sleep carefully. carefully permanent accounts slee": 1,
+            "oggedly. regular packages solve across": 1,
+            "ong the regular requests: blithely silent pinto beans hagg": 1,
+            "pendencies; slyly express foxes integrate carefully across the reg": 1,
+            "regular requests sleep carefull": 1,
+            "se slyly across the blithely regular deposits. deposits use carefully regular ": 1,
+            "sly blithe requests. thinly bold deposits above the blithely regular accounts nag special, final requests. care": 1,
+            "ss deposits wake across the pending foxes. packages after the carefully bold requests integrate caref": 1,
+            "the slyly regular ideas. silent Tiresias affix slyly fu": 1,
+            "uctions. furiously unusual instructions sleep furiously ironic packages. slyly ": 1,
+            "uriously unusual deposits about the slyly final pinto beans could": 1,
+            "usly ironic, pending foxes. even, special instructions nag. sly, final foxes detect slyly fluffily ": 1
+          }
+        }
+      }
+    },
+    "supplier": {
+      "rows": 10000,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "s_suppkey"
+          ],
+          "rows": 10000,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 10000,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "s_suppkey": {
+          "rows": 10000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 10000,
+          "min_text": "1",
+          "max_text": "9999",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 10000.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1",
+              1
+            ],
+            [
+              "10",
+              1
+            ],
+            [
+              "100",
+              1
+            ],
+            [
+              "1000",
+              1
+            ],
+            [
+              "10000",
+              1
+            ]
+          ]
+        },
+        "s_name": {
+          "rows": 10000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 10000,
+          "min_text": "Supplier#000000001",
+          "max_text": "Supplier#000010000",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "Supplier#000000001",
+              1
+            ],
+            [
+              "Supplier#000000002",
+              1
+            ],
+            [
+              "Supplier#000000003",
+              1
+            ],
+            [
+              "Supplier#000000004",
+              1
+            ],
+            [
+              "Supplier#000000005",
+              1
+            ]
+          ]
+        },
+        "s_address": {
+          "rows": 10000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 10000,
+          "min_text": "  3TLxhVMgyjeZyud",
+          "max_text": "zzeiHvqsHBhiLpxcRfnNDLw2SBc5EPaWKjgzw",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 298,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "  3TLxhVMgyjeZyud",
+              1
+            ],
+            [
+              "  45xOIuOVJ e7A",
+              1
+            ],
+            [
+              "  Bg4GNb1 64E,NhHOTBsSLegFZL2l",
+              1
+            ],
+            [
+              "  DSFc5t,Sb5,ITn3GgPyW2q6aJxSxT",
+              1
+            ],
+            [
+              "  SeWtz zYYisk8yASiL6F 3GiE",
+              1
+            ]
+          ]
+        },
+        "s_nationkey": {
+          "rows": 10000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 25,
+          "min_text": "0",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 24.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "11": 438,
+            "17": 421,
+            "0": 420,
+            "4": 415,
+            "8": 415,
+            "1": 413,
+            "3": 412,
+            "20": 411,
+            "18": 407,
+            "16": 406,
+            "9": 405,
+            "6": 402,
+            "22": 401,
+            "21": 399,
+            "19": 398,
+            "2": 397,
+            "7": 396,
+            "10": 393,
+            "24": 393,
+            "23": 390,
+            "5": 380,
+            "12": 377,
+            "14": 376,
+            "15": 373,
+            "13": 362
+          }
+        },
+        "s_phone": {
+          "rows": 10000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 10000,
+          "min_text": "10-102-116-6785",
+          "max_text": "34-998-900-4911",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "10-102-116-6785",
+              1
+            ],
+            [
+              "10-102-827-4527",
+              1
+            ],
+            [
+              "10-106-222-1832",
+              1
+            ],
+            [
+              "10-108-469-7350",
+              1
+            ],
+            [
+              "10-108-564-6160",
+              1
+            ]
+          ]
+        },
+        "s_acctbal": {
+          "rows": 10000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 9955,
+          "min_text": "-0.92",
+          "max_text": "9999.72",
+          "inferred_type": "numeric",
+          "numeric_min": -998.22,
+          "numeric_max": 9999.72,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "-111.84",
+              2
+            ],
+            [
+              "-192.70",
+              2
+            ],
+            [
+              "1380.58",
+              2
+            ],
+            [
+              "140.04",
+              2
+            ],
+            [
+              "1710.29",
+              2
+            ]
+          ]
+        },
+        "s_comment": {
+          "rows": 10000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 9998,
+          "min_text": " Tiresias cajole final excuses. c",
+          "max_text": "zzle-- final, unusual platelets above the c",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 2435,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "ely regular excuses. furiously final pinto be",
+              2
+            ],
+            [
+              "ial packages. slyly bold ideas against the ideas affix blithely blithely special d",
+              2
+            ],
+            [
+              " Tiresias cajole final excuses. c",
+              1
+            ],
+            [
+              " about the blithely unusual platelets. regular foxes detect. final theodolites was along",
+              1
+            ],
+            [
+              " about the careful packages. furiou",
+              1
+            ]
+          ]
+        }
+      }
+    },
+    "customer": {
+      "rows": 150000,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "c_custkey"
+          ],
+          "rows": 150000,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 150000,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "c_custkey": {
+          "rows": 150000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 150000,
+          "min_text": "1",
+          "max_text": "99999",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 150000.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1",
+              1
+            ],
+            [
+              "10",
+              1
+            ],
+            [
+              "100",
+              1
+            ],
+            [
+              "1000",
+              1
+            ],
+            [
+              "10000",
+              1
+            ]
+          ]
+        },
+        "c_name": {
+          "rows": 150000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 150000,
+          "min_text": "Customer#000000001",
+          "max_text": "Customer#000150000",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "Customer#000000001",
+              1
+            ],
+            [
+              "Customer#000000002",
+              1
+            ],
+            [
+              "Customer#000000003",
+              1
+            ],
+            [
+              "Customer#000000004",
+              1
+            ],
+            [
+              "Customer#000000005",
+              1
+            ]
+          ]
+        },
+        "c_address": {
+          "rows": 150000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 150000,
+          "min_text": "   2Ksa,hc rgy7p",
+          "max_text": "zzyQcZpC50YDkK26Pglp",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 4697,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "   2Ksa,hc rgy7p",
+              1
+            ],
+            [
+              "   U5mU,NhV H",
+              1
+            ],
+            [
+              "  1s6sVFwEyCrA21nFSO1N3lu8",
+              1
+            ],
+            [
+              "  2GwZHgL6DrhNGw2M,up aC",
+              1
+            ],
+            [
+              "  2vO jhssidE44DYwxv3k",
+              1
+            ]
+          ]
+        },
+        "c_nationkey": {
+          "rows": 150000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 25,
+          "min_text": "0",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 24.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "9": 6161,
+            "19": 6100,
+            "6": 6100,
+            "22": 6078,
+            "8": 6042,
+            "13": 6033,
+            "18": 6024,
+            "3": 6020,
+            "23": 6011,
+            "10": 6009,
+            "21": 6008,
+            "2": 5999,
+            "4": 5995,
+            "14": 5992,
+            "24": 5983,
+            "1": 5975,
+            "17": 5975,
+            "16": 5974,
+            "11": 5963,
+            "5": 5952,
+            "12": 5948,
+            "0": 5925,
+            "15": 5921,
+            "7": 5908,
+            "20": 5904
+          }
+        },
+        "c_phone": {
+          "rows": 150000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 150000,
+          "min_text": "10-100-106-1617",
+          "max_text": "34-999-618-6881",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "10-100-106-1617",
+              1
+            ],
+            [
+              "10-100-220-4520",
+              1
+            ],
+            [
+              "10-100-274-5785",
+              1
+            ],
+            [
+              "10-100-301-2651",
+              1
+            ],
+            [
+              "10-100-541-5585",
+              1
+            ]
+          ]
+        },
+        "c_acctbal": {
+          "rows": 150000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 140187,
+          "min_text": "-0.01",
+          "max_text": "9999.99",
+          "inferred_type": "numeric",
+          "numeric_min": -999.99,
+          "numeric_max": 9999.99,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "-101.79",
+              4
+            ],
+            [
+              "-109.73",
+              4
+            ],
+            [
+              "-216.13",
+              4
+            ],
+            [
+              "1237.93",
+              4
+            ],
+            [
+              "1327.12",
+              4
+            ]
+          ]
+        },
+        "c_mktsegment": {
+          "rows": 150000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 5,
+          "min_text": "AUTOMOBILE",
+          "max_text": "MACHINERY",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "HOUSEHOLD": 30189,
+            "BUILDING": 30142,
+            "FURNITURE": 29968,
+            "MACHINERY": 29949,
+            "AUTOMOBILE": 29752
+          }
+        },
+        "c_comment": {
+          "rows": 150000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 148965,
+          "min_text": " Tiresias about the quickly express ideas detect quickly regular dependencies. even requests wake across the",
+          "max_text": "zzle. quickly bold accounts according to the ironic ideas affix",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 37170,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              " are pinto beans. blithely regular pains cajole. q",
+              3
+            ],
+            [
+              "ously bold packages x-ray furiously. slyly ironic ideas across the orbits wake blithely among the caref",
+              3
+            ],
+            [
+              "sits. carefully even requests wake careful",
+              3
+            ],
+            [
+              " about the blithely bold packages hagg",
+              2
+            ],
+            [
+              " above the express deposits. regular, final ideas wake carefully enticingly bold packages. daringly re",
+              2
+            ]
+          ]
+        }
+      }
+    },
+    "part": {
+      "rows": 200000,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "p_partkey"
+          ],
+          "rows": 200000,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 200000,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "p_partkey": {
+          "rows": 200000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 200000,
+          "min_text": "1",
+          "max_text": "99999",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 200000.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1",
+              1
+            ],
+            [
+              "10",
+              1
+            ],
+            [
+              "100",
+              1
+            ],
+            [
+              "1000",
+              1
+            ],
+            [
+              "10000",
+              1
+            ]
+          ]
+        },
+        "p_name": {
+          "rows": 200000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 199997,
+          "min_text": "almond antique blue royal burnished",
+          "max_text": "yellow white seashell lavender black",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "aquamarine frosted tomato medium navy",
+              2
+            ],
+            [
+              "azure lime rosy peru powder",
+              2
+            ],
+            [
+              "blush burlywood red blanched olive",
+              2
+            ],
+            [
+              "almond antique blue royal burnished",
+              1
+            ],
+            [
+              "almond antique cornsilk midnight medium",
+              1
+            ]
+          ]
+        },
+        "p_mfgr": {
+          "rows": 200000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 5,
+          "min_text": "Manufacturer#1",
+          "max_text": "Manufacturer#5",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "Manufacturer#3": 40304,
+            "Manufacturer#5": 40135,
+            "Manufacturer#1": 40084,
+            "Manufacturer#4": 39841,
+            "Manufacturer#2": 39636
+          }
+        },
+        "p_brand": {
+          "rows": 200000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 25,
+          "min_text": "Brand#11",
+          "max_text": "Brand#55",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "Brand#35": 8233,
+            "Brand#12": 8167,
+            "Brand#52": 8158,
+            "Brand#33": 8141,
+            "Brand#53": 8088,
+            "Brand#14": 8053,
+            "Brand#44": 8031,
+            "Brand#55": 8031,
+            "Brand#34": 8014,
+            "Brand#41": 8006,
+            "Brand#15": 7999,
+            "Brand#21": 7991,
+            "Brand#13": 7989,
+            "Brand#22": 7978,
+            "Brand#45": 7978,
+            "Brand#24": 7975,
+            "Brand#31": 7968,
+            "Brand#32": 7948,
+            "Brand#54": 7938,
+            "Brand#51": 7920,
+            "Brand#43": 7918,
+            "Brand#42": 7908,
+            "Brand#11": 7876,
+            "Brand#23": 7870,
+            "Brand#25": 7822
+          }
+        },
+        "p_type": {
+          "rows": 200000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 150,
+          "min_text": "ECONOMY ANODIZED BRASS",
+          "max_text": "STANDARD POLISHED TIN",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "ECONOMY ANODIZED STEEL",
+              1451
+            ],
+            [
+              "LARGE PLATED STEEL",
+              1434
+            ],
+            [
+              "PROMO BRUSHED BRASS",
+              1420
+            ],
+            [
+              "LARGE PLATED BRASS",
+              1415
+            ],
+            [
+              "MEDIUM BURNISHED COPPER",
+              1415
+            ]
+          ]
+        },
+        "p_size": {
+          "rows": 200000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 50,
+          "min_text": "1",
+          "max_text": "9",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 50.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "10",
+              4177
+            ],
+            [
+              "14",
+              4153
+            ],
+            [
+              "30",
+              4127
+            ],
+            [
+              "3",
+              4123
+            ],
+            [
+              "16",
+              4103
+            ]
+          ]
+        },
+        "p_container": {
+          "rows": 200000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 40,
+          "min_text": "JUMBO BAG",
+          "max_text": "WRAP PKG",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "SM DRUM": 5153,
+            "JUMBO JAR": 5115,
+            "LG JAR": 5103,
+            "LG BOX": 5096,
+            "LG PACK": 5091,
+            "MED CAN": 5091,
+            "MED JAR": 5083,
+            "MED DRUM": 5077,
+            "MED CASE": 5064,
+            "JUMBO CAN": 5062,
+            "SM BOX": 5055,
+            "WRAP JAR": 5049,
+            "WRAP CASE": 5045,
+            "MED BOX": 5043,
+            "JUMBO BAG": 5024,
+            "JUMBO PKG": 5013,
+            "WRAP BAG": 5008,
+            "JUMBO PACK": 5001,
+            "MED BAG": 5000,
+            "SM PACK": 4993,
+            "SM PKG": 4992,
+            "SM BAG": 4990,
+            "WRAP CAN": 4987,
+            "JUMBO BOX": 4982,
+            "MED PACK": 4977,
+            "SM JAR": 4973,
+            "JUMBO CASE": 4972,
+            "MED PKG": 4966,
+            "WRAP DRUM": 4956,
+            "LG CASE": 4947,
+            "LG PKG": 4946,
+            "WRAP BOX": 4935,
+            "SM CAN": 4934,
+            "WRAP PKG": 4934,
+            "LG CAN": 4916,
+            "WRAP PACK": 4911,
+            "JUMBO DRUM": 4903,
+            "LG BAG": 4899,
+            "SM CASE": 4866,
+            "LG DRUM": 4848
+          }
+        },
+        "p_retailprice": {
+          "rows": 200000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 20899,
+          "min_text": "1000.00",
+          "max_text": "999.09",
+          "inferred_type": "numeric",
+          "numeric_min": 901.0,
+          "numeric_max": 2098.99,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1000.00",
+              10
+            ],
+            [
+              "1000.01",
+              10
+            ],
+            [
+              "1000.02",
+              10
+            ],
+            [
+              "1000.03",
+              10
+            ],
+            [
+              "1000.04",
+              10
+            ]
+          ]
+        },
+        "p_comment": {
+          "rows": 200000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 130704,
+          "min_text": " Tires",
+          "max_text": "zzle? fur",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 49904,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              " the ",
+              110
+            ],
+            [
+              "carefully",
+              79
+            ],
+            [
+              "furiou",
+              79
+            ],
+            [
+              "gular",
+              77
+            ],
+            [
+              "furious",
+              76
+            ]
+          ]
+        }
+      }
+    },
+    "partsupp": {
+      "rows": 800000,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "ps_partkey",
+            "ps_suppkey"
+          ],
+          "rows": 800000,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 800000,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "ps_partkey": {
+          "rows": 800000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 200000,
+          "min_text": "1",
+          "max_text": "99999",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 200000.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1",
+              4
+            ],
+            [
+              "10",
+              4
+            ],
+            [
+              "100",
+              4
+            ],
+            [
+              "1000",
+              4
+            ],
+            [
+              "10000",
+              4
+            ]
+          ]
+        },
+        "ps_suppkey": {
+          "rows": 800000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 10000,
+          "min_text": "1",
+          "max_text": "9999",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 10000.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1",
+              80
+            ],
+            [
+              "10",
+              80
+            ],
+            [
+              "100",
+              80
+            ],
+            [
+              "1000",
+              80
+            ],
+            [
+              "10000",
+              80
+            ]
+          ]
+        },
+        "ps_availqty": {
+          "rows": 800000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 9999,
+          "min_text": "1",
+          "max_text": "9999",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 9999.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "3100",
+              112
+            ],
+            [
+              "4620",
+              112
+            ],
+            [
+              "5052",
+              111
+            ],
+            [
+              "6547",
+              111
+            ],
+            [
+              "4496",
+              110
+            ]
+          ]
+        },
+        "ps_supplycost": {
+          "rows": 800000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 99865,
+          "min_text": "1.00",
+          "max_text": "999.99",
+          "inferred_type": "numeric",
+          "numeric_min": 1.0,
+          "numeric_max": 1000.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "144.43",
+              21
+            ],
+            [
+              "110.77",
+              20
+            ],
+            [
+              "128.56",
+              20
+            ],
+            [
+              "139.07",
+              20
+            ],
+            [
+              "143.64",
+              20
+            ]
+          ]
+        },
+        "ps_comment": {
+          "rows": 800000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 772739,
+          "min_text": " Tiresias about the carefully even packages detect quickly silent packages. ironic, pending ideas about the slyly unusual dolphins wake permanently package",
+          "max_text": "zzle. thinly regular deposits haggle blithely regular, regular instructions. carefully special instructions haggle final accounts. blithely special accoun",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 198584,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              " instructions cajole furiously about the accounts. requests nag carefully about the ironic asymptotes-- slow, bold asymptotes mold. regu",
+              5
+            ],
+            [
+              " sleep busily. blithely silent requests use carefully requests. carefully regular accounts sleep. furiously even requests ab",
+              4
+            ],
+            [
+              "ecial platelets sleep according to the furiously final deposits. deposits are furiously slyly even grouches. express deposits haggle: ironic deposits boost. furiously special acc",
+              4
+            ],
+            [
+              "egular deposits. slyly regular instructions haggle blithely. quickly even requests grow furiously? quickly regular accounts wake blithely. pending warhorses affix quickly according to t",
+              4
+            ],
+            [
+              "es. regular asymptotes cajole. furiously express requests haggle. slyly regular deposits across the slyly even asymptotes cajole according to the regular, express asymptot",
+              4
+            ]
+          ]
+        }
+      }
+    },
+    "orders": {
+      "rows": 1500000,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "o_orderkey"
+          ],
+          "rows": 1500000,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 1500000,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "o_orderkey": {
+          "rows": 1500000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 1500000,
+          "min_text": "1",
+          "max_text": "999975",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 6000000.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1",
+              1
+            ],
+            [
+              "100",
+              1
+            ],
+            [
+              "100000",
+              1
+            ],
+            [
+              "1000000",
+              1
+            ],
+            [
+              "1000001",
+              1
+            ]
+          ]
+        },
+        "o_custkey": {
+          "rows": 1500000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 99996,
+          "min_text": "1",
+          "max_text": "99998",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 149999.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "102004",
+              41
+            ],
+            [
+              "102022",
+              41
+            ],
+            [
+              "3451",
+              41
+            ],
+            [
+              "117082",
+              40
+            ],
+            [
+              "122623",
+              40
+            ]
+          ]
+        },
+        "o_orderstatus": {
+          "rows": 1500000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 3,
+          "min_text": "F",
+          "max_text": "P",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "O": 732044,
+            "F": 729413,
+            "P": 38543
+          }
+        },
+        "o_totalprice": {
+          "rows": 1500000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 1464556,
+          "min_text": "1000.55",
+          "max_text": "99999.89",
+          "inferred_type": "numeric",
+          "numeric_min": 857.71,
+          "numeric_max": 555285.16,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "152215.76",
+              4
+            ],
+            [
+              "155832.34",
+              4
+            ],
+            [
+              "188963.15",
+              4
+            ],
+            [
+              "190980.25",
+              4
+            ],
+            [
+              "217595.19",
+              4
+            ]
+          ]
+        },
+        "o_orderdate": {
+          "rows": 1500000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 2406,
+          "min_text": "1992-01-01",
+          "max_text": "1998-08-02",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1995-01-13",
+              702
+            ],
+            [
+              "1998-01-21",
+              698
+            ],
+            [
+              "1996-05-31",
+              696
+            ],
+            [
+              "1993-03-19",
+              695
+            ],
+            [
+              "1994-09-12",
+              694
+            ]
+          ]
+        },
+        "o_orderpriority": {
+          "rows": 1500000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 5,
+          "min_text": "1-URGENT",
+          "max_text": "5-LOW",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "5-LOW": 300589,
+            "1-URGENT": 300343,
+            "4-NOT SPECIFIED": 300254,
+            "2-HIGH": 300091,
+            "3-MEDIUM": 298723
+          }
+        },
+        "o_clerk": {
+          "rows": 1500000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 1000,
+          "min_text": "Clerk#000000001",
+          "max_text": "Clerk#000001000",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "Clerk#000000542",
+              1618
+            ],
+            [
+              "Clerk#000000081",
+              1615
+            ],
+            [
+              "Clerk#000000901",
+              1612
+            ],
+            [
+              "Clerk#000000828",
+              1610
+            ],
+            [
+              "Clerk#000000902",
+              1607
+            ]
+          ]
+        },
+        "o_shippriority": {
+          "rows": 1500000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 1,
+          "min_text": "0",
+          "max_text": "0",
+          "inferred_type": "integer",
+          "numeric_min": 0.0,
+          "numeric_max": 0.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "0": 1500000
+          }
+        },
+        "o_comment": {
+          "rows": 1500000,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 1387872,
+          "min_text": " Tiresias about the quickly express ideas detect quickly regular depen",
+          "max_text": "zzle? furiously ironic packages are sil",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 371895,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              " carefully regular ",
+              18
+            ],
+            [
+              " furiously regular ",
+              16
+            ],
+            [
+              "y according to the ",
+              15
+            ],
+            [
+              ". furiously regular ",
+              12
+            ],
+            [
+              "egular instructions",
+              11
+            ]
+          ]
+        }
+      }
+    },
+    "lineitem": {
+      "rows": 6001215,
+      "duplicate_full_rows": 0,
+      "candidate_keys": [
+        {
+          "key_columns": [
+            "l_orderkey",
+            "l_linenumber"
+          ],
+          "rows": 6001215,
+          "rows_with_null_like_key_part": 0,
+          "distinct_keys": 6001215,
+          "uniqueness_pct": 100.0,
+          "duplicate_key_groups": 0,
+          "rows_in_duplicate_groups": 0,
+          "max_rows_per_key": 0
+        }
+      ],
+      "columns": {
+        "l_orderkey": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 1500000,
+          "min_text": "1",
+          "max_text": "999975",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 6000000.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1000003",
+              7
+            ],
+            [
+              "1000005",
+              7
+            ],
+            [
+              "1000007",
+              7
+            ],
+            [
+              "1000035",
+              7
+            ],
+            [
+              "100005",
+              7
+            ]
+          ]
+        },
+        "l_partkey": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 200000,
+          "min_text": "1",
+          "max_text": "99999",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 200000.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "49981",
+              57
+            ],
+            [
+              "121664",
+              56
+            ],
+            [
+              "166553",
+              56
+            ],
+            [
+              "40724",
+              56
+            ],
+            [
+              "131873",
+              55
+            ]
+          ]
+        },
+        "l_suppkey": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 10000,
+          "min_text": "1",
+          "max_text": "9999",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 10000.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "8520",
+              694
+            ],
+            [
+              "4016",
+              689
+            ],
+            [
+              "7489",
+              687
+            ],
+            [
+              "4851",
+              684
+            ],
+            [
+              "2298",
+              683
+            ]
+          ]
+        },
+        "l_linenumber": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 7,
+          "min_text": "1",
+          "max_text": "7",
+          "inferred_type": "integer",
+          "numeric_min": 1.0,
+          "numeric_max": 7.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "1": 1500000,
+            "2": 1285828,
+            "3": 1071394,
+            "4": 857015,
+            "5": 643287,
+            "6": 429070,
+            "7": 214621
+          }
+        },
+        "l_quantity": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 50,
+          "min_text": "1.00",
+          "max_text": "9.00",
+          "inferred_type": "numeric",
+          "numeric_min": 1.0,
+          "numeric_max": 50.0,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "35.00",
+              120753
+            ],
+            [
+              "25.00",
+              120635
+            ],
+            [
+              "32.00",
+              120630
+            ],
+            [
+              "23.00",
+              120593
+            ],
+            [
+              "16.00",
+              120518
+            ]
+          ]
+        },
+        "l_extendedprice": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 933900,
+          "min_text": "1000.00",
+          "max_text": "99999.50",
+          "inferred_type": "numeric",
+          "numeric_min": 901.0,
+          "numeric_max": 104949.5,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "36036.00",
+              62
+            ],
+            [
+              "57657.60",
+              55
+            ],
+            [
+              "39939.90",
+              50
+            ],
+            [
+              "48770.40",
+              50
+            ],
+            [
+              "43722.00",
+              47
+            ]
+          ]
+        },
+        "l_discount": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 11,
+          "min_text": "0.00",
+          "max_text": "0.10",
+          "inferred_type": "numeric",
+          "numeric_min": 0.0,
+          "numeric_max": 0.1,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "0.05": 546395,
+            "0.07": 546192,
+            "0.02": 546173,
+            "0.01": 545834,
+            "0.10": 545815,
+            "0.04": 545545,
+            "0.09": 545309,
+            "0.03": 545293,
+            "0.06": 544970,
+            "0.00": 544886,
+            "0.08": 544803
+          }
+        },
+        "l_tax": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 9,
+          "min_text": "0.00",
+          "max_text": "0.08",
+          "inferred_type": "numeric",
+          "numeric_min": 0.0,
+          "numeric_max": 0.08,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "0.06": 667463,
+            "0.02": 667458,
+            "0.08": 667429,
+            "0.03": 667175,
+            "0.04": 666908,
+            "0.07": 666878,
+            "0.01": 666678,
+            "0.05": 665972,
+            "0.00": 665254
+          }
+        },
+        "l_returnflag": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 3,
+          "min_text": "A",
+          "max_text": "R",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "N": 3043852,
+            "R": 1478870,
+            "A": 1478493
+          }
+        },
+        "l_linestatus": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 2,
+          "min_text": "F",
+          "max_text": "O",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "O": 3004998,
+            "F": 2996217
+          }
+        },
+        "l_shipdate": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 2526,
+          "min_text": "1992-01-02",
+          "max_text": "1998-12-01",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1997-06-01",
+              2707
+            ],
+            [
+              "1998-01-17",
+              2691
+            ],
+            [
+              "1995-09-18",
+              2673
+            ],
+            [
+              "1996-11-29",
+              2664
+            ],
+            [
+              "1995-09-26",
+              2657
+            ]
+          ]
+        },
+        "l_commitdate": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 2466,
+          "min_text": "1992-01-31",
+          "max_text": "1998-10-31",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1997-03-24",
+              2667
+            ],
+            [
+              "1995-03-10",
+              2653
+            ],
+            [
+              "1992-09-22",
+              2650
+            ],
+            [
+              "1995-02-08",
+              2640
+            ],
+            [
+              "1995-06-13",
+              2640
+            ]
+          ]
+        },
+        "l_receiptdate": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 2554,
+          "min_text": "1992-01-04",
+          "max_text": "1998-12-31",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              "1995-10-08",
+              2694
+            ],
+            [
+              "1997-08-08",
+              2661
+            ],
+            [
+              "1997-06-05",
+              2660
+            ],
+            [
+              "1998-07-26",
+              2651
+            ],
+            [
+              "1994-12-03",
+              2645
+            ]
+          ]
+        },
+        "l_shipinstruct": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 4,
+          "min_text": "COLLECT COD",
+          "max_text": "TAKE BACK RETURN",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "NONE": 1500862,
+            "COLLECT COD": 1500547,
+            "DELIVER IN PERSON": 1500048,
+            "TAKE BACK RETURN": 1499758
+          }
+        },
+        "l_shipmode": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 7,
+          "min_text": "AIR",
+          "max_text": "TRUCK",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 0,
+          "rows_with_leading_zero": 0,
+          "value_counts": {
+            "AIR": 858104,
+            "SHIP": 858036,
+            "MAIL": 857401,
+            "FOB": 857324,
+            "TRUCK": 856998,
+            "REG AIR": 856868,
+            "RAIL": 856484
+          }
+        },
+        "l_comment": {
+          "rows": 6001215,
+          "null_like_rows": 0,
+          "null_like_rate_pct": 0.0,
+          "null_like_tokens": {},
+          "distinct_values": 3610733,
+          "min_text": " Tiresias ",
+          "max_text": "zzle? furiously iro",
+          "inferred_type": "text",
+          "numeric_min": null,
+          "numeric_max": null,
+          "rows_with_padding_whitespace": 1487450,
+          "rows_with_leading_zero": 0,
+          "top5_values": [
+            [
+              " furiously",
+              991
+            ],
+            [
+              " carefully",
+              944
+            ],
+            [
+              "furiously ",
+              905
+            ],
+            [
+              " carefully ",
+              860
+            ],
+            [
+              "carefully ",
+              839
+            ]
+          ]
+        }
+      }
+    }
+  },
+  "relationships": [
+    {
+      "relationship": "nation_to_region",
+      "child": "nation",
+      "child_columns": [
+        "n_regionkey"
+      ],
+      "parent": "region",
+      "parent_columns": [
+        "r_regionkey"
+      ],
+      "child_rows": 25,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 5,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 5,
+      "distinct_parent_keys": 5,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 5
+    },
+    {
+      "relationship": "supplier_to_nation",
+      "child": "supplier",
+      "child_columns": [
+        "s_nationkey"
+      ],
+      "parent": "nation",
+      "parent_columns": [
+        "n_nationkey"
+      ],
+      "child_rows": 10000,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 25,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 25,
+      "distinct_parent_keys": 25,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 438
+    },
+    {
+      "relationship": "customer_to_nation",
+      "child": "customer",
+      "child_columns": [
+        "c_nationkey"
+      ],
+      "parent": "nation",
+      "parent_columns": [
+        "n_nationkey"
+      ],
+      "child_rows": 150000,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 25,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 25,
+      "distinct_parent_keys": 25,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 6161
+    },
+    {
+      "relationship": "orders_to_customer",
+      "child": "orders",
+      "child_columns": [
+        "o_custkey"
+      ],
+      "parent": "customer",
+      "parent_columns": [
+        "c_custkey"
+      ],
+      "child_rows": 1500000,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 99996,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 150000,
+      "distinct_parent_keys": 150000,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 50004,
+      "max_child_rows_per_key": 41
+    },
+    {
+      "relationship": "lineitem_to_orders",
+      "child": "lineitem",
+      "child_columns": [
+        "l_orderkey"
+      ],
+      "parent": "orders",
+      "parent_columns": [
+        "o_orderkey"
+      ],
+      "child_rows": 6001215,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 1500000,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 1500000,
+      "distinct_parent_keys": 1500000,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 7
+    },
+    {
+      "relationship": "partsupp_to_part",
+      "child": "partsupp",
+      "child_columns": [
+        "ps_partkey"
+      ],
+      "parent": "part",
+      "parent_columns": [
+        "p_partkey"
+      ],
+      "child_rows": 800000,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 200000,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 200000,
+      "distinct_parent_keys": 200000,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 4
+    },
+    {
+      "relationship": "partsupp_to_supplier",
+      "child": "partsupp",
+      "child_columns": [
+        "ps_suppkey"
+      ],
+      "parent": "supplier",
+      "parent_columns": [
+        "s_suppkey"
+      ],
+      "child_rows": 800000,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 10000,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 10000,
+      "distinct_parent_keys": 10000,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 0,
+      "max_child_rows_per_key": 80
+    },
+    {
+      "relationship": "lineitem_to_partsupp",
+      "child": "lineitem",
+      "child_columns": [
+        "l_partkey",
+        "l_suppkey"
+      ],
+      "parent": "partsupp",
+      "parent_columns": [
+        "ps_partkey",
+        "ps_suppkey"
+      ],
+      "child_rows": 6001215,
+      "orphan_rows": 0,
+      "match_rate_pct": 100.0,
+      "distinct_child_keys": 799541,
+      "orphan_distinct_keys": 0,
+      "parent_rows": 800000,
+      "distinct_parent_keys": 800000,
+      "parent_key_unique": true,
+      "parent_keys_without_children": 459,
+      "max_child_rows_per_key": 24
+    }
+  ],
+  "custom_checks": {
+    "lineitem_per_order": {
+      "columns": [
+        "lines_per_order",
+        "orders"
+      ],
+      "rows": [
+        [
+          1,
+          214172
+        ],
+        [
+          2,
+          214434
+        ],
+        [
+          3,
+          214379
+        ],
+        [
+          4,
+          213728
+        ],
+        [
+          5,
+          214217
+        ],
+        [
+          6,
+          214449
+        ],
+        [
+          7,
+          214621
+        ]
+      ]
+    },
+    "orders_without_lineitem": {
+      "columns": [
+        "orders"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "customers_without_orders": {
+      "columns": [
+        "customers"
+      ],
+      "rows": [
+        [
+          50004
+        ]
+      ]
+    },
+    "partsupp_per_part": {
+      "columns": [
+        "suppliers_per_part",
+        "parts"
+      ],
+      "rows": [
+        [
+          4,
+          200000
+        ]
+      ]
+    },
+    "shipdate_before_orderdate": {
+      "columns": [
+        "rows"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "receiptdate_before_shipdate": {
+      "columns": [
+        "rows"
+      ],
+      "rows": [
+        [
+          0
+        ]
+      ]
+    },
+    "discount_range": {
+      "columns": [
+        "min_discount",
+        "max_discount"
+      ],
+      "rows": [
+        [
+          0.0,
+          0.1
+        ]
+      ]
+    },
+    "quantity_range": {
+      "columns": [
+        "min_quantity",
+        "max_quantity"
+      ],
+      "rows": [
+        [
+          1.0,
+          50.0
+        ]
+      ]
+    },
+    "orderstatus_values": {
+      "columns": [
+        "o_orderstatus",
+        "rows"
+      ],
+      "rows": [
+        [
+          "F",
+          729413
+        ],
+        [
+          "O",
+          732044
+        ],
+        [
+          "P",
+          38543
+        ]
+      ]
+    },
+    "returnflag_linestatus_values": {
+      "columns": [
+        "l_returnflag",
+        "l_linestatus",
+        "rows"
+      ],
+      "rows": [
+        [
+          "A",
+          "F",
+          1478493
+        ],
+        [
+          "N",
+          "F",
+          38854
+        ],
+        [
+          "N",
+          "O",
+          3004998
+        ],
+        [
+          "R",
+          "F",
+          1478870
+        ]
+      ]
+    },
+    "nation_region_distribution": {
+      "columns": [
+        "region",
+        "nations"
+      ],
+      "rows": [
+        [
+          "AFRICA",
+          5
+        ],
+        [
+          "AMERICA",
+          5
+        ],
+        [
+          "ASIA",
+          5
+        ],
+        [
+          "EUROPE",
+          5
+        ],
+        [
+          "MIDDLE EAST",
+          5
+        ]
+      ]
+    }
+  }
+}

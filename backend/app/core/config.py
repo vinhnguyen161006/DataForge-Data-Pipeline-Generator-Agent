@@ -4,12 +4,15 @@ from pathlib import Path
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from app.core.logging import LogLevel
+
 
 class BaseProcessSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_prefix="DATAFORGE_", extra="ignore")
 
     app_database_url: str = "postgresql+asyncpg://dataforge:dataforge@localhost:5432/dataforge_app"
     storage_root: Path = Path("./data")
+    log_level: LogLevel = "INFO"
 
 
 class OptimizerBudget(BaseSettings):
@@ -31,7 +34,7 @@ class ApiSettings(BaseProcessSettings):
 
     gemini_api_key: SecretStr = SecretStr("")
     gemini_model: str = "gemini-3.5-flash-lite"
-    gemini_embedding_model: str = "gemini-embedding-001"
+    gemini_embedding_model: str = "gemini-embedding-2"
 
     qdrant_url: str = "http://localhost:6333"
     qdrant_collection: str = "pipeline_examples"
