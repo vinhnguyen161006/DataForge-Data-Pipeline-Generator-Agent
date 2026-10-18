@@ -24,3 +24,5 @@ htmlcov/
 .DS_Store
 Thumbs.db
 .idea/
+eval/golden/**/raw/
+eval/golden/**/*.zip
