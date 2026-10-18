@@ -76,7 +76,7 @@ async def test_codegen_refuses_an_unapproved_design(state: PipelineState) -> Non
         await nodes.codegen_node(state, unused_runtime())
 
 
-def testrun_view_reports_the_pending_interrupt() -> None:
+def test_run_view_reports_the_pending_interrupt() -> None:
     wait = JobWait(job_id=uuid.uuid4(), job_kind="profile").model_dump(mode="json")
     task = PregelTask(id="t1", name="profile", path=(), interrupts=(Interrupt(value=wait),))
     status, step, pending = run_view(
@@ -85,12 +85,12 @@ def testrun_view_reports_the_pending_interrupt() -> None:
     assert (status, step, pending) == (RunStatus.WAITING_JOB, "profile", wait)
 
 
-def testrun_view_between_nodes_is_running() -> None:
+def test_run_view_between_nodes_is_running() -> None:
     view = run_view(snapshot(values={"run_id": "r"}, next_nodes=("modeler",), tasks=()))
     assert view == (RunStatus.RUNNING, "modeler", None)
 
 
-def testrun_view_of_a_finished_thread() -> None:
+def test_run_view_of_a_finished_thread() -> None:
     failed = run_view(snapshot(values={"error": "Profiling failed"}, next_nodes=(), tasks=()))
     done = run_view(snapshot(values={"dashboard_url": "http://mb"}, next_nodes=(), tasks=()))
     assert failed == (RunStatus.FAILED, None, None)
