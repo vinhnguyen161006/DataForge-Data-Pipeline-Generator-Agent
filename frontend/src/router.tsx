@@ -1,8 +1,10 @@
 import { type MouseEvent, type ReactNode, useMemo, useSyncExternalStore } from "react";
 
 export type Route =
+  | { name: "landing" }
   | { name: "login" }
   | { name: "projects" }
+  | { name: "project"; projectId: string }
   | { name: "upload"; projectId: string }
   | { name: "run"; projectId: string; runId: string }
   | { name: "export"; projectId: string; runId: string }
@@ -26,7 +28,7 @@ export function parseRoute(pathname: string): Route {
   }
   const [root, projectId, section, runId, action] = segments;
   if (segments.length === 0) {
-    return { name: "projects" };
+    return { name: "landing" };
   }
   if (segments.length === 1 && root === "login") {
     return { name: "login" };
@@ -36,6 +38,9 @@ export function parseRoute(pathname: string): Route {
   }
   if (segments.length === 1) {
     return { name: "projects" };
+  }
+  if (segments.length === 2) {
+    return { name: "project", projectId };
   }
   if (segments.length === 3 && section === "upload") {
     return { name: "upload", projectId };
@@ -51,13 +56,17 @@ export function parseRoute(pathname: string): Route {
 
 export function routePath(route: Route): string {
   switch (route.name) {
+    case "landing":
+      return "/";
     case "login":
       return "/login";
     case "projects":
     case "notFound":
       return "/projects";
+    case "project":
+      return `/projects/${encodeURIComponent(route.projectId)}`;
     case "upload":
-      return `/projects/${encodeURIComponent(route.projectId)}/upload`;
+      return `${routePath({ ...route, name: "project" })}/upload`;
     case "run":
       return `/projects/${encodeURIComponent(route.projectId)}/runs/${encodeURIComponent(route.runId)}`;
     case "export":
