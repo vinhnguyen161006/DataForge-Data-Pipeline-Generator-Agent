@@ -1,4 +1,5 @@
 const TOKEN_KEY = "dataforge.token";
+const ACCOUNT_KEY = "dataforge.account";
 
 const listeners = new Set<() => void>();
 
@@ -12,9 +13,14 @@ export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY);
 }
 
-export function setToken(token: string): void {
+export function setToken(token: string, accountEmail: string): void {
   localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(ACCOUNT_KEY, accountEmail);
   notify();
+}
+
+export function getAccountEmail(): string | null {
+  return localStorage.getItem(ACCOUNT_KEY);
 }
 
 export function clearToken(): void {
@@ -22,6 +28,7 @@ export function clearToken(): void {
     return;
   }
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(ACCOUNT_KEY);
   notify();
 }
 

@@ -1,8 +1,11 @@
 import { useEffect } from "react";
-import { logout } from "./api/client";
+import { WorkspaceShell } from "./components/workspace/WorkspaceShell";
 import { useAuthToken } from "./hooks/useAuthToken";
+import { ProjectsProvider } from "./hooks/useProjects";
 import { ExportPage } from "./pages/ExportPage";
+import { LandingPage } from "./pages/LandingPage";
 import { LoginPage } from "./pages/LoginPage";
+import { ProjectPage } from "./pages/ProjectPage";
 import { ProjectsPage } from "./pages/ProjectsPage";
 import { RunPage } from "./pages/RunPage";
 import { UploadPage } from "./pages/UploadPage";
@@ -28,10 +31,14 @@ function NotFoundPage() {
 
 function AuthenticatedPage({ route }: { route: Route }) {
   switch (route.name) {
+    case "landing":
+      return <LandingPage />;
     case "login":
       return <Redirect to={HOME} />;
     case "projects":
       return <ProjectsPage />;
+    case "project":
+      return <ProjectPage key={route.projectId} projectId={route.projectId} />;
     case "upload":
       return <UploadPage key={route.projectId} projectId={route.projectId} />;
     case "run":
@@ -45,26 +52,18 @@ function AuthenticatedPage({ route }: { route: Route }) {
 
 export function App() {
   const route = useRoute();
-  const token = useAuthToken();
-  const signedIn = token !== null;
+  const signedIn = useAuthToken() !== null;
+  if (route.name === "landing") {
+    return <LandingPage />;
+  }
+  if (!signedIn) {
+    return <LoginPage />;
+  }
   return (
-    <div className="layout">
-      <header className="header">
-        <h1>
-          <Link to={HOME} className="brand">
-            DataForge
-          </Link>
-        </h1>
-        {signedIn && (
-          <nav>
-            <Link to={HOME}>Projects</Link>
-            <button type="button" onClick={logout}>
-              Sign out
-            </button>
-          </nav>
-        )}
-      </header>
-      <main>{signedIn ? <AuthenticatedPage route={route} /> : <LoginPage />}</main>
-    </div>
+    <ProjectsProvider>
+      <WorkspaceShell route={route}>
+        <AuthenticatedPage route={route} />
+      </WorkspaceShell>
+    </ProjectsProvider>
   );
 }

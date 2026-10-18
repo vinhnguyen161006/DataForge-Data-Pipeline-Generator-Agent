@@ -70,6 +70,20 @@ export interface Batch {
   files: SourceFile[];
 }
 
+export interface ApprovalHistory {
+  id: string;
+  project_id: string;
+  run_id: string;
+  gate: "design" | "code";
+  decision: "approved" | "returned";
+  approver_id: string;
+  independent_review: boolean;
+  fingerprint: string;
+  comment: string | null;
+  created_at: string;
+  review_note: string | null;
+}
+
 export interface RunCreate {
   batch_id: string;
   request_text: string;
@@ -79,7 +93,7 @@ export interface Run {
   id: string;
   status: RunStatus;
   current_step: string | null;
-  pending: Record<string, unknown> | null;
+  pending: Pending | null;
   error: string | null;
   updated_at: string;
 }
@@ -89,8 +103,49 @@ export interface ClarificationAnswer {
   answer: string;
 }
 
-export interface FactTable {
+export type ClarificationTopic =
+  | "grain"
+  | "metric"
+  | "key"
+  | "cleaning"
+  | "update"
+  | "dashboard"
+  | "other";
+
+export interface ClarificationQuestion {
+  topic: ClarificationTopic;
+  question: string;
+  why: string;
+  options: string[];
+}
+
+export interface PendingJob {
+  kind: "job";
+  job_id: string;
+  job_kind: string;
+}
+
+export interface PendingClarification {
+  kind: "clarification";
+  questions: ClarificationQuestion[];
+}
+
+export interface PendingDesignGate {
+  kind: "design_gate";
+  design_version_id: string;
+  version: number;
+  design: DataDesign;
+  edited_by_user: boolean;
+}
+
+export type Pending = PendingJob | PendingClarification | PendingDesignGate;
+
+export interface Justified {
   rationale: string;
+  open_questions: string[];
+}
+
+export interface FactTable extends Justified {
   name: string;
   grain: string;
   source_tables: string[];
@@ -98,23 +153,20 @@ export interface FactTable {
   dimension_keys: string[];
 }
 
-export interface DimensionTable {
-  rationale: string;
+export interface DimensionTable extends Justified {
   name: string;
   business_key: string[];
   source_table: string;
   attributes: string[];
 }
 
-export interface KeyDefinition {
-  rationale: string;
+export interface KeyDefinition extends Justified {
   table: string;
   columns: string[];
   kind: "primary" | "business" | "composite";
 }
 
-export interface RelationshipDefinition {
-  rationale: string;
+export interface RelationshipDefinition extends Justified {
   child_table: string;
   child_columns: string[];
   parent_table: string;
@@ -122,16 +174,14 @@ export interface RelationshipDefinition {
   cardinality: "many_to_one" | "one_to_one";
 }
 
-export interface MetricDefinition {
-  rationale: string;
+export interface MetricDefinition extends Justified {
   name: string;
   definition: string;
   expression: string;
   fact_table: string;
 }
 
-export interface CleaningRule {
-  rationale: string;
+export interface CleaningRule extends Justified {
   table: string;
   columns: string[];
   condition: string;
@@ -139,8 +189,7 @@ export interface CleaningRule {
   default_value: string | null;
 }
 
-export interface UpdatePolicy {
-  rationale: string;
+export interface UpdatePolicy extends Justified {
   mode: "snapshot_replace";
   required_files: string[];
 }
@@ -153,8 +202,7 @@ export interface CardSpec {
   dimension: string | null;
 }
 
-export interface DashboardRequirements {
-  rationale: string;
+export interface DashboardRequirements extends Justified {
   metrics: string[];
   dimensions: string[];
   filters: string[];
