@@ -22,6 +22,13 @@ def pytest_asyncio_loop_factories(
     return {"selector": asyncio.SelectorEventLoop}
 
 
+@pytest.fixture(autouse=True)
+def no_background_job_delivery(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep app lifespans from polling a database; tests drive delivery explicitly."""
+    monkeypatch.setenv("DATAFORGE_JOB_DELIVERY_ENABLED", "false")
+    get_api_settings.cache_clear()
+
+
 def pytest_collection_modifyitems(items: list[pytest.Item]) -> None:
     if os.environ.get(TEST_DATABASE_URL_ENV):
         return

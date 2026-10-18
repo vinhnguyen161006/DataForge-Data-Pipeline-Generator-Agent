@@ -1,160 +1,135 @@
-import { type SubmitEvent, useEffect, useState } from "react";
-import { createProject, listProjects } from "../api/client";
-import type { Project, ReviewMode } from "../api/types";
-import { errorText } from "../errors";
-import { Link } from "../router";
-import { slugify } from "../slug";
+import { useState } from "react";
+import type { Project, ProjectRole, ReviewMode } from "../api/types";
+import { LoadError } from "../components/workspace/LoadError";
+import { NewProjectForm } from "../components/workspace/NewProjectForm";
+import { useProjects } from "../hooks/useProjects";
+import { navigate } from "../router";
 
-const REVIEW_MODE_HELP: Record<ReviewMode, string> = {
-  team: "Team: the Reviewer must be a different person from the Engineer.",
-  solo: "Solo: one person holds both roles; the log records that there was no independent review.",
-};
+const REVIEW_MODE_LABEL: Record<ReviewMode, string> = { team: "Team", solo: "Individual" };
+const ROLE_LABEL: Record<ProjectRole, string> = { engineer: "Engineer", reviewer: "Reviewer" };
 
-function ProjectList({ projects }: { projects: Project[] }) {
-  if (projects.length === 0) {
-    return <p className="muted">No projects yet. Create the first one below.</p>;
-  }
+function countWithRole(projects: Project[], role: ProjectRole): number {
+  return projects.filter((project) => project.roles.includes(role)).length;
+}
+
+function Summary({ projects }: { projects: Project[] }) {
+  const items = [
+    { label: "Projects", value: projects.length },
+    { label: "As engineer", value: countWithRole(projects, "engineer") },
+    { label: "As reviewer", value: countWithRole(projects, "reviewer") },
+    {
+      label: "Team review",
+      value: projects.filter((project) => project.review_mode === "team").length,
+    },
+  ];
   return (
-    <table className="table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Slug</th>
-          <th>Review mode</th>
-          <th>Your roles</th>
-        </tr>
-      </thead>
-      <tbody>
-        {projects.map((project) => (
-          <tr key={project.id}>
-            <td>
-              <Link to={{ name: "upload", projectId: project.id }}>{project.name}</Link>
-            </td>
-            <td>
-              <code>{project.slug}</code>
-            </td>
-            <td>{project.review_mode}</td>
-            <td>
-              {project.roles.map((role) => (
-                <span key={role} className="badge">
-                  {role}
-                </span>
-              ))}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <dl className="ws-summary">
+      {items.map((item) => (
+        <div key={item.label}>
+          <dt>{item.label}</dt>
+          <dd>{item.value}</dd>
+        </div>
+      ))}
+    </dl>
   );
 }
 
-function CreateProjectForm({ onCreated }: { onCreated: (project: Project) => void }) {
-  const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
-  const [slugEdited, setSlugEdited] = useState(false);
-  const [reviewMode, setReviewMode] = useState<ReviewMode>("team");
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
-
-  const onNameChange = (value: string) => {
-    setName(value);
-    if (!slugEdited) {
-      setSlug(slugify(value));
-    }
-  };
-
-  const onSlugChange = (value: string) => {
-    setSlug(value);
-    setSlugEdited(true);
-  };
-
-  const onSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    try {
-      onCreated(await createProject({ name: name.trim(), slug, review_mode: reviewMode }));
-      setName("");
-      setSlug("");
-      setSlugEdited(false);
-      setReviewMode("team");
-    } catch (caught) {
-      setError(errorText(caught));
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
+function ProjectTable({ projects }: { projects: Project[] }) {
   return (
-    <form className="form" onSubmit={onSubmit}>
-      <h3>New project</h3>
-      <label>
-        Name
-        <input required value={name} onChange={(event) => onNameChange(event.target.value)} />
-      </label>
-      <label>
-        Slug
-        <input
-          required
-          pattern="[a-z0-9]+(-[a-z0-9]+)*"
-          title="Lowercase letters, digits and single hyphens"
-          value={slug}
-          onChange={(event) => onSlugChange(event.target.value)}
-        />
-      </label>
-      <label>
-        Review mode
-        <select
-          value={reviewMode}
-          onChange={(event) => setReviewMode(event.target.value as ReviewMode)}
-        >
-          <option value="team">Team</option>
-          <option value="solo">Solo</option>
-        </select>
-      </label>
-      <p className="muted">{REVIEW_MODE_HELP[reviewMode]}</p>
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
-      )}
-      <button type="submit" className="primary" disabled={submitting}>
-        {submitting ? "Creating..." : "Create project"}
-      </button>
-    </form>
+    <div className="ws-table-wrap">
+      <table className="ws-table">
+        <thead>
+          <tr>
+            <th scope="col">Project</th>
+            <th scope="col">Review mode</th>
+            <th scope="col">Your roles</th>
+            <th scope="col">
+              <span className="visually-hidden">Actions</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {projects.map((project) => (
+            <tr key={project.id}>
+              <td>
+                <div className="ws-strong">{project.name}</div>
+                <div className="lp-mono ws-sub">{project.slug}</div>
+              </td>
+              <td>
+                <span className="ws-status">
+                  <span className={`ws-dot ${project.review_mode}`} aria-hidden="true" />
+                  {REVIEW_MODE_LABEL[project.review_mode]}
+                </span>
+              </td>
+              <td className="ws-muted">
+                {project.roles.map((role) => ROLE_LABEL[role]).join(" + ")}
+              </td>
+              <td className="ws-cta">
+                <button
+                  type="button"
+                  className="ws-link"
+                  onClick={() => navigate({ name: "project", projectId: project.id })}
+                >
+                  Open
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 
 export function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    listProjects().then(
-      (loaded) => active && setProjects(loaded),
-      (caught: unknown) => active && setError(errorText(caught)),
-    );
-    return () => {
-      active = false;
-    };
-  }, []);
+  const { projects, error, reload, add } = useProjects();
+  const [creating, setCreating] = useState(false);
 
   const onCreated = (project: Project) => {
-    setProjects((current) => [project, ...(current ?? [])]);
+    add(project);
+    setCreating(false);
   };
 
   return (
-    <section className="page">
-      <h2>Projects</h2>
-      {error && (
-        <p className="error" role="alert">
-          {error}
-        </p>
+    <section className="ws-page">
+      <div className="ws-crumb">Workspace / Projects</div>
+      <div className="ws-title-row">
+        <div>
+          <h1 className="ws-h1">Projects</h1>
+          <p className="ws-lede">
+            Each project holds its batches, pipelines and approval history. Roles are granted per
+            project; the review mode decides whether design and code need different approvers.
+          </p>
+        </div>
+        {!creating && (
+          <button type="button" className="lp-button small" onClick={() => setCreating(true)}>
+            New project
+          </button>
+        )}
+      </div>
+
+      {creating && <NewProjectForm onCreated={onCreated} onCancel={() => setCreating(false)} />}
+
+      {error !== null && error !== undefined && <LoadError error={error} onRetry={reload} />}
+
+      {projects === null && !error && <p className="ws-muted">Loading projects...</p>}
+
+      {projects && (
+        <>
+          <Summary projects={projects} />
+          <div>
+            <h2 className="ws-h2">Your projects</h2>
+            {projects.length === 0 ? (
+              <p className="ws-muted">
+                You are not a member of any project yet. Create one, or ask a project owner to add
+                you.
+              </p>
+            ) : (
+              <ProjectTable projects={projects} />
+            )}
+          </div>
+        </>
       )}
-      {projects === null && !error && <p className="muted">Loading projects...</p>}
-      {projects && <ProjectList projects={projects} />}
-      <CreateProjectForm onCreated={onCreated} />
     </section>
   );
 }

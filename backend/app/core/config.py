@@ -31,6 +31,8 @@ class ApiSettings(BaseProcessSettings):
     jwt_secret: SecretStr = SecretStr("change-me")
     jwt_ttl_minutes: int = 720
     cors_origins: list[str] = ["http://localhost:5173"]
+    job_delivery_enabled: bool = True
+    job_delivery_interval_seconds: float = 2.0
 
     gemini_api_key: SecretStr = SecretStr("")
     gemini_model: str = "gemini-3.5-flash-lite"

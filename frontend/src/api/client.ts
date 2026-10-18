@@ -1,5 +1,6 @@
 import { clearToken, getToken, setToken } from "./session";
 import type {
+  ApprovalHistory,
   Batch,
   ClarificationAnswer,
   CodeDecision,
@@ -107,13 +108,13 @@ export async function register(email: string, password: string): Promise<void> {
     "/auth/register",
     jsonBody("POST", { email, password }),
   );
-  setToken(token.access_token);
+  setToken(token.access_token, email);
 }
 
 export async function login(email: string, password: string): Promise<void> {
   const form = new URLSearchParams({ username: email, password });
   const token = await requestJson<TokenResponse>("/auth/token", { method: "POST", body: form });
-  setToken(token.access_token);
+  setToken(token.access_token, email);
 }
 
 export function logout(): void {
@@ -132,8 +133,8 @@ export function addMember(projectId: string, body: MemberAdd): Promise<void> {
   return requestEmpty(`${projectPath(projectId)}/members`, jsonBody("POST", body));
 }
 
-export function getApprovalHistory(projectId: string): Promise<Record<string, unknown>[]> {
-  return requestJson<Record<string, unknown>[]>(`${projectPath(projectId)}/approvals`);
+export function getApprovalHistory(projectId: string): Promise<ApprovalHistory[]> {
+  return requestJson<ApprovalHistory[]>(`${projectPath(projectId)}/approvals`);
 }
 
 export function createBatch(projectId: string): Promise<Batch> {
