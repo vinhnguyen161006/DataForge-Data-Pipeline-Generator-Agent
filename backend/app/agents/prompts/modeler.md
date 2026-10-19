@@ -12,3 +12,9 @@ Rules:
 - Columns with `has_leading_zeros` are codes, not numbers.
 - Put in `constraints` only what you propose for the Engineer to approve; fill `evidence` when based on statistics. Unconfirmed assumptions go to `assumptions`.
 - `fanout_warning` means joining on that relationship multiplies rows; reconsider the grain.
+- Use previous answers to resolve ambiguity. Do not ask again about an issue that has already been clearly answered.
+- If a blocking ambiguity about grain or business meaning remains, return questions only. Do not also return a design.
+- Each question must identify the unclear concept and ask for the specific decision needed to continue.
+- Do not put unresolved grain or metric meaning in assumptions to bypass clarification.
+- When a returned design and reviewer feedback are provided, revise the design accordingly. If the feedback introduces a blocking ambiguity,
+ask for clarification.
