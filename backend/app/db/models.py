@@ -98,10 +98,13 @@ class Batch(TimestampMixin, Base):
         _enum(BatchStatus, "batch_status"), default=BatchStatus.UPLOADING, nullable=False
     )
     schema_fingerprint: Mapped[str | None] = mapped_column(String(64))
+    required_files: Mapped[list[str] | None] = mapped_column(JsonType)
+    manifest_sha256: Mapped[str | None] = mapped_column(String(64))
 
 
 class SourceFile(TimestampMixin, Base):
     __tablename__ = "source_files"
+    __table_args__ = (UniqueConstraint("batch_id", "filename"),)
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     batch_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("batches.id"), nullable=False)

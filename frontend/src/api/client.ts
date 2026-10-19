@@ -137,8 +137,11 @@ export function getApprovalHistory(projectId: string): Promise<ApprovalHistory[]
   return requestJson<ApprovalHistory[]>(`${projectPath(projectId)}/approvals`);
 }
 
-export function createBatch(projectId: string): Promise<Batch> {
-  return requestJson<Batch>(`${projectPath(projectId)}/batches`, { method: "POST" });
+export function createBatch(projectId: string, requiredFiles: string[]): Promise<Batch> {
+  return requestJson<Batch>(`${projectPath(projectId)}/batches`, {
+    method: "POST",
+    body: JSON.stringify({ required_files: requiredFiles }),
+  });
 }
 
 export function uploadFile(projectId: string, batchId: string, file: File): Promise<SourceFile> {

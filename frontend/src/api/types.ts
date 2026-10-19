@@ -65,6 +65,7 @@ export interface SourceFile {
 }
 
 export interface Batch {
+  required_files: string[] | null;
   id: string;
   status: BatchStatus;
   files: SourceFile[];

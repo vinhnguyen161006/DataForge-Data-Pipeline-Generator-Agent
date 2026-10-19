@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.agents.schemas import DataDesign
 from app.db.models import (
@@ -12,6 +12,7 @@ from app.db.models import (
     ReviewMode,
     RunStatus,
 )
+from app.ingest.filenames import required_filenames
 from app.ingest.sniff import CsvReadConfig
 
 
@@ -108,13 +109,27 @@ class SourceFileOut(BaseModel):
     warnings: list[str]
 
 
+class BatchCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    required_files: list[str] = Field(min_length=1)
+
+    @field_validator("required_files")
+    @classmethod
+    def validate_required_files(cls, values: list[str]) -> list[str]:
+        return required_filenames(values)
+
+
 class BatchOut(BaseModel):
     id: uuid.UUID
     status: str
     files: list[SourceFileOut]
+    required_files: list[str] | None = None
 
 
 class ReadConfigConfirm(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     read_config: CsvReadConfig
 
 

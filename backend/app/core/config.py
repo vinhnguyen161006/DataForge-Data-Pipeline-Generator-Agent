@@ -31,6 +31,7 @@ class ApiSettings(BaseProcessSettings):
     jwt_secret: SecretStr = SecretStr("change-me")
     jwt_ttl_minutes: int = 720
     cors_origins: list[str] = ["http://localhost:5173"]
+    max_upload_bytes: int = Field(default=1024 * 1024 * 1024, gt=0, le=2147483647)
     job_delivery_enabled: bool = True
     job_delivery_interval_seconds: float = 2.0
 
