@@ -103,3 +103,4 @@ Lệnh regression đã chạy, từ backend:
   --junitxml=data/upload-checks/run-access-regression.xml
 ~~~
 
+Bổ sung C3: [Kiểm chứng GET trạng thái và polling](run-polling.md) ghi kết quả mới nhất và test tính chỉ đọc.

@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
+from unittest.mock import AsyncMock
 from uuid import UUID, uuid4
 
 import pytest
@@ -783,4 +784,67 @@ async def test_graph_kickoff_failure_marks_the_committed_run_failed(
     assert (
         await service.recover_pending_runs(creation.factory, creation.graph, creation.context) == 0
     )
+    assert creation.modeler.calls == 0
+
+
+async def test_created_run_can_be_polled_without_advancing_its_job_or_checkpoint(
+    creation: RunCreationScenario, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    created = await creation.create()
+    assert created.status_code == 200
+    run_id = UUID(created.json()["id"])
+    original_run = await creation.row(run_id)
+    original_jobs = await creation.jobs(run_id)
+    original_counts = await creation.counts()
+    before = await creation.graph.aget_state(service.thread_config(run_id))
+    mocks = []
+    with monkeypatch.context() as patch:
+        for name in (
+            "start_run",
+            "drive_run",
+            "resume_run",
+            "sync_run",
+            "deliver_finished_jobs",
+            "recover_pending_runs",
+        ):
+            mock = AsyncMock(side_effect=AssertionError(f"Polling must not call {name}"))
+            patch.setattr(service, name, mock)
+            mocks.append(mock)
+        for target, name in (
+            (queue, "enqueue"),
+            (creation.graph, "ainvoke"),
+            (creation.graph, "aget_state"),
+        ):
+            mock = AsyncMock(side_effect=AssertionError(f"Polling must not call {name}"))
+            patch.setattr(target, name, mock)
+            mocks.append(mock)
+        responses = [
+            await creation.client.get(
+                f"/api/projects/{creation.project_id}/runs/{run_id}",
+                headers=creation.headers[actor],
+            )
+            for actor in ("engineer", "reviewer", "engineer")
+        ]
+        for mock in mocks:
+            mock.assert_not_called()
+
+    assert all(response.status_code == 200 for response in responses)
+    assert all(response.json() == responses[0].json() for response in responses)
+    body = responses[0].json()
+    assert body["status"] == "waiting_job"
+    assert body["pending"] == {
+        "kind": "job",
+        "job_id": str(original_jobs[0].id),
+        "job_kind": "profile",
+    }
+    current_run = await creation.row(run_id)
+    assert current_run.status == original_run.status
+    assert current_run.pending == original_run.pending
+    assert current_run.updated_at == original_run.updated_at
+    assert await creation.counts() == original_counts
+    assert [job.id for job in await creation.jobs(run_id)] == [original_jobs[0].id]
+    after = await creation.graph.aget_state(service.thread_config(run_id))
+    assert after.config == before.config
+    assert after.values == before.values
+    assert after.tasks[0].interrupts == before.tasks[0].interrupts
     assert creation.modeler.calls == 0

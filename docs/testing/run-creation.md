@@ -95,7 +95,7 @@ BackgroundTasks vẫn là đường khởi động sớm. Recovery hiện chạy
 
 Worker phải tự kiểm tra snapshot/payload khi thực thi ở D4. Test C2 chưa chứng minh worker profile/sandbox đã chạy hoặc đã khóa DuckDB.
 
-Các ca polling/clarifications/design-decision thành công và 409 theo trạng thái/interrupt tiếp tục ở C3/C4. Không đánh dấu toàn bộ tuần 2 hoàn thành từ bộ test này.
+Polling đã được kiểm chứng trong [run-polling.md](run-polling.md); clarifications/design-decision thành công và 409 theo trạng thái/interrupt tiếp tục ở C4. Không đánh dấu toàn bộ tuần 2 hoàn thành từ bộ test này.
 
 ## Kết quả chạy
 
@@ -124,3 +124,4 @@ Lệnh regression, từ backend sau khi nạp cấu hình DB test:
 
 Không chạy CI images/security hoặc nghiệm thu worker/FR-21 trong bước này.
 
+Bổ sung C3: [Kiểm chứng GET trạng thái và polling](run-polling.md) ghi kết quả mới nhất và test tính chỉ đọc.

@@ -5,6 +5,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from sqlalchemy import select
 
 from app.api.deps import SessionDep, require_project_member, require_role
+from app.api.run_views import run_out
 from app.api.schemas import (
     ClarificationAnswers,
     CodeDecision,
@@ -50,14 +51,8 @@ async def create_run(
             request_text=body.request_text,
         )
         run = await _get_project_run(session, project_id, run_id)
-        response = RunOut(
-            id=run.id,
-            status=run.status,
-            current_step=run.current_step,
-            pending=run.pending,
-            error=run.error,
-            updated_at=run.updated_at,
-        )
+        response = run_out(run)
+
     except batch_service.BatchError as exc:
         await session.rollback()
         raise HTTPException(status_code=exc.status_code, detail=str(exc)) from exc
@@ -75,9 +70,9 @@ async def get_run(
     _member: ProjectMemberDep,
     session: SessionDep,
 ) -> RunOut:
-    """TODO: polling endpoint: status, current step and pending interrupt payload."""
-    await _get_project_run(session, project_id, run_id)
-    raise NotImplementedError
+    """Read persisted run status without advancing the workflow."""
+    run = await _get_project_run(session, project_id, run_id)
+    return run_out(run)
 
 
 @router.post("/{run_id}/clarifications", response_model=RunOut)
