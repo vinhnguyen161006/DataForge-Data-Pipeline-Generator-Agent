@@ -26,6 +26,9 @@ async def propose_design(
 
     Uses the statistical profile rather than complete source rows.
     """
+    if not isinstance(profile, DataProfile):
+        raise TypeError("profile must be a DataProfile instance.")
+
     instructions = await asyncio.to_thread(_load_instructions)
 
     context = {

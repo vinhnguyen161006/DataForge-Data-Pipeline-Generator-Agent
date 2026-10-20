@@ -1,5 +1,7 @@
 import asyncio
 import json
+from pathlib import Path
+from typing import cast
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -12,7 +14,7 @@ from app.agents.schemas import (
     ModelerOutput,
     RelationshipDefinition,
 )
-from app.profiler.schemas import DataProfile
+from app.profiler.schemas import ColumnProfile, DataProfile, TableProfile
 
 
 @pytest.fixture
@@ -114,7 +116,23 @@ def test_returns_questions_and_passes_context() -> None:
     )
     llm = StructuredLLM(api_key="fake-key", model="fake-model")
     profile = DataProfile(
-        tables=[],
+        tables=[
+            TableProfile(
+                name="orders",
+                source_file="orders.csv",
+                row_count=2,
+                columns=[
+                    ColumnProfile(
+                        name="status",
+                        inferred_type="string",
+                        row_count=2,
+                        null_ratio=0.0,
+                        distinct_count=2,
+                        sample_values=["paid", "refunded"],
+                    )
+                ],
+            )
+        ],
         key_candidates=[],
         relationship_candidates=[],
     )
@@ -146,6 +164,15 @@ def test_returns_questions_and_passes_context() -> None:
 
     prompt = call.kwargs["prompt"]
     context = json.loads(prompt.split("\n\n", 1)[1])
+    assert set(context) == {
+        "request_text",
+        "profile",
+        "answers",
+        "returned_design",
+        "reviewer_feedback",
+    }
+    column = context["profile"]["tables"][0]["columns"][0]
+    assert column["sample_values"] == ["paid", "refunded"]
     assert context["request_text"] == "Analyze revenue."
     assert context["profile"] == profile.model_dump(mode="json")
     assert context["answers"] == answers
@@ -209,3 +236,33 @@ def test_rejects_unknown_references(
 
     with pytest.raises(ValueError, match="unknown"):
         run_modeler(ModelerOutput(design=design))
+
+
+@pytest.mark.parametrize(
+    "invalid_profile",
+    [
+        "orders.csv",
+        Path("orders.csv"),
+        [{"order_id": 1, "amount": 100}],
+    ],
+)
+def test_rejects_non_profile_input(invalid_profile: object) -> None:
+    """Reject paths and raw rows before calling the LLM."""
+    llm = StructuredLLM(api_key="fake-key", model="fake-model")
+
+    with patch.object(
+        StructuredLLM,
+        "generate",
+        new_callable=AsyncMock,
+    ) as generate:
+        with pytest.raises(TypeError, match="profile must be a DataProfile"):
+            asyncio.run(
+                propose_design(
+                    llm,
+                    request_text="Analyze orders.",
+                    profile=cast("DataProfile", invalid_profile),
+                    answers=[],
+                )
+            )
+
+        generate.assert_not_called()
