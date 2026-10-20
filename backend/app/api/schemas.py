@@ -137,6 +137,14 @@ class RunCreate(BaseModel):
     batch_id: uuid.UUID
     request_text: str
 
+    @field_validator("request_text")
+    @classmethod
+    def validate_request_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("The analytical requirement cannot be empty")
+        return value
+
 
 class RunOut(BaseModel):
     id: uuid.UUID
