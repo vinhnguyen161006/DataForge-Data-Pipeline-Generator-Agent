@@ -6,6 +6,7 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
+from app.agents.codegen import generate_models
 from app.agents.llm import StructuredLLM
 from app.agents.modeler import propose_design
 from app.agents.schemas import (
@@ -262,6 +263,39 @@ def test_rejects_non_profile_input(invalid_profile: object) -> None:
                     request_text="Analyze orders.",
                     profile=cast("DataProfile", invalid_profile),
                     answers=[],
+                )
+            )
+
+        generate.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "invalid_profile",
+    [
+        "orders.csv",
+        Path("orders.csv"),
+        [{"order_id": 1, "amount": 100}],
+    ],
+)
+def test_codegen_rejects_non_profile_input(
+    design: DataDesign,
+    invalid_profile: object,
+) -> None:
+    """Reject source paths and raw rows before calling the Codegen LLM."""
+    llm = StructuredLLM(api_key="fake-key", model="fake-model")
+
+    with patch.object(
+        StructuredLLM,
+        "generate",
+        new_callable=AsyncMock,
+    ) as generate:
+        with pytest.raises(TypeError, match="profile must be a DataProfile"):
+            asyncio.run(
+                generate_models(
+                    llm,
+                    design=design,
+                    profile=cast("DataProfile", invalid_profile),
+                    examples=[],
                 )
             )
 
