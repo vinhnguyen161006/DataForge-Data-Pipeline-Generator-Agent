@@ -1,6 +1,7 @@
 import itertools
 import re
 from pathlib import Path
+from typing import Any
 
 import duckdb
 
@@ -12,6 +13,14 @@ from app.profiler.schemas import (
     RelationshipCandidate,
     TableProfile,
 )
+
+
+def _required_row(cursor: duckdb.DuckDBPyConnection) -> tuple[Any, ...]:
+    """Return the single row of an aggregate query, which always yields one."""
+    row = cursor.fetchone()
+    if row is None:
+        raise RuntimeError("Aggregate query returned no row")
+    return row
 
 
 def quote_identifier(identifier: str) -> str:
@@ -197,7 +206,7 @@ def _profile_table(
         f"DESCRIBE SELECT * FROM {quote_identifier(view_name)}"
     ).fetchall()
     row_count = int(
-        connection.execute(f"SELECT count(*) FROM {quote_identifier(view_name)}").fetchone()[0]
+        _required_row(connection.execute(f"SELECT count(*) FROM {quote_identifier(view_name)}"))[0]
     )
     columns: list[ColumnProfile] = []
     numeric_names = [
@@ -225,9 +234,11 @@ def _profile_table(
                 f"max(CAST({identifier} AS VARCHAR))",
             ]
         )
-    aggregate_values = connection.execute(
-        f"SELECT {', '.join(aggregate_selects)} FROM {quote_identifier(view_name)}"
-    ).fetchone()
+    aggregate_values = _required_row(
+        connection.execute(
+            f"SELECT {', '.join(aggregate_selects)} FROM {quote_identifier(view_name)}"
+        )
+    )
     for index, (name, column_type, *_) in enumerate(description):
         identifier = quote_identifier(name)
         samples = [
@@ -247,15 +258,17 @@ def _profile_table(
         leading_zero = any(re.fullmatch(r"[+-]?0[0-9]+", value) for value in samples)
         if raw_view_name is not None and name in numeric_names:
             leading_zero = bool(
-                connection.execute(
-                    f"""
+                _required_row(
+                    connection.execute(
+                        f"""
                     SELECT EXISTS(
                         SELECT 1
                         FROM {quote_identifier(raw_view_name)}
                         WHERE regexp_matches(CAST({raw_identifier} AS VARCHAR), '^[+-]?0[0-9]+$')
                     )
                     """
-                ).fetchone()[0]
+                    )
+                )[0]
             )
         stats = aggregate_values[index * 4 : index * 4 + 4]
         columns.append(
@@ -293,13 +306,15 @@ def _find_key_groups(
             names = [column.name for column in combination]
             expressions = ", ".join(quote_identifier(name) for name in names)
             null_predicate = " OR ".join(f"{quote_identifier(name)} IS NULL" for name in names)
-            result = connection.execute(
-                f"""
+            result = _required_row(
+                connection.execute(
+                    f"""
                 SELECT count(*), count(DISTINCT ({expressions}))
                 FROM {quote_identifier(view_name)}
                 WHERE NOT ({null_predicate})
                 """
-            ).fetchone()
+                )
+            )
             non_null_count, distinct_count = int(result[0]), int(result[1])
             if non_null_count == table.row_count and distinct_count == table.row_count:
                 groups.append(names)
@@ -352,6 +367,8 @@ def _find_relationships_sql(
                 GROUP BY parent_stats.parent_unique
                 """
             ).fetchone()
+            if result is None:
+                continue
             child_count = int(result[0])
             if child_count == 0:
                 continue
