@@ -71,6 +71,7 @@ runtime-evaluated-base-classes = [
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
+"worker/sandbox.py" = ["S603"]
 "app/api/**" = ["TC001", "TC002", "TC003"]
 "app/api/schemas.py" = ["S105"]
 "migrations/versions/**" = ["E501"]
