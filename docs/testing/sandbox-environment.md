@@ -127,3 +127,4 @@ Log và JUnit local được Git bỏ qua:
 - backend/data/upload-checks/sandbox-env-regression.xml.
 
 Không chạy lại frontend CI hoặc migration vì D1 không thay các phần đó.
+
