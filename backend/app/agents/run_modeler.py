@@ -10,7 +10,7 @@ profile_path = (
     Path(__file__).resolve().parents[3]
     / "eval"
     / "golden"
-    / "oulad"
+    / "tpch_sf1"
     / "metadata"
     / "modeler_profile.json"
 )
@@ -26,9 +26,11 @@ async def main() -> None:
     )
 
     request_text = (
-        "Design an OULAD dashboard showing student outcomes by module "
-        "and presentation, including a pass rate KPI. "
-        "The business grain and the definition of pass rate are not yet confirmed."
+        "Design a TPC-H sales dashboard showing revenue and order counts "
+        "over time, by customer nation and product type. "
+        "The business grain, revenue formula, reporting date, and treatment "
+        "of returned items and order statuses are not yet confirmed. "
+        "Ask clarification questions before making these business decisions."
     )
 
     first_output = await propose_design(

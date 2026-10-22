@@ -12,7 +12,7 @@ from app.profiler.schemas import (
 
 def main() -> None:
     project_root = Path(__file__).resolve().parents[3]
-    report_path = project_root / "eval" / "golden" / "oulad" / "metadata" / "profile_report.json"
+    report_path = project_root / "eval" / "golden" / "tpch_sf1" / "metadata" / "profile_report.json"
 
     report = json.loads(report_path.read_text(encoding="utf-8"))
 
@@ -26,7 +26,8 @@ def main() -> None:
                 "text": "string",
                 "numeric": "float",
             }.get(column["inferred_type"], column["inferred_type"])
-
+            if column["rows_with_leading_zero"] > 0:
+                inferred_type = "string"
             numeric = inferred_type in {"integer", "float"}
             minimum = column["numeric_min"] if numeric else column["min_text"]
             maximum = column["numeric_max"] if numeric else column["max_text"]
@@ -58,22 +59,23 @@ def main() -> None:
     key_candidates: list[KeyCandidate] = []
 
     for table_name, table in report["tables"].items():
-        candidate = table.get("candidate_key")
-        if candidate is None:
-            continue
+        candidates = table.get("candidate_keys", [])
+        if "candidate_key" in table:
+            candidates = [table["candidate_key"]]
 
-        key_candidates.append(
-            KeyCandidate(
-                table=table_name,
-                columns=candidate["key_columns"],
-                is_unique_in_batch=(candidate["distinct_keys"] == candidate["rows"]),
-                null_count=candidate["rows_with_null_like_key_part"],
+        for candidate in candidates:
+            key_candidates.append(
+                KeyCandidate(
+                    table=table_name,
+                    columns=candidate["key_columns"],
+                    is_unique_in_batch=(candidate["distinct_keys"] == candidate["rows"]),
+                    null_count=candidate["rows_with_null_like_key_part"],
+                )
             )
-        )
 
     relationships: list[RelationshipCandidate] = []
     notes = [
-        "Converted from the OULAD golden statistical report.",
+        "Converted from the TPC-H SF1 golden statistical report.",
         "Null ratios include these null-like tokens: "
         + json.dumps(report["null_like_tokens_checked"]),
         "Keys and relationships are batch observations, not approved constraints.",
