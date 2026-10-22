@@ -160,7 +160,17 @@ async def design_gate_node(state: PipelineState, runtime: Runtime[GraphContext])
     approved = reply.decision == "approve"
 
     async with runtime.context.sessionmaker.begin() as session:
-        if await design_store.find_decision_on(session, presented) is None:
+        existing = await design_store.find_decision_on(session, presented)
+        if existing is not None and (
+            existing.approver_id != reply.user_id
+            or existing.decision
+            != (ApprovalDecision.APPROVED if approved else ApprovalDecision.RETURNED)
+            or existing.fingerprint != decided.content_hash
+            or existing.fingerprint_parts["design_version_id"] != str(decided.id)
+            or existing.comment != reply.comment
+        ):
+            raise ValueError("A different decision was already recorded for this design")
+        if existing is None:
             session.add(
                 design_store.design_decision(
                     project_id=uuid.UUID(state["project_id"]),

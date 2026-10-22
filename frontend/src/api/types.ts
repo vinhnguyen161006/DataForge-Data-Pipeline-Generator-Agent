@@ -91,6 +91,7 @@ export interface RunCreate {
 }
 
 export interface Run {
+  interrupt_id: string | null;
   id: string;
   status: RunStatus;
   current_step: string | null;
@@ -233,6 +234,8 @@ export interface DataDesign {
 }
 
 export interface DesignDecision {
+  interrupt_id: string;
+  design_version_id: string;
   decision: "approve" | "return";
   edited_design?: DataDesign | null;
   comment?: string | null;

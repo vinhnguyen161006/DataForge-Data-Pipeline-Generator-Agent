@@ -125,3 +125,5 @@ Lệnh regression, từ backend sau khi nạp cấu hình DB test:
 Không chạy CI images/security hoặc nghiệm thu worker/FR-21 trong bước này.
 
 Bổ sung C3: [Kiểm chứng GET trạng thái và polling](run-polling.md) ghi kết quả mới nhất và test tính chỉ đọc.
+
+Bổ sung C4: [Kiểm chứng clarification và quyết định Cổng 1](run-decisions.md) ghi contract mới, migration, cách chạy test và bằng chứng recovery.

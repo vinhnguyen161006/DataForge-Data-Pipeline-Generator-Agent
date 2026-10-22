@@ -124,3 +124,5 @@ Log và JUnit local được Git bỏ qua:
 
 - backend/data/upload-checks/run-polling-tests.log và run-polling-tests.xml.
 - backend/data/upload-checks/run-polling-regression.log và run-polling-regression.xml.
+
+Bổ sung C4: [Kiểm chứng clarification và quyết định Cổng 1](run-decisions.md) ghi contract mới, migration, cách chạy test và bằng chứng recovery.

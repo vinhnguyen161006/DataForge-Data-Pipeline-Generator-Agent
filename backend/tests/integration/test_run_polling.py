@@ -180,6 +180,7 @@ def forbid_polling_workflow_execution(
         "resume_run",
         "sync_run",
         "deliver_finished_jobs",
+        "deliver_resume_intents",
         "recover_pending_runs",
     ):
         mock = AsyncMock(side_effect=AssertionError(f"Polling must not call {name}"))
@@ -350,7 +351,15 @@ async def test_members_can_poll_each_public_run_status(
     response = await polling.get(actor=actor)
     assert response.status_code == 200, response.text
     body = response.json()
-    assert set(body) == {"id", "status", "current_step", "pending", "error", "updated_at"}
+    assert set(body) == {
+        "id",
+        "status",
+        "current_step",
+        "pending",
+        "error",
+        "updated_at",
+        "interrupt_id",
+    }
     assert body["id"] == str(polling.run_ids[0])
     assert body["status"] == status.value
     assert body["current_step"] == step

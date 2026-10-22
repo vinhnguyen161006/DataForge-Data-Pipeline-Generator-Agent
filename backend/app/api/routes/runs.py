@@ -16,9 +16,11 @@ from app.api.schemas import (
 )
 from app.core.config import get_api_settings
 from app.db.models import Batch, PipelineRun, ProjectRole, User
+from app.graph.interrupts import ClarificationAnswer, ClarificationReply, DesignGateReply
 from app.ingest.storage import Storage
 from app.services import batches as batch_service
 from app.services import runs as run_service
+from app.services.run_lock import RunBusyError
 
 router = APIRouter(prefix="/projects/{project_id}/runs", tags=["runs"])
 
@@ -80,12 +82,22 @@ async def answer_clarifications(
     project_id: uuid.UUID,
     run_id: uuid.UUID,
     body: ClarificationAnswers,
-    _engineer: EngineerDep,
+    engineer: EngineerDep,
     session: SessionDep,
+    request: Request,
+    background_tasks: BackgroundTasks,
 ) -> RunOut:
-    """TODO: resume the Modeler with the Engineer's answers."""
+    """Accept answers to the current questions and durably schedule their delivery."""
     await _get_project_run(session, project_id, run_id)
-    raise NotImplementedError
+    reply = ClarificationReply(
+        user_id=engineer.id,
+        answers=[
+            ClarificationAnswer(question=item.question, answer=item.answer) for item in body.answers
+        ],
+    )
+    return await _accept_human_reply(
+        request, background_tasks, project_id, run_id, body.interrupt_id, reply
+    )
 
 
 @router.post("/{run_id}/design-decision", response_model=RunOut)
@@ -95,10 +107,66 @@ async def decide_design(
     body: DesignDecision,
     engineer: EngineerDep,
     session: SessionDep,
+    request: Request,
+    background_tasks: BackgroundTasks,
 ) -> RunOut:
-    """TODO: gate 1: approve, edit or return the current design."""
+    """Accept one Engineer decision for the exact design currently under review."""
     await _get_project_run(session, project_id, run_id)
-    raise NotImplementedError
+    reply = DesignGateReply(
+        user_id=engineer.id,
+        decision=body.decision,
+        edited_design=body.edited_design,
+        comment=body.comment,
+    )
+    return await _accept_human_reply(
+        request,
+        background_tasks,
+        project_id,
+        run_id,
+        body.interrupt_id,
+        reply,
+        body.design_version_id,
+    )
+
+
+async def _accept_human_reply(
+    request: Request,
+    background_tasks: BackgroundTasks,
+    project_id: uuid.UUID,
+    run_id: uuid.UUID,
+    interrupt_id: str,
+    reply: ClarificationReply | DesignGateReply,
+    design_version_id: uuid.UUID | None = None,
+) -> RunOut:
+    factory = request.app.state.sessionmaker
+    graph = request.app.state.graph
+    context = request.app.state.graph_context
+    try:
+        run = await run_service.resume_run(
+            factory,
+            graph,
+            context,
+            run_id,
+            project_id=project_id,
+            interrupt_id=interrupt_id,
+            reply=reply,
+            design_version_id=design_version_id,
+        )
+    except run_service.RunNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Run not found in this project") from exc
+    except (
+        RunBusyError,
+        run_service.RunDecisionConflictError,
+        run_service.RunStateConflictError,
+    ) as exc:
+        raise HTTPException(
+            status_code=409, detail="The run has changed or is busy; refresh its status"
+        ) from exc
+    except run_service.RunReplyValidationError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    response = run_out(run)
+    background_tasks.add_task(run_service.deliver_resume_intents, factory, graph, context, run_id)
+    return response
 
 
 @router.get("/{run_id}/code")

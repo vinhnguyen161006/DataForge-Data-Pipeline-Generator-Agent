@@ -170,9 +170,16 @@ async def _request(
     if operation == "status":
         return await client.get(f"{base}/{run}", headers=headers)
     if operation == "clarifications":
-        payload = {"answers": [{"question": "Which customers?", "answer": "All customers"}]}
+        payload = {
+            "interrupt_id": "access-check",
+            "answers": [{"question": "Which customers?", "answer": "All customers"}],
+        }
     else:
-        payload = {"decision": "approve"}
+        payload = {
+            "interrupt_id": "access-check",
+            "design_version_id": str(uuid4()),
+            "decision": "approve",
+        }
     return await client.post(
         f"{base}/{run}/{operation}", headers=headers, json=payload if body is None else body
     )

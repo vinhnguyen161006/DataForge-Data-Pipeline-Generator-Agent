@@ -55,4 +55,5 @@ def run_out(run: PipelineRun) -> RunOut:
             else None
         ),
         updated_at=run.updated_at,
+        interrupt_id=(run.interrupt_id if run.status in WAITING_STATUS.values() else None),
     )

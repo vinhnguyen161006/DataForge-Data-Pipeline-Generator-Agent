@@ -6,7 +6,6 @@ from typing import Any
 
 import pytest
 from langgraph.checkpoint.memory import InMemorySaver
-from langgraph.types import Command
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -34,6 +33,7 @@ from app.profiler.schemas import DataProfile
 from app.services.runs import (
     RunStateConflictError,
     deliver_finished_jobs,
+    deliver_resume_intents,
     drive_run,
     recover_pending_runs,
     resume_run,
@@ -179,11 +179,33 @@ async def finish_job(fx: Fixture, run: PipelineRun, *, failed: bool = False) -> 
         )
 
 
-async def reply(fx: Fixture, run_id: uuid.UUID, expected: RunStatus, value: Any) -> PipelineRun:
-    async with fx.factory() as session:
-        await resume_run(session, run_id, expected=expected)
-    resume: Command[Any] = Command(resume=value.model_dump(mode="json"))
-    await drive_run(fx.factory, fx.graph, fx.context, run_id, resume)
+async def accept_reply(
+    fx: Fixture, run_id: uuid.UUID, value: ClarificationReply | DesignGateReply
+) -> None:
+    run = await load_run(fx, run_id)
+    assert run.interrupt_id is not None
+    await resume_run(
+        fx.factory,
+        fx.graph,
+        fx.context,
+        run_id,
+        project_id=fx.project_id,
+        interrupt_id=run.interrupt_id,
+        reply=value,
+        design_version_id=(
+            uuid.UUID(run.pending["design_version_id"])
+            if isinstance(value, DesignGateReply) and run.pending
+            else None
+        ),
+    )
+
+
+async def reply(
+    fx: Fixture, run_id: uuid.UUID, expected: RunStatus, value: ClarificationReply | DesignGateReply
+) -> PipelineRun:
+    assert (await load_run(fx, run_id)).status is expected
+    await accept_reply(fx, run_id, value)
+    await deliver_resume_intents(fx.factory, fx.graph, fx.context)
     return await load_run(fx, run_id)
 
 
@@ -342,32 +364,35 @@ async def test_real_codegen_guard_lets_an_approved_design_through(setup: Fixture
     assert run.error.startswith("NotImplementedError")
 
 
+async def accept_reply_with_old_interrupt(
+    fx: Fixture, run_id: uuid.UUID, value: DesignGateReply
+) -> None:
+    await resume_run(
+        fx.factory,
+        fx.graph,
+        fx.context,
+        run_id,
+        project_id=fx.project_id,
+        interrupt_id="already-accepted",
+        reply=value,
+    )
+
+
 async def test_a_second_decision_is_rejected(setup: Fixture) -> None:
     run_id = await reach_design_gate(setup)
     returned = DesignGateReply(
         user_id=setup.user_id, decision="return", comment="Exclude withdrawals"
     )
-    async with setup.factory() as session:
-        await resume_run(session, run_id, expected=RunStatus.WAITING_DESIGN_APPROVAL)
-    async with setup.factory() as session:
-        with pytest.raises(RunStateConflictError):
-            await resume_run(session, run_id, expected=RunStatus.WAITING_DESIGN_APPROVAL)
-    await drive_run(
-        setup.factory,
-        setup.graph,
-        setup.context,
-        run_id,
-        Command(resume=returned.model_dump(mode="json")),
-    )
+    await accept_reply(setup, run_id, returned)
+    with pytest.raises(RunStateConflictError):
+        await accept_reply_with_old_interrupt(setup, run_id, returned)
+    await deliver_resume_intents(setup.factory, setup.graph, setup.context)
     assert len(await design_approvals(setup, run_id)) == 1
 
 
 async def test_restart_restores_a_run_waiting_at_gate_one(setup: Fixture) -> None:
     run_id = await reach_design_gate(setup)
     before = await load_run(setup, run_id)
-    async with setup.factory() as session:
-        await resume_run(session, run_id, expected=RunStatus.WAITING_DESIGN_APPROVAL)
-
     restarted = build_graph(setup.checkpointer)
     await recover_pending_runs(setup.factory, restarted, setup.context)
 

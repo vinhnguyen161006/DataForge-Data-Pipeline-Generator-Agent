@@ -183,11 +183,12 @@ export function getRun(projectId: string, runId: string): Promise<Run> {
 export function answerClarifications(
   projectId: string,
   runId: string,
+  interruptId: string,
   answers: ClarificationAnswer[],
 ): Promise<Run> {
   return requestJson<Run>(
     `${runPath(projectId, runId)}/clarifications`,
-    jsonBody("POST", { answers }),
+    jsonBody("POST", { interrupt_id: interruptId, answers }),
   );
 }
 

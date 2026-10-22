@@ -91,12 +91,17 @@ function RunBody({
   if (run.status === "failed") {
     return <Failed projectId={projectId} error={run.error} />;
   }
-  if (run.status === "waiting_clarification" && pending?.kind === "clarification") {
+  if (
+    run.status === "waiting_clarification" &&
+    pending?.kind === "clarification" &&
+    run.interrupt_id
+  ) {
     return (
       <ClarificationPanel
-        key={pending.questions.map((question) => question.question).join("|")}
+        key={run.interrupt_id}
         projectId={projectId}
         runId={run.id}
+        interruptId={run.interrupt_id}
         questions={pending.questions}
         canAnswer={canDecide}
         onAnswered={onRunChange}
@@ -104,12 +109,17 @@ function RunBody({
       />
     );
   }
-  if (run.status === "waiting_design_approval" && pending?.kind === "design_gate") {
+  if (
+    run.status === "waiting_design_approval" &&
+    pending?.kind === "design_gate" &&
+    run.interrupt_id
+  ) {
     return (
       <DesignGatePage
-        key={pending.design_version_id}
+        key={run.interrupt_id}
         projectId={projectId}
         runId={run.id}
+        interruptId={run.interrupt_id}
         pending={pending}
         canDecide={canDecide}
         onDecided={onRunChange}
