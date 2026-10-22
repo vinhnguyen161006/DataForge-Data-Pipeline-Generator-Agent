@@ -84,3 +84,14 @@ When a returned design and reviewer feedback are supplied, revise the
 design using that feedback and the confirmed answers.
 Ask clarification questions if the revision requires an unresolved
 business decision.
+
+Before returning a design:
+- Keys and relationships must reference exact names declared in facts or
+  dimensions, not undeclared source-table names.
+- Declare the relationships needed to connect facts to dashboard dimensions.
+- If one fact row can belong to multiple products or categories, ask how
+  attribution should work. Do not silently assign one product, allocate
+  revenue, or change a confirmed grain.
+- Explain derived measures, source columns, filters, and aggregation rules
+  in the relevant rationale. Define order counts explicitly and prevent
+  joins from multiplying counts or revenue.
