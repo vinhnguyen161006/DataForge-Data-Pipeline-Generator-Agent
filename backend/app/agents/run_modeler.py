@@ -1,54 +1,20 @@
 import asyncio
+from pathlib import Path
 
 from app.agents.llm import StructuredLLM
 from app.agents.modeler import propose_design
 from app.core.config import get_api_settings
-from app.profiler.schemas import ColumnProfile, DataProfile, TableProfile
+from app.profiler.schemas import DataProfile
 
-profile = DataProfile(
-    tables=[
-        TableProfile(
-            name="studentInfo",
-            source_file="studentInfo.csv",
-            row_count=4,
-            columns=[
-                ColumnProfile(
-                    name="id_student",
-                    inferred_type="integer",
-                    row_count=4,
-                    null_ratio=0.0,
-                    distinct_count=3,
-                ),
-                ColumnProfile(
-                    name="code_module",
-                    inferred_type="string",
-                    row_count=4,
-                    null_ratio=0.0,
-                    distinct_count=2,
-                ),
-                ColumnProfile(
-                    name="code_presentation",
-                    inferred_type="string",
-                    row_count=4,
-                    null_ratio=0.0,
-                    distinct_count=1,
-                ),
-                ColumnProfile(
-                    name="final_result",
-                    inferred_type="string",
-                    row_count=4,
-                    null_ratio=0.0,
-                    distinct_count=3,
-                ),
-            ],
-        )
-    ],
-    key_candidates=[],
-    relationship_candidates=[],
-    notes=[
-        "Synthetic OULAD profile for a prompt spike; counts are illustrative.",
-    ],
+profile_path = (
+    Path(__file__).resolve().parents[3]
+    / "eval"
+    / "golden"
+    / "oulad"
+    / "metadata"
+    / "modeler_profile.json"
 )
+profile = DataProfile.model_validate_json(profile_path.read_text(encoding="utf-8"))
 
 
 async def main() -> None:
@@ -108,6 +74,21 @@ async def main() -> None:
 
     print("\n=== Response after clarification ===")
     print(second_output.model_dump_json(indent=2))
+
+    output_dir = profile_path.parents[1] / "modeler_results"
+    await asyncio.to_thread(output_dir.mkdir, parents=True, exist_ok=True)
+
+    for filename, output in [
+        ("first_response.json", first_output),
+        ("after_clarification.json", second_output),
+    ]:
+        await asyncio.to_thread(
+            (output_dir / filename).write_text,
+            output.model_dump_json(indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+    print(f"Saved responses to: {output_dir}")
 
     if second_output.questions:
         print("Further clarification is required; review the remaining questions.")

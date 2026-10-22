@@ -1,0 +1,225 @@
+{
+  "design": {
+    "facts": [
+      {
+        "rationale": "The student enrollment fact table captures student outcomes and performance at the confirmed grain of one row per student per module and presentation.",
+        "open_questions": [],
+        "name": "fact_student_enrollments",
+        "grain": "One row per student enrollment, identified by code_module, code_presentation, and id_student.",
+        "source_tables": [
+          "studentInfo"
+        ],
+        "measures": [
+          "enrolled_student_count",
+          "pass_distinction_count",
+          "non_withdrawn_count"
+        ],
+        "dimension_keys": [
+          "code_module",
+          "code_presentation",
+          "id_student"
+        ]
+      }
+    ],
+    "dimensions": [
+      {
+        "rationale": "Courses dimension provides module and presentation attributes for grouping dashboard metrics.",
+        "open_questions": [],
+        "name": "dim_courses",
+        "business_key": [
+          "code_module",
+          "code_presentation"
+        ],
+        "source_table": "courses",
+        "attributes": [
+          "code_module",
+          "code_presentation",
+          "module_presentation_length"
+        ]
+      },
+      {
+        "rationale": "Student demographic and background attributes for filtering and segmenting student outcomes.",
+        "open_questions": [],
+        "name": "dim_students",
+        "business_key": [
+          "code_module",
+          "code_presentation",
+          "id_student"
+        ],
+        "source_table": "studentInfo",
+        "attributes": [
+          "id_student",
+          "gender",
+          "region",
+          "highest_education",
+          "imd_band",
+          "age_band",
+          "num_of_prev_attempts",
+          "studied_credits",
+          "disability",
+          "final_result"
+        ]
+      }
+    ],
+    "keys": [
+      {
+        "rationale": "Composite primary key for courses dimension.",
+        "open_questions": [],
+        "table": "dim_courses",
+        "columns": [
+          "code_module",
+          "code_presentation"
+        ],
+        "kind": "primary"
+      },
+      {
+        "rationale": "Composite primary key for students dimension and enrollment fact table.",
+        "open_questions": [],
+        "table": "dim_students",
+        "columns": [
+          "code_module",
+          "code_presentation",
+          "id_student"
+        ],
+        "kind": "primary"
+      },
+      {
+        "rationale": "Composite primary key for the enrollment fact table.",
+        "open_questions": [],
+        "table": "fact_student_enrollments",
+        "columns": [
+          "code_module",
+          "code_presentation",
+          "id_student"
+        ],
+        "kind": "primary"
+      }
+    ],
+    "relationships": [
+      {
+        "rationale": "Links student enrollments fact table to the courses dimension.",
+        "open_questions": [],
+        "child_table": "fact_student_enrollments",
+        "child_columns": [
+          "code_module",
+          "code_presentation"
+        ],
+        "parent_table": "dim_courses",
+        "parent_columns": [
+          "code_module",
+          "code_presentation"
+        ],
+        "cardinality": "many_to_one"
+      },
+      {
+        "rationale": "Links student enrollments fact table to the student dimension.",
+        "open_questions": [],
+        "child_table": "fact_student_enrollments",
+        "child_columns": [
+          "code_module",
+          "code_presentation",
+          "id_student"
+        ],
+        "parent_table": "dim_students",
+        "parent_columns": [
+          "code_module",
+          "code_presentation",
+          "id_student"
+        ],
+        "cardinality": "one_to_one"
+      }
+    ],
+    "metrics": [
+      {
+        "rationale": "Calculates the pass rate percentage based on confirmed numerator (Pass and Distinction) and denominator (all enrolled excluding Withdrawn).",
+        "open_questions": [],
+        "name": "pass_rate",
+        "definition": "Percentage of non-withdrawn students who achieved Pass or Distinction",
+        "expression": "sum(case when final_result in ('Pass', 'Distinction') then 1 else 0 end) * 100.0 / nullif(sum(case when final_result != 'Withdrawn' then 1 else 0 end), 0)",
+        "fact_table": "fact_student_enrollments"
+      },
+      {
+        "rationale": "Total count of student enrollments.",
+        "open_questions": [],
+        "name": "total_enrollments",
+        "definition": "Total number of student enrollments",
+        "expression": "count(*)",
+        "fact_table": "fact_student_enrollments"
+      }
+    ],
+    "cleaning_rules": [],
+    "update_policy": {
+      "rationale": "Batch replacement load mode for historical snapshots.",
+      "open_questions": [],
+      "mode": "snapshot_replace",
+      "required_files": [
+        "courses.csv",
+        "studentInfo.csv"
+      ]
+    },
+    "dashboard": {
+      "rationale": "Dashboard fulfills requirements for student outcomes by module and presentation with a pass rate KPI.",
+      "open_questions": [],
+      "metrics": [
+        "pass_rate",
+        "total_enrollments"
+      ],
+      "dimensions": [
+        "code_module",
+        "code_presentation"
+      ],
+      "filters": [
+        "code_module",
+        "code_presentation",
+        "gender",
+        "region"
+      ],
+      "cards": [
+        {
+          "key": "card_pass_rate_kpi",
+          "title": "Pass Rate KPI",
+          "type": "kpi",
+          "metric": "pass_rate",
+          "dimension": null
+        },
+        {
+          "key": "card_outcomes_by_module",
+          "title": "Enrollments and Pass Rate by Module",
+          "type": "bar",
+          "metric": "pass_rate",
+          "dimension": "code_module"
+        }
+      ]
+    },
+    "constraints": [
+      {
+        "layer": "mart",
+        "model": "fact_student_enrollments",
+        "columns": [
+          "code_module",
+          "code_presentation",
+          "id_student"
+        ],
+        "kind": "unique",
+        "params": {},
+        "evidence": "studentInfo composite key is unique in batch observation"
+      },
+      {
+        "layer": "mart",
+        "model": "fact_student_enrollments",
+        "columns": [
+          "code_module",
+          "code_presentation",
+          "id_student"
+        ],
+        "kind": "not_null",
+        "params": {},
+        "evidence": "No nulls observed in key columns"
+      }
+    ],
+    "assumptions": [
+      "Student outcomes are fully represented using studentInfo final_result column."
+    ]
+  },
+  "questions": []
+}
