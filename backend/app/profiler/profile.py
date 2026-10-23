@@ -1,13 +1,20 @@
-from pathlib import Path
+from __future__ import annotations
 
-from app.ingest.sniff import CsvReadConfig
-from app.profiler.schemas import (
-    ColumnProfile,
-    DataProfile,
-    KeyCandidate,
-    RelationshipCandidate,
-    TableProfile,
-)
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+    from duckdb import DuckDBPyConnection
+
+    from app.profiler.schemas import (
+        ColumnProfile,
+        DataProfile,
+        KeyCandidate,
+        LoadedTable,
+        RelationshipCandidate,
+        TableProfile,
+    )
 
 
 def quote_identifier(identifier: str) -> str:
@@ -35,9 +42,11 @@ def find_relationship_candidates(tables: list[TableProfile]) -> list[Relationshi
     raise NotImplementedError
 
 
-def profile_files(files: list[tuple[Path, CsvReadConfig]], *, threads: int = 2) -> DataProfile:
-    """TODO: load each CSV into DuckDB and build the full DataProfile (FR-02).
+def profile_files(tables: Sequence[LoadedTable], *, connection: DuckDBPyConnection) -> DataProfile:
+    """TODO: build DataProfile from materialized tables on the caller's locked connection.
 
-    Runs inside the sandbox worker (job kind "profile"), never in the API process.
+    Runs inside the sandbox worker, never in the API process. The worker owns
+    confirmed CSV loading, resource settings, lockdown and connection cleanup.
+    Do not open another database, read source files or close this connection.
     """
     raise NotImplementedError

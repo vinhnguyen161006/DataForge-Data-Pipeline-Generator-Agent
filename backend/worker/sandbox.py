@@ -152,12 +152,14 @@ def start_child_process(
 
 
 def duckdb_lockdown_sql() -> str:
-    """TODO: render SET statements for DUCKDB_LOCKDOWN_SETTINGS, lock_configuration last.
-
-    Run before any generated SQL so models cannot read files, load extensions
-    or change settings. Verify setting names against the pinned DuckDB version.
-    """
-    raise NotImplementedError
+    """Render the trusted SQL policy with configuration locking applied last."""
+    settings = [
+        (name, value)
+        for name, value in DUCKDB_LOCKDOWN_SETTINGS.items()
+        if name != "lock_configuration"
+    ]
+    settings.append(("lock_configuration", DUCKDB_LOCKDOWN_SETTINGS["lock_configuration"]))
+    return "\n".join(f"SET {name} = {value};" for name, value in settings)
 
 
 def _signal_group(child: subprocess.Popen[bytes], sig: signal.Signals) -> None:

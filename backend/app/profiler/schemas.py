@@ -46,3 +46,10 @@ class DataProfile(BaseModel):
     key_candidates: list[KeyCandidate]
     relationship_candidates: list[RelationshipCandidate]
     notes: list[str] = Field(default_factory=list)
+
+
+class LoadedTable(BaseModel):
+    """A materialized source table; no source filesystem access is needed for profiling."""
+
+    name: str
+    source_file: str
