@@ -2,54 +2,19 @@ import asyncio
 from pathlib import Path
 
 from app.agents.llm import StructuredLLM
-from app.agents.schemas import ModelerOutput
+from app.agents.modeler import propose_design
 from app.core.config import get_api_settings
-from app.profiler.schemas import ColumnProfile, DataProfile, TableProfile
+from app.profiler.schemas import DataProfile
 
-profile = DataProfile(
-    tables=[
-        TableProfile(
-            name="studentInfo",
-            source_file="studentInfo.csv",
-            row_count=4,
-            columns=[
-                ColumnProfile(
-                    name="id_student",
-                    inferred_type="integer",
-                    row_count=4,
-                    null_ratio=0.0,
-                    distinct_count=3,
-                ),
-                ColumnProfile(
-                    name="code_module",
-                    inferred_type="string",
-                    row_count=4,
-                    null_ratio=0.0,
-                    distinct_count=2,
-                ),
-                ColumnProfile(
-                    name="code_presentation",
-                    inferred_type="string",
-                    row_count=4,
-                    null_ratio=0.0,
-                    distinct_count=1,
-                ),
-                ColumnProfile(
-                    name="final_result",
-                    inferred_type="string",
-                    row_count=4,
-                    null_ratio=0.0,
-                    distinct_count=3,
-                ),
-            ],
-        )
-    ],
-    key_candidates=[],
-    relationship_candidates=[],
-    notes=[
-        "Synthetic OULAD profile for a prompt spike; counts are illustrative.",
-    ],
+profile_path = (
+    Path(__file__).resolve().parents[3]
+    / "eval"
+    / "golden"
+    / "tpch_sf1"
+    / "metadata"
+    / "modeler_profile.json"
 )
+profile = DataProfile.model_validate_json(profile_path.read_text(encoding="utf-8"))
 
 
 async def main() -> None:
@@ -60,35 +25,79 @@ async def main() -> None:
         model=settings.gemini_model,
     )
 
-    prompt_path = Path(__file__).parent / "prompts" / "modeler.md"
-    system = prompt_path.read_text(encoding="utf-8")
-
     request_text = (
-        "Design an OULAD dashboard showing student outcomes by module "
-        "and presentation, including a pass rate KPI. "
-        "Ask clarification questions when business definitions are missing."
-        "\nClarified business rules for this experiment: "
-        "Each row represents exactly one student-module-presentation combination. "
-        "The combination of id_student, code_module, and code_presentation is unique. "
-        "A student may appear in multiple module-presentation combinations. "
-        "Pass means final_result is either Pass or Distinction. "
-        "Pass rate equals the number of Pass or Distinction records divided "
-        "by all student-module-presentation records in the selected group, "
-        "including Fail and Withdrawn in the denominator."
+        "Design a TPC-H sales dashboard showing revenue and order counts "
+        "over time, by customer nation and product type. "
+        "The business grain, revenue formula, reporting date, and treatment "
+        "of returned items and order statuses are not yet confirmed. "
+        "Ask clarification questions before making these business decisions."
     )
 
-    prompt = (
-        f"Analysis request:\n{request_text}\n\n"
-        f"Statistical profile:\n{profile.model_dump_json(indent=2)}"
+    first_output = await propose_design(
+        llm,
+        request_text=request_text,
+        profile=profile,
+        answers=[],
     )
 
-    output = await llm.generate(
-        system=system,
-        prompt=prompt,
-        schema=ModelerOutput,
+    print("=== First response: clarification expected ===")
+    print(first_output.model_dump_json(indent=2))
+
+    if first_output.design is not None:
+        raise ValueError("Expected clarification before designing with unconfirmed business rules.")
+
+    answers: list[dict[str, str]] = []
+
+    for question in first_output.questions:
+        print(f"\nTopic: {question.topic}")
+        print(f"Question: {question.question}")
+        print(f"Why: {question.why}")
+
+        if question.options:
+            print("Options:", question.options)
+
+        answer = await asyncio.to_thread(input, "Your answer: ")
+        if not answer.strip():
+            raise ValueError("A clarification answer must not be empty.")
+
+        answers.append(
+            {
+                "question": question.question,
+                "answer": answer.strip(),
+            }
+        )
+
+    second_output = await propose_design(
+        llm,
+        request_text=request_text,
+        profile=profile,
+        answers=answers,
     )
 
-    print(output.model_dump_json(indent=2))
+    print("\n=== Response after clarification ===")
+    print(second_output.model_dump_json(indent=2))
+
+    output_dir = profile_path.parents[1] / "modeler_results"
+    await asyncio.to_thread(output_dir.mkdir, parents=True, exist_ok=True)
+
+    for filename, output in [
+        ("first_response.json", first_output),
+        ("after_clarification.json", second_output),
+    ]:
+        await asyncio.to_thread(
+            (output_dir / filename).write_text,
+            output.model_dump_json(indent=2) + "\n",
+            encoding="utf-8",
+        )
+
+    print(f"Saved responses to: {output_dir}")
+
+    if second_output.questions:
+        print("Further clarification is required; review the remaining questions.")
+    else:
+        print("Design returned and reference validation passed.")
+
+    print("\nToken usage:")
     print(llm.usage)
 
 

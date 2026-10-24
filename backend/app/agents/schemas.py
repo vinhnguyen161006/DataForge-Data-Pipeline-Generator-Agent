@@ -138,10 +138,54 @@ class OptimizerOutput(BaseModel):
 
 
 def validate_design(design: DataDesign) -> list[str]:
-    """TODO: cross-field checks; e.g. every card metric is defined, every key table exists."""
-    raise NotImplementedError
+    """Check table and metric references within a design."""
+    errors: list[str] = []
+
+    fact_names = {fact.name for fact in design.facts}
+    dimension_names = {dimension.name for dimension in design.dimensions}
+    table_names = fact_names | dimension_names
+    metric_names = {metric.name for metric in design.metrics}
+
+    for key in design.keys:
+        if key.table not in table_names:
+            errors.append(f"Key references unknown table: {key.table}")
+
+    for relationship in design.relationships:
+        if relationship.child_table not in table_names:
+            errors.append(
+                f"Relationship references unknown child table: {relationship.child_table}"
+            )
+        if relationship.parent_table not in table_names:
+            errors.append(
+                f"Relationship references unknown parent table: {relationship.parent_table}"
+            )
+
+    for metric in design.metrics:
+        if metric.fact_table not in fact_names:
+            errors.append(
+                f"Metric '{metric.name}' references unknown fact table: {metric.fact_table}"
+            )
+
+    for metric_name in design.dashboard.metrics:
+        if metric_name not in metric_names:
+            errors.append(f"Dashboard references unknown metric: {metric_name}")
+
+    for card in design.dashboard.cards:
+        if card.metric not in metric_names:
+            errors.append(f"Dashboard card '{card.key}' references unknown metric: {card.metric}")
+
+    return errors
 
 
 def validate_modeler_output(output: ModelerOutput) -> list[str]:
-    """TODO: exactly one of `design` or `questions` must be set; the Modeler never guesses."""
-    raise NotImplementedError
+    """Require one output branch and validate any returned design."""
+    has_design = output.design is not None
+    has_questions = bool(output.questions)
+
+    if has_design == has_questions:
+        return ["Return either a design or clarification questions, exclusively."]
+
+    if output.design is not None:
+        return validate_design(output.design)
+
+    return []

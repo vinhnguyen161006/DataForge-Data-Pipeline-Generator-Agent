@@ -1,0 +1,25 @@
+{
+  "design": null,
+  "questions": [
+    {
+      "topic": "grain",
+      "question": "What is the intended business grain for student outcomes and performance metrics in the dashboard?",
+      "why": "The request asks to show student outcomes by module and presentation, but the dataset contains multiple grains such as course registrations, individual assessment scores, and daily VLE interactions. We need to confirm whether the primary fact table should be at the student-module-presentation grain or event-level grain.",
+      "options": [
+        "Student per module and presentation (one row per student enrollment)",
+        "Student per assessment (one row per submitted assessment)",
+        "Student per VLE interaction daily"
+      ]
+    },
+    {
+      "topic": "metric",
+      "question": "How should the pass rate KPI be defined based on the student final_result values?",
+      "why": "The studentInfo table contains the final_result column with distinct values like 'Distinction', 'Pass', 'Fail', and 'Withdrawn'. We need to know which specific final_result values constitute the numerator (e.g., 'Pass' only, or both 'Pass' and 'Distinction') and what constitutes the denominator (e.g., all registered students, or excluding withdrawn students).",
+      "options": [
+        "Numerator: Pass and Distinction, Denominator: All enrolled students excluding withdrawals",
+        "Numerator: Pass and Distinction, Denominator: All registered students including withdrawals",
+        "Numerator: Pass only, Denominator: All enrolled students excluding withdrawals"
+      ]
+    }
+  ]
+}

@@ -17,4 +17,7 @@ async def generate_models(
 
     Include retrieved examples, current files, sandbox failures and gate-2 feedback.
     """
+    if not isinstance(profile, DataProfile):
+        raise TypeError("profile must be a DataProfile instance.")
+
     raise NotImplementedError
