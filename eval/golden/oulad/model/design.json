@@ -1,0 +1,641 @@
+{
+  "facts": [
+    {
+      "name": "fact_assessment_submission",
+      "grain": "M\u1ed9t l\u1ea7n n\u1ed9p b\u00e0i c\u1ee7a m\u1ed9t sinh vi\u00ean cho m\u1ed9t b\u00e0i \u0111\u00e1nh gi\u00e1 trong m\u1ed9t module-presentation",
+      "source_tables": [
+        "studentAssessment",
+        "assessments"
+      ],
+      "measures": [
+        "score",
+        "is_banked"
+      ],
+      "dimension_keys": [
+        "dim_enrollment",
+        "dim_assessment"
+      ],
+      "rationale": "L\u01b0\u1ee3t n\u1ed9p l\u00e0 s\u1ef1 ki\u1ec7n ri\u00eang; grain n\u00e0y kh\u1edbp kh\u00f3a (id_assessment, id_student) duy nh\u1ea5t 100% \u0111\u00e3 \u0111o (173.912 d\u00f2ng).",
+      "open_questions": []
+    },
+    {
+      "name": "fact_vle_daily",
+      "grain": "T\u1ed5ng click c\u1ee7a m\u1ed9t enrollment tr\u00ean m\u1ed9t h\u1ecdc li\u1ec7u trong m\u1ed9t ng\u00e0y t\u01b0\u01a1ng \u0111\u1ed1i (\u0111\u00e3 c\u1ed9ng d\u1ed3n c\u00e1c d\u00f2ng c\u00f9ng kh\u00f3a, n\u1ebfu \u0111\u01b0\u1ee3c duy\u1ec7t)",
+      "source_tables": [
+        "studentVle"
+      ],
+      "measures": [
+        "sum_click"
+      ],
+      "dimension_keys": [
+        "dim_enrollment",
+        "dim_vle_site"
+      ],
+      "rationale": "M\u00f4 t\u1ea3 ch\u00ednh th\u1ee9c ghi sum_click l\u00e0 s\u1ed1 l\u1ea7n t\u01b0\u01a1ng t\u00e1c trong ng\u00e0y; grain n\u00e0y l\u00e0 c\u00e1ch \u0111\u1ecdc c\u1ee7a m\u00f4 t\u1ea3, nh\u01b0ng d\u1eef li\u1ec7u c\u00f3 1.614.505 nh\u00f3m tr\u00f9ng kh\u00f3a.",
+      "open_questions": [
+        "Q1/N1: c\u00e1c d\u00f2ng tr\u00f9ng kh\u00f3a (enrollment, h\u1ecdc li\u1ec7u, ng\u00e0y) c\u1ed9ng d\u1ed3n, lo\u1ea1i b\u1ecf hay l\u00e0 l\u1ed7i? Ch\u1edd ngu\u1ed3n v\u00e0 nh\u00f3m.",
+        "S\u1ed1 d\u00f2ng d\u1ef1 ki\u1ebfn 8.459.320 ch\u1ec9 \u0111\u00fang n\u1ebfu c\u1ed9ng d\u1ed3n \u0111\u01b0\u1ee3c duy\u1ec7t."
+      ]
+    }
+  ],
+  "dimensions": [
+    {
+      "name": "dim_course",
+      "business_key": [
+        "code_module",
+        "code_presentation"
+      ],
+      "source_table": "courses",
+      "attributes": [
+        "module_presentation_length"
+      ],
+      "rationale": "M\u1ed9t module-presentation l\u00e0 \u0111\u01a1n v\u1ecb c\u1ee7a m\u1ecdi b\u1ea3ng ngu\u1ed3n; 22 d\u00f2ng, kh\u00f3a duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "name": "dim_assessment",
+      "business_key": [
+        "id_assessment"
+      ],
+      "source_table": "assessments",
+      "attributes": [
+        "code_module",
+        "code_presentation",
+        "assessment_type",
+        "date",
+        "weight"
+      ],
+      "rationale": "B\u00e0i \u0111\u00e1nh gi\u00e1 c\u00f3 kh\u00f3a ri\u00eang duy nh\u1ea5t 100% (206 d\u00f2ng).",
+      "open_questions": [
+        "date thi\u1ebfu \u1edf 11 b\u00e0i Exam: quy \u01b0\u1edbc \u0111\u1eb7t cu\u1ed1i tu\u1ea7n cu\u1ed1i c\u1ee7a m\u00f4 t\u1ea3 ngu\u1ed3n ch\u01b0a \u0111\u01b0\u1ee3c nh\u00f3m duy\u1ec7t (N3)."
+      ]
+    },
+    {
+      "name": "dim_vle_site",
+      "business_key": [
+        "id_site"
+      ],
+      "source_table": "vle",
+      "attributes": [
+        "code_module",
+        "code_presentation",
+        "activity_type",
+        "week_from",
+        "week_to"
+      ],
+      "rationale": "H\u1ecdc li\u1ec7u c\u00f3 kh\u00f3a duy nh\u1ea5t to\u00e0n c\u1ee5c (6.364 d\u00f2ng); week_from v\u00e0 week_to thi\u1ebfu c\u00f9ng l\u00fac \u1edf 5.243 d\u00f2ng.",
+      "open_questions": []
+    },
+    {
+      "name": "dim_enrollment",
+      "business_key": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "source_table": "studentInfo",
+      "attributes": [
+        "gender",
+        "region",
+        "highest_education",
+        "imd_band",
+        "age_band",
+        "num_of_prev_attempts",
+        "studied_credits",
+        "disability",
+        "final_result",
+        "date_registration",
+        "date_unregistration",
+        "has_unregistered"
+      ],
+      "rationale": "M\u1ed9t l\u01b0\u1ee3t h\u1ecdc l\u00e0 \u0111\u01a1n v\u1ecb \u0111\u1ebfm ch\u00ednh; g\u1ed9p studentRegistration v\u00ec quan h\u1ec7 1-1 \u0111\u00e3 \u0111o (32.593 d\u00f2ng). Kh\u00f4ng t\u1ea1o dim_student v\u00ec age_band thay \u0111\u1ed5i \u1edf 72 sinh vi\u00ean.",
+      "open_questions": [
+        "Withdrawn \u2194 date_unregistration l\u1ec7ch 102 d\u00f2ng; m\u00f4 t\u1ea3 ngu\u1ed3n n\u00f3i ng\u01b0\u1ee3c l\u1ea1i (N2).",
+        "imd_band c\u00f3 nh\u00f3m '10-20' thi\u1ebfu k\u00fd t\u1ef1 %; chu\u1ea9n h\u00f3a c\u1ea7n duy\u1ec7t (C02)."
+      ]
+    }
+  ],
+  "keys": [
+    {
+      "table": "dim_course",
+      "columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "kind": "composite",
+      "rationale": "Kh\u00f3a gh\u00e9p duy nh\u1ea5t 100% tr\u00ean 22 d\u00f2ng.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_assessment",
+      "columns": [
+        "id_assessment"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100% tr\u00ean 206 d\u00f2ng.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_vle_site",
+      "columns": [
+        "id_site"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100% v\u00e0 to\u00e0n c\u1ee5c tr\u00ean 6.364 d\u00f2ng.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_enrollment",
+      "columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "kind": "composite",
+      "rationale": "Duy nh\u1ea5t 100% tr\u00ean 32.593 d\u00f2ng; id_student ri\u00eang kh\u00f4ng duy nh\u1ea5t (28.785 gi\u00e1 tr\u1ecb).",
+      "open_questions": []
+    },
+    {
+      "table": "fact_assessment_submission",
+      "columns": [
+        "id_assessment",
+        "id_student"
+      ],
+      "kind": "composite",
+      "rationale": "Duy nh\u1ea5t 100% tr\u00ean 173.912 d\u00f2ng \u0111\u00e3 \u0111o.",
+      "open_questions": []
+    },
+    {
+      "table": "fact_vle_daily",
+      "columns": [
+        "code_module",
+        "code_presentation",
+        "id_student",
+        "id_site",
+        "date"
+      ],
+      "kind": "business",
+      "rationale": "KH\u00d4NG duy nh\u1ea5t tr\u00ean d\u1eef li\u1ec7u g\u1ed1c (79,39%); ch\u1ec9 l\u00e0 kh\u00f3a t\u1ef1 nhi\u00ean \u1ee9ng vi\u00ean.",
+      "open_questions": [
+        "Ch\u1edd Q1 tr\u01b0\u1edbc khi d\u00f9ng l\u00e0m kh\u00f3a c\u1ee7a b\u1ea3ng fact."
+      ]
+    },
+    {
+      "table": "dim_enrollment",
+      "columns": [
+        "id_student"
+      ],
+      "kind": "business",
+      "rationale": "M\u00e3 sinh vi\u00ean l\u00e0 \u0111\u1ecbnh danh theo m\u00f4 t\u1ea3 ngu\u1ed3n nh\u01b0ng kh\u00f4ng duy nh\u1ea5t trong b\u1ea3ng l\u01b0\u1ee3t h\u1ecdc (28.785/32.593).",
+      "open_questions": [
+        "Kh\u00f4ng d\u00f9ng l\u00e0m kh\u00f3a \u0111\u01a1n; ch\u1ec9 l\u00e0 kh\u00f3a nghi\u1ec7p v\u1ee5 theo sinh vi\u00ean."
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "child_table": "dim_assessment",
+      "child_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "parent_table": "dim_course",
+      "parent_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "B\u00e0i \u0111\u00e1nh gi\u00e1 thu\u1ed9c m\u1ed9t module-presentation; 0 m\u1ed3 c\u00f4i \u0111\u00e3 \u0111o.",
+      "open_questions": []
+    },
+    {
+      "child_table": "dim_vle_site",
+      "child_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "parent_table": "dim_course",
+      "parent_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "H\u1ecdc li\u1ec7u thu\u1ed9c m\u1ed9t module-presentation; 0 m\u1ed3 c\u00f4i \u0111\u00e3 \u0111o.",
+      "open_questions": []
+    },
+    {
+      "child_table": "dim_enrollment",
+      "child_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "parent_table": "dim_course",
+      "parent_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "L\u01b0\u1ee3t h\u1ecdc thu\u1ed9c m\u1ed9t module-presentation; 0 m\u1ed3 c\u00f4i \u0111\u00e3 \u0111o.",
+      "open_questions": []
+    },
+    {
+      "child_table": "fact_assessment_submission",
+      "child_columns": [
+        "id_assessment"
+      ],
+      "parent_table": "dim_assessment",
+      "parent_columns": [
+        "id_assessment"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "M\u1ed7i l\u01b0\u1ee3t n\u1ed9p thu\u1ed9c m\u1ed9t b\u00e0i; 0 m\u1ed3 c\u00f4i \u0111\u00e3 \u0111o (173.912 d\u00f2ng).",
+      "open_questions": []
+    },
+    {
+      "child_table": "fact_vle_daily",
+      "child_columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "parent_table": "dim_enrollment",
+      "parent_columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "M\u1ed7i click thu\u1ed9c m\u1ed9t l\u01b0\u1ee3t h\u1ecdc; 0 m\u1ed3 c\u00f4i \u0111\u00e3 \u0111o (10.655.280 d\u00f2ng).",
+      "open_questions": [
+        "Ch\u1edd Q1 v\u00ec grain c\u1ee7a fact_vle_daily ch\u01b0a \u0111\u01b0\u1ee3c duy\u1ec7t."
+      ]
+    },
+    {
+      "child_table": "fact_vle_daily",
+      "child_columns": [
+        "id_site"
+      ],
+      "parent_table": "dim_vle_site",
+      "parent_columns": [
+        "id_site"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "M\u1ed7i click thu\u1ed9c m\u1ed9t h\u1ecdc li\u1ec7u; 0 m\u1ed3 c\u00f4i \u0111\u00e3 \u0111o.",
+      "open_questions": []
+    }
+  ],
+  "metrics": [
+    {
+      "name": "enrollment_count",
+      "definition": "S\u1ed1 l\u01b0\u1ee3t h\u1ecdc",
+      "expression": "count(*)",
+      "fact_table": "dim_enrollment",
+      "rationale": "\u0110\u1ebfm l\u01b0\u1ee3t h\u1ecdc (M01); tr\u01b0\u1eddng fact_table tr\u1ecf t\u1edbi dimension v\u00ec ch\u1ec9 s\u1ed1 n\u00e0y kh\u00f4ng c\u00f3 fact ri\u00eang.",
+      "open_questions": [
+        "Schema gap: fact_table nh\u1eadn t\u00ean dimension trong tr\u01b0\u1eddng h\u1ee3p n\u00e0y; c\u1ea7n Tu\u1ea5n Anh x\u00e1c nh\u1eadn cho ph\u00e9p."
+      ]
+    },
+    {
+      "name": "withdrawal_rate",
+      "definition": "T\u1ec9 l\u1ec7 r\u00fat h\u1ecdc theo final_result = Withdrawn",
+      "expression": "count(*) filter (where final_result = 'Withdrawn') * 1.0 / count(*)",
+      "fact_table": "dim_enrollment",
+      "rationale": "M04; c\u00f4ng th\u1ee9c theo k\u1ebft qu\u1ea3 cu\u1ed1i, kh\u00f4ng theo ng\u00e0y h\u1ee7y.",
+      "open_questions": [
+        "N\u1ebfu \u0111\u1ecbnh ngh\u0129a theo ng\u00e0y h\u1ee7y: 'count(date_unregistration is not null)' (M09). Ch\u1edd N2."
+      ]
+    },
+    {
+      "name": "pass_rate_all",
+      "definition": "T\u1ec9 l\u1ec7 \u0111\u1ea1t tr\u00ean t\u1ea5t c\u1ea3 l\u01b0\u1ee3t h\u1ecdc",
+      "expression": "count(*) filter (where final_result in ('Pass','Distinction')) * 1.0 / count(*)",
+      "fact_table": "dim_enrollment",
+      "rationale": "M06; m\u1ed9t trong hai c\u00e1ch t\u00ednh t\u1ec9 l\u1ec7 \u0111\u1ea1t.",
+      "open_questions": [
+        "Q2: m\u1eabu s\u1ed1 g\u1ed3m ng\u01b0\u1eddi r\u00fat h\u1ecdc hay kh\u00f4ng; M07 l\u00e0 ph\u01b0\u01a1ng \u00e1n c\u00f2n l\u1ea1i."
+      ]
+    },
+    {
+      "name": "avg_score_excl_banked",
+      "definition": "\u0110i\u1ec3m trung b\u00ecnh, kh\u00f4ng t\u00ednh \u0111i\u1ec3m banked",
+      "expression": "avg(score) filter (where is_banked = 0 and score is not null)",
+      "fact_table": "fact_assessment_submission",
+      "rationale": "M12; b\u1ecf \u0111i\u1ec3m \u0111\u01b0\u1ee3c chuy\u1ec3n t\u1eeb l\u1ea7n h\u1ecdc tr\u01b0\u1edbc.",
+      "open_questions": [
+        "Q3: c\u00f3 n\u00ean t\u00ednh \u0111i\u1ec3m banked kh\u00f4ng (M11)."
+      ]
+    },
+    {
+      "name": "submission_count",
+      "definition": "S\u1ed1 l\u01b0\u1ee3t n\u1ed9p",
+      "expression": "count(*)",
+      "fact_table": "fact_assessment_submission",
+      "rationale": "M10; \u0111\u1ebfm l\u01b0\u1ee3t n\u1ed9p, kh\u00f4ng c\u1ed9ng d\u1ed3n \u0111i\u1ec3m.",
+      "open_questions": []
+    },
+    {
+      "name": "total_clicks",
+      "definition": "T\u1ed5ng click",
+      "expression": "sum(sum_click)",
+      "fact_table": "fact_vle_daily",
+      "rationale": "M14; ph\u1ee5 thu\u1ed9c quy\u1ebft \u0111\u1ecbnh c\u1ed9ng d\u1ed3n.",
+      "open_questions": [
+        "Q1: n\u1ebfu kh\u00f4ng c\u1ed9ng d\u1ed3n, t\u1ed5ng s\u1ebd kh\u00e1c (ph\u1ea3i \u0111\u1ed1i chi\u1ebfu v\u1edbi t\u1ed5ng bronze)."
+      ]
+    },
+    {
+      "name": "unused_site_rate",
+      "definition": "T\u1ec9 l\u1ec7 h\u1ecdc li\u1ec7u kh\u00f4ng c\u00f3 click",
+      "expression": "1.0 - count(distinct id_site) * 1.0 / (select count(*) from dim_vle_site)",
+      "fact_table": "fact_vle_daily",
+      "rationale": "M17; \u0111\u1ebfm h\u1ecdc li\u1ec7u c\u00f3 click so v\u1edbi t\u1ed5ng h\u1ecdc li\u1ec7u.",
+      "open_questions": [
+        "Ph\u1ee5 thu\u1ed9c quan h\u1ec7 v\u1edbi dim_vle_site; bi\u1ec3u th\u1ee9c c\u1ea7n ki\u1ec3m tra tr\u00ean mart."
+      ]
+    }
+  ],
+  "cleaning_rules": [
+    {
+      "table": "dim_enrollment",
+      "columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "condition": "code_module is null or code_presentation is null or id_student is null",
+      "action": "quarantine",
+      "default_value": null,
+      "rationale": "Kh\u00f3a r\u1ed7ng kh\u00f4ng \u0111\u01b0\u1ee3c v\u00e0o mart; \u0111o \u0111\u01b0\u1ee3c 0 d\u00f2ng tr\u00ean b\u1ed9 g\u1ed1c (R11).",
+      "open_questions": []
+    },
+    {
+      "table": "fact_assessment_submission",
+      "columns": [
+        "id_assessment",
+        "id_student"
+      ],
+      "condition": "id_assessment is null or id_student is null",
+      "action": "quarantine",
+      "default_value": null,
+      "rationale": "Kh\u00f3a l\u01b0\u1ee3t n\u1ed9p r\u1ed7ng kh\u00f4ng \u0111\u01b0\u1ee3c v\u00e0o mart; \u0111o \u0111\u01b0\u1ee3c 0 d\u00f2ng (R11).",
+      "open_questions": []
+    },
+    {
+      "table": "fact_assessment_submission",
+      "columns": [
+        "score"
+      ],
+      "condition": "score < 0 or score > 100",
+      "action": "quarantine",
+      "default_value": null,
+      "rationale": "\u0110i\u1ec3m ngo\u00e0i [0,100] kh\u00f4ng h\u1ee3p l\u1ec7; \u0111o \u0111\u01b0\u1ee3c 0 d\u00f2ng (R05).",
+      "open_questions": []
+    },
+    {
+      "table": "fact_vle_daily",
+      "columns": [
+        "sum_click"
+      ],
+      "condition": "sum_click < 1",
+      "action": "quarantine",
+      "default_value": null,
+      "rationale": "Click kh\u00f4ng d\u01b0\u01a1ng kh\u00f4ng h\u1ee3p l\u1ec7; \u0111o \u0111\u01b0\u1ee3c 0 d\u00f2ng (R06).",
+      "open_questions": []
+    },
+    {
+      "table": "dim_enrollment",
+      "columns": [
+        "imd_band"
+      ],
+      "condition": "imd_band = ''",
+      "action": "set_default",
+      "default_value": null,
+      "rationale": "Chu\u1ed7i r\u1ed7ng l\u00e0 gi\u00e1 tr\u1ecb thi\u1ebfu duy nh\u1ea5t trong b\u1ed9 ngu\u1ed3n; \u0111\u1eb7t NULL, kh\u00f4ng \u0111i\u1ec1n gi\u00e1 tr\u1ecb (C01, C03).",
+      "open_questions": [
+        "Chu\u1ea9n h\u00f3a '10-20' th\u00e0nh '10-20%' (C02) KH\u00d4NG th\u1ec3 bi\u1ec3u di\u1ec5n b\u1eb1ng action c\u1ee7a schema; ghi th\u00e0nh c\u00e2u h\u1ecfi cho nh\u00f3m."
+      ]
+    },
+    {
+      "table": "dim_vle_site",
+      "columns": [
+        "week_from",
+        "week_to"
+      ],
+      "condition": "week_from > week_to",
+      "action": "quarantine",
+      "default_value": null,
+      "rationale": "Kho\u1ea3ng tu\u1ea7n kh\u00f4ng h\u1ee3p l\u1ec7; \u0111o \u0111\u01b0\u1ee3c 0 d\u00f2ng (R08).",
+      "open_questions": []
+    }
+  ],
+  "update_policy": {
+    "mode": "snapshot_replace",
+    "required_files": [
+      "courses.csv",
+      "assessments.csv",
+      "vle.csv",
+      "studentInfo.csv",
+      "studentRegistration.csv",
+      "studentAssessment.csv",
+      "studentVle.csv"
+    ],
+    "rationale": "B\u1ea3n \u0111\u1ea7u ch\u1ec9 h\u1ed7 tr\u1ee3 snapshot thay th\u1ebf to\u00e0n b\u1ed9 theo CLAUDE.md m\u1ee5c 4 b\u01b0\u1edbc 3.",
+    "open_questions": []
+  },
+  "dashboard": {
+    "metrics": [
+      "enrollment_count",
+      "withdrawal_rate",
+      "pass_rate_all",
+      "avg_score_excl_banked",
+      "total_clicks"
+    ],
+    "dimensions": [
+      "code_module",
+      "code_presentation",
+      "gender",
+      "age_band",
+      "disability",
+      "assessment_type",
+      "date"
+    ],
+    "filters": [
+      "code_module",
+      "code_presentation",
+      "gender",
+      "age_band",
+      "disability"
+    ],
+    "cards": [
+      {
+        "key": "kpi_enrollment_count",
+        "title": "S\u1ed1 l\u01b0\u1ee3t h\u1ecdc",
+        "type": "kpi",
+        "metric": "enrollment_count",
+        "dimension": null
+      },
+      {
+        "key": "kpi_withdrawal_rate",
+        "title": "T\u1ec9 l\u1ec7 r\u00fat h\u1ecdc",
+        "type": "kpi",
+        "metric": "withdrawal_rate",
+        "dimension": null
+      },
+      {
+        "key": "kpi_total_clicks",
+        "title": "T\u1ed5ng click",
+        "type": "kpi",
+        "metric": "total_clicks",
+        "dimension": null
+      },
+      {
+        "key": "bar_withdrawal_by_module",
+        "title": "T\u1ec9 l\u1ec7 r\u00fat h\u1ecdc theo module-presentation",
+        "type": "bar",
+        "metric": "withdrawal_rate",
+        "dimension": "code_presentation"
+      },
+      {
+        "key": "bar_score_by_assessment_type",
+        "title": "\u0110i\u1ec3m trung b\u00ecnh theo lo\u1ea1i b\u00e0i",
+        "type": "bar",
+        "metric": "avg_score_excl_banked",
+        "dimension": "assessment_type"
+      },
+      {
+        "key": "line_clicks_by_day",
+        "title": "Click theo ng\u00e0y t\u01b0\u01a1ng \u0111\u1ed1i",
+        "type": "line",
+        "metric": "total_clicks",
+        "dimension": "date"
+      }
+    ],
+    "rationale": "C\u00e1c card theo y\u00eau c\u1ea7u ph\u00e2n t\u00edch c\u1ee7a \u0111\u1eb7c t\u1ea3 v\u00e0 c\u00e1c c\u00e2u h\u1ecfi trong canonical_design.md.",
+    "open_questions": [
+      "C\u00e1c card d\u00f9ng total_clicks ch\u1edd Q1."
+    ]
+  },
+  "constraints": [
+    {
+      "layer": "silver",
+      "model": "silver_student_info",
+      "columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "kind": "not_null",
+      "params": {},
+      "evidence": null
+    },
+    {
+      "layer": "mart",
+      "model": "dim_enrollment",
+      "columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "Duy nh\u1ea5t 100% tr\u00ean 32.593 d\u00f2ng \u0111\u00e3 \u0111o."
+    },
+    {
+      "layer": "mart",
+      "model": "dim_course",
+      "columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "22/22 duy nh\u1ea5t."
+    },
+    {
+      "layer": "mart",
+      "model": "dim_assessment",
+      "columns": [
+        "id_assessment"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "206/206 duy nh\u1ea5t."
+    },
+    {
+      "layer": "mart",
+      "model": "fact_assessment_submission",
+      "columns": [
+        "id_assessment",
+        "id_student"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "173.912/173.912 duy nh\u1ea5t."
+    },
+    {
+      "layer": "mart",
+      "model": "fact_assessment_submission",
+      "columns": [
+        "id_assessment"
+      ],
+      "kind": "relationship",
+      "params": {
+        "to_model": "dim_assessment",
+        "to_columns": [
+          "id_assessment"
+        ]
+      },
+      "evidence": "0 m\u1ed3 c\u00f4i \u0111\u00e3 \u0111o."
+    },
+    {
+      "layer": "mart",
+      "model": "dim_enrollment",
+      "columns": [
+        "gender"
+      ],
+      "kind": "accepted_values",
+      "params": {
+        "values": [
+          "M",
+          "F"
+        ]
+      },
+      "evidence": "\u0110\u00e3 \u0111o: ch\u1ec9 M v\u00e0 F."
+    },
+    {
+      "layer": "mart",
+      "model": "dim_enrollment",
+      "columns": [
+        "disability"
+      ],
+      "kind": "accepted_values",
+      "params": {
+        "values": [
+          "Y",
+          "N"
+        ]
+      },
+      "evidence": "\u0110\u00e3 \u0111o: ch\u1ec9 Y v\u00e0 N."
+    },
+    {
+      "layer": "mart",
+      "model": "fact_assessment_submission",
+      "columns": [
+        "score"
+      ],
+      "kind": "expression",
+      "params": {
+        "expression": "score between 0 and 100"
+      },
+      "evidence": "\u0110\u00e3 \u0111o: 0 ngo\u00e0i kho\u1ea3ng."
+    }
+  ],
+  "assumptions": [
+    "B\u1ed9 r\u00e0ng bu\u1ed9c l\u00e0 \u0111\u1ec1 xu\u1ea5t; ch\u1ec9 r\u00e0ng bu\u1ed9c \u0111\u01b0\u1ee3c C\u1ed5ng 1 duy\u1ec7t m\u1edbi th\u00e0nh test (FR-08).",
+    "fact_vle_daily kh\u00f4ng \u0111\u01b0\u1ee3c d\u00f9ng cho \u0111\u1ebfn khi Q1/N1 c\u00f3 k\u1ebft lu\u1eadn.",
+    "\u0110i\u1ec3m \u0111\u00e3 ch\u1ecdn trong b\u1ea3n n\u00e0y: t\u1ec9 l\u1ec7 \u0111\u1ea1t l\u00e0 M06 (m\u1eabu s\u1ed1 to\u00e0n b\u1ed9) v\u00e0 \u0111i\u1ec3m trung b\u00ecnh l\u00e0 M12, \u0111\u1ec1u l\u00e0 l\u1ef1a ch\u1ecdn t\u1ea1m th\u1eddi ch\u1edd Q2 v\u00e0 Q3.",
+    "Kh\u00f4ng c\u00f3 dim_date: d\u1eef li\u1ec7u ch\u1ec9 c\u00f3 s\u1ed1 ng\u00e0y t\u01b0\u01a1ng \u0111\u1ed1i (C11).",
+    "Schema gap: MetricDefinition.fact_table ch\u1ec9 m\u00f4 t\u1ea3 fact, c\u00f2n enrollment_count v\u00e0 withdrawal_rate d\u1ef1a tr\u00ean dimension.",
+    "Schema gap: CleaningRule kh\u00f4ng c\u00f3 action chu\u1ea9n h\u00f3a gi\u00e1 tr\u1ecb; chu\u1ea9n h\u00f3a imd_band \u0111\u01b0\u1ee3c ghi th\u00e0nh c\u00e2u h\u1ecfi, kh\u00f4ng th\u00e0nh rule."
+  ]
+}
