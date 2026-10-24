@@ -33,7 +33,8 @@ class ApiSettings(BaseProcessSettings):
     cors_origins: list[str] = ["http://localhost:5173"]
     max_upload_bytes: int = Field(default=1024 * 1024 * 1024, gt=0, le=2147483647)
     job_delivery_enabled: bool = True
-    job_delivery_interval_seconds: float = 2.0
+    job_delivery_interval_seconds: float = Field(default=2.0, gt=0, allow_inf_nan=False)
+    job_delivery_startup_timeout_seconds: float = Field(default=120.0, gt=0, allow_inf_nan=False)
 
     gemini_api_key: SecretStr = SecretStr("")
     gemini_model: str = "gemini-3.5-flash-lite"

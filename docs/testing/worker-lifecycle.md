@@ -49,7 +49,7 @@ Không có vòng retry runner độc lập. Mã lỗi và định danh job/run/w
 
 ## Delivery sau crash
 
-API đã có một delivery loop trong lifespan. Recovery lúc khởi động được thử lại ở tick kế tiếp nếu lỗi, cho đến khi thành công. Worker không chạy graph hoặc gọi Modeler.
+API đã có một delivery loop trong lifespan. API chờ recovery và lượt delivery đầu tiên trước khi hoàn tất startup; xem [application recovery](application-recovery.md). Recovery lúc khởi động được thử lại ở tick kế tiếp nếu lỗi, cho đến khi thành công. Worker không chạy graph hoặc gọi Modeler.
 
 Profile node dùng idempotency key `profile:<run_id>`, kiểm tra outcome khớp job đang chờ, validate DataProfile và lưu `consumed_job_ids` cùng output của node vào checkpoint. Job thất bại cũng có receipt cùng trạng thái lỗi.
 

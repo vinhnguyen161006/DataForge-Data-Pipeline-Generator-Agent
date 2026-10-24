@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from collections.abc import AsyncIterator, Callable
-from contextlib import AbstractAsyncContextManager, asynccontextmanager, suppress
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,10 +12,16 @@ from app.agents.llm import StructuredLLM
 from app.api.routes import auth, batches, exports, health, projects, runs
 from app.core.config import ApiSettings, get_api_settings
 from app.core.logging import configure_logging
+from app.core.readiness import JobDeliveryStatus
 from app.db.checkpointer import open_postgres_checkpointer
 from app.db.session import make_engine, make_sessionmaker
 from app.graph.builder import PipelineGraph, build_graph
 from app.graph.context import GraphContext, make_graph_context
+from app.services.delivery_lifecycle import (
+    observe_delivery,
+    stop_delivery,
+    wait_for_delivery_startup,
+)
 from app.services.runs import job_delivery_loop
 
 CheckpointerFactory = Callable[[str], AbstractAsyncContextManager[BaseCheckpointSaver[str]]]
@@ -36,22 +42,35 @@ async def job_delivery(
     sessionmaker: async_sessionmaker[AsyncSession],
     graph: PipelineGraph,
     context: GraphContext,
+    *,
+    status: JobDeliveryStatus | None = None,
 ) -> AsyncIterator[None]:
-    """Run the job delivery loop for the lifetime of the block, unless disabled."""
+    """Wait for recovery before serving and join delivery before closing its resources."""
+    delivery_status = status or JobDeliveryStatus(enabled=settings.job_delivery_enabled)
     if not settings.job_delivery_enabled:
         yield
         return
+    startup_ready = asyncio.Event()
     task = asyncio.create_task(
         job_delivery_loop(
-            sessionmaker, graph, context, interval_seconds=settings.job_delivery_interval_seconds
+            sessionmaker,
+            graph,
+            context,
+            interval_seconds=settings.job_delivery_interval_seconds,
+            startup_ready=startup_ready,
         )
     )
+    observe_delivery(task, delivery_status)
     try:
+        await wait_for_delivery_startup(
+            task,
+            startup_ready,
+            timeout_seconds=settings.job_delivery_startup_timeout_seconds,
+        )
+        delivery_status.ready = True
         yield
     finally:
-        task.cancel()
-        with suppress(asyncio.CancelledError):
-            await task
+        await stop_delivery(task, delivery_status)
 
 
 def make_lifespan(settings: ApiSettings, open_checkpointer: CheckpointerFactory) -> Lifespan:
@@ -63,6 +82,8 @@ def make_lifespan(settings: ApiSettings, open_checkpointer: CheckpointerFactory)
         request dependencies, and runs the job delivery loop that also recovers runs left
         unfinished by a restart (FR-21).
         """
+        delivery_status = JobDeliveryStatus(enabled=settings.job_delivery_enabled)
+        app.state.job_delivery_status = delivery_status
         engine = make_engine(settings.app_database_url)
         try:
             async with open_checkpointer(settings.checkpoint_database_url) as checkpointer:
@@ -72,7 +93,9 @@ def make_lifespan(settings: ApiSettings, open_checkpointer: CheckpointerFactory)
                 app.state.sessionmaker = sessionmaker
                 app.state.graph = graph
                 app.state.graph_context = context
-                async with job_delivery(settings, sessionmaker, graph, context):
+                async with job_delivery(
+                    settings, sessionmaker, graph, context, status=delivery_status
+                ):
                     logger.info("api resources ready")
                     yield
         finally:

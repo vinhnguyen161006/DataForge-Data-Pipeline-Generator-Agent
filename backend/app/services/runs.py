@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import math
 import uuid
 from collections.abc import Awaitable
 from typing import TYPE_CHECKING, Any
@@ -532,14 +533,23 @@ async def job_delivery_loop(
     context: GraphContext,
     *,
     interval_seconds: float,
+    startup_ready: asyncio.Event | None = None,
 ) -> None:
-    """Retry startup recovery until successful, then deliver results until cancelled."""
+    """Recover and drain before readiness, then keep delivering results until cancelled."""
+    if not math.isfinite(interval_seconds) or interval_seconds <= 0:
+        raise ValueError("The delivery interval must be positive and finite")
     recovered = False
     while True:
         if not recovered:
             recovered = await _logged(
                 "recover_pending_runs", recover_pending_runs(factory, graph, context)
             )
-        await _logged("deliver_resume_intents", deliver_resume_intents(factory, graph, context))
-        await _logged("deliver_finished_jobs", deliver_finished_jobs(factory, graph, context))
+        intents_ok = await _logged(
+            "deliver_resume_intents", deliver_resume_intents(factory, graph, context)
+        )
+        jobs_ok = await _logged(
+            "deliver_finished_jobs", deliver_finished_jobs(factory, graph, context)
+        )
+        if recovered and intents_ok and jobs_ok and startup_ready is not None:
+            startup_ready.set()
         await asyncio.sleep(interval_seconds)

@@ -24,8 +24,8 @@ async def open_postgres_checkpointer(conn_string: str) -> AsyncIterator[AsyncPos
         kwargs={"autocommit": True, "prepare_threshold": 0, "row_factory": dict_row},
         open=False,
     )
-    await pool.open(wait=True)
     try:
+        await pool.open(wait=True)
         yield AsyncPostgresSaver(pool)
     finally:
         await pool.close()

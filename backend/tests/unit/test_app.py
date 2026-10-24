@@ -43,6 +43,7 @@ async def test_lifespan_runs_job_delivery_until_shutdown(monkeypatch: pytest.Mon
 
     async def fake_loop(*args: Any, **kwargs: Any) -> None:
         started.set()
+        kwargs["startup_ready"].set()
         try:
             await asyncio.Event().wait()
         except asyncio.CancelledError:
