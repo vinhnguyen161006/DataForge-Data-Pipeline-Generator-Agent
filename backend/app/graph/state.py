@@ -7,6 +7,7 @@ class PipelineState(TypedDict, total=False):
     batch_id: str
     request_text: str
 
+    consumed_job_ids: list[str]
     profile: dict[str, Any]
     questions: list[dict[str, Any]]
     clarification_answers: list[dict[str, str]]

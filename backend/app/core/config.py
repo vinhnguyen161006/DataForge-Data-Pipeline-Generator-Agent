@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.core.logging import LogLevel
@@ -49,14 +49,31 @@ class ApiSettings(BaseProcessSettings):
 
 
 class WorkerSettings(BaseProcessSettings):
-    worker_id: str = "sandbox-1"
-    poll_interval_seconds: float = 2.0
-    lease_seconds: int = 300
-    run_timeout_seconds: int = 900
-    run_memory_mb: int = 2048
-    run_cpu_seconds: int = 900
-    run_max_file_mb: int = 2048
-    duckdb_threads: int = 2
+    worker_id: str = Field(default="sandbox-1", min_length=1, max_length=128)
+    poll_interval_seconds: float = Field(default=2.0, gt=0, allow_inf_nan=False)
+    lease_seconds: int = Field(default=300, gt=0)
+    heartbeat_interval_seconds: float = Field(default=60.0, gt=0, allow_inf_nan=False)
+    database_timeout_seconds: float = Field(default=10.0, gt=0, allow_inf_nan=False)
+    run_timeout_seconds: int = Field(default=900, gt=0)
+    run_memory_mb: int = Field(default=2048, gt=0)
+    run_cpu_seconds: int = Field(default=900, gt=0)
+    run_max_file_mb: int = Field(default=2048, gt=0)
+    run_max_processes: int = Field(default=4096, gt=0)
+    duckdb_threads: int = Field(default=2, gt=0, le=64)
+    duckdb_memory_mb: int = Field(default=256, gt=0)
+    duckdb_max_temp_mb: int = Field(default=512, gt=0)
+
+    @model_validator(mode="after")
+    def validate_lease_budget(self) -> "WorkerSettings":
+        if not self.worker_id.strip():
+            raise ValueError("worker_id cannot be blank")
+        if self.heartbeat_interval_seconds + self.database_timeout_seconds >= self.lease_seconds:
+            raise ValueError(
+                "The heartbeat interval and database timeout must fit inside the lease"
+            )
+        if self.duckdb_memory_mb >= self.run_memory_mb:
+            raise ValueError("DuckDB memory must leave room inside the process memory limit")
+        return self
 
 
 class PublisherSettings(BaseProcessSettings):

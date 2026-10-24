@@ -115,8 +115,13 @@ services:
   sandbox-worker:
     <<: *backend-image
     command: python -m worker.main
+    stop_grace_period: 30s
     environment:
       <<: *app-db
+      DATAFORGE_WORKER_ID: ${DATAFORGE_WORKER_ID:-sandbox-1}
+      DATAFORGE_LEASE_SECONDS: ${DATAFORGE_LEASE_SECONDS:-300}
+      DATAFORGE_HEARTBEAT_INTERVAL_SECONDS: ${DATAFORGE_HEARTBEAT_INTERVAL_SECONDS:-60}
+      DATAFORGE_DATABASE_TIMEOUT_SECONDS: ${DATAFORGE_DATABASE_TIMEOUT_SECONDS:-10}
     volumes:
       - dataforge-data:/data
     networks:
