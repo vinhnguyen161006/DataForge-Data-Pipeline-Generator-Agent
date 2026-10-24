@@ -1,0 +1,757 @@
+{
+  "tables": [
+    {
+      "name": "courses",
+      "source_file": "courses.csv",
+      "row_count": 22,
+      "columns": [
+        {
+          "name": "code_module",
+          "inferred_type": "string",
+          "row_count": 22,
+          "null_ratio": 0.0,
+          "distinct_count": 7,
+          "min_value": "AAA",
+          "max_value": "GGG",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "code_presentation",
+          "inferred_type": "string",
+          "row_count": 22,
+          "null_ratio": 0.0,
+          "distinct_count": 4,
+          "min_value": "2013B",
+          "max_value": "2014J",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "module_presentation_length",
+          "inferred_type": "integer",
+          "row_count": 22,
+          "null_ratio": 0.0,
+          "distinct_count": 7,
+          "min_value": "234.0",
+          "max_value": "269.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "assessments",
+      "source_file": "assessments.csv",
+      "row_count": 206,
+      "columns": [
+        {
+          "name": "code_module",
+          "inferred_type": "string",
+          "row_count": 206,
+          "null_ratio": 0.0,
+          "distinct_count": 7,
+          "min_value": "AAA",
+          "max_value": "GGG",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "code_presentation",
+          "inferred_type": "string",
+          "row_count": 206,
+          "null_ratio": 0.0,
+          "distinct_count": 4,
+          "min_value": "2013B",
+          "max_value": "2014J",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "id_assessment",
+          "inferred_type": "integer",
+          "row_count": 206,
+          "null_ratio": 0.0,
+          "distinct_count": 206,
+          "min_value": "1752.0",
+          "max_value": "40088.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "assessment_type",
+          "inferred_type": "string",
+          "row_count": 206,
+          "null_ratio": 0.0,
+          "distinct_count": 3,
+          "min_value": "CMA",
+          "max_value": "TMA",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "date",
+          "inferred_type": "integer",
+          "row_count": 206,
+          "null_ratio": 0.05339805825242718,
+          "distinct_count": 75,
+          "min_value": "12.0",
+          "max_value": "261.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "weight",
+          "inferred_type": "float",
+          "row_count": 206,
+          "null_ratio": 0.0,
+          "distinct_count": 24,
+          "min_value": "0.0",
+          "max_value": "100.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "vle",
+      "source_file": "vle.csv",
+      "row_count": 6364,
+      "columns": [
+        {
+          "name": "id_site",
+          "inferred_type": "integer",
+          "row_count": 6364,
+          "null_ratio": 0.0,
+          "distinct_count": 6364,
+          "min_value": "526721.0",
+          "max_value": "1077905.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "code_module",
+          "inferred_type": "string",
+          "row_count": 6364,
+          "null_ratio": 0.0,
+          "distinct_count": 7,
+          "min_value": "AAA",
+          "max_value": "GGG",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "code_presentation",
+          "inferred_type": "string",
+          "row_count": 6364,
+          "null_ratio": 0.0,
+          "distinct_count": 4,
+          "min_value": "2013B",
+          "max_value": "2014J",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "activity_type",
+          "inferred_type": "string",
+          "row_count": 6364,
+          "null_ratio": 0.0,
+          "distinct_count": 20,
+          "min_value": "dataplus",
+          "max_value": "url",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "week_from",
+          "inferred_type": "integer",
+          "row_count": 6364,
+          "null_ratio": 0.823852922690132,
+          "distinct_count": 31,
+          "min_value": "0.0",
+          "max_value": "29.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "week_to",
+          "inferred_type": "integer",
+          "row_count": 6364,
+          "null_ratio": 0.823852922690132,
+          "distinct_count": 31,
+          "min_value": "0.0",
+          "max_value": "29.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "studentInfo",
+      "source_file": "studentInfo.csv",
+      "row_count": 32593,
+      "columns": [
+        {
+          "name": "code_module",
+          "inferred_type": "string",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 7,
+          "min_value": "AAA",
+          "max_value": "GGG",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "code_presentation",
+          "inferred_type": "string",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 4,
+          "min_value": "2013B",
+          "max_value": "2014J",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "id_student",
+          "inferred_type": "integer",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 28785,
+          "min_value": "3733.0",
+          "max_value": "2716795.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "gender",
+          "inferred_type": "string",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 2,
+          "min_value": "F",
+          "max_value": "M",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "region",
+          "inferred_type": "string",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 13,
+          "min_value": "East Anglian Region",
+          "max_value": "Yorkshire Region",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "highest_education",
+          "inferred_type": "string",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 5,
+          "min_value": "A Level or Equivalent",
+          "max_value": "Post Graduate Qualification",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "imd_band",
+          "inferred_type": "string",
+          "row_count": 32593,
+          "null_ratio": 0.03408707391157611,
+          "distinct_count": 11,
+          "min_value": "",
+          "max_value": "90-100%",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "age_band",
+          "inferred_type": "string",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 3,
+          "min_value": "0-35",
+          "max_value": "55<=",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "num_of_prev_attempts",
+          "inferred_type": "integer",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 7,
+          "min_value": "0.0",
+          "max_value": "6.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "studied_credits",
+          "inferred_type": "integer",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 61,
+          "min_value": "30.0",
+          "max_value": "655.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "disability",
+          "inferred_type": "string",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 2,
+          "min_value": "N",
+          "max_value": "Y",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "final_result",
+          "inferred_type": "string",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 4,
+          "min_value": "Distinction",
+          "max_value": "Withdrawn",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "studentRegistration",
+      "source_file": "studentRegistration.csv",
+      "row_count": 32593,
+      "columns": [
+        {
+          "name": "code_module",
+          "inferred_type": "string",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 7,
+          "min_value": "AAA",
+          "max_value": "GGG",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "code_presentation",
+          "inferred_type": "string",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 4,
+          "min_value": "2013B",
+          "max_value": "2014J",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "id_student",
+          "inferred_type": "integer",
+          "row_count": 32593,
+          "null_ratio": 0.0,
+          "distinct_count": 28785,
+          "min_value": "3733.0",
+          "max_value": "2716795.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "date_registration",
+          "inferred_type": "integer",
+          "row_count": 32593,
+          "null_ratio": 0.0013806645598748197,
+          "distinct_count": 333,
+          "min_value": "-322.0",
+          "max_value": "167.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "date_unregistration",
+          "inferred_type": "integer",
+          "row_count": 32593,
+          "null_ratio": 0.6909765900653515,
+          "distinct_count": 417,
+          "min_value": "-365.0",
+          "max_value": "444.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "studentAssessment",
+      "source_file": "studentAssessment.csv",
+      "row_count": 173912,
+      "columns": [
+        {
+          "name": "id_assessment",
+          "inferred_type": "integer",
+          "row_count": 173912,
+          "null_ratio": 0.0,
+          "distinct_count": 188,
+          "min_value": "1752.0",
+          "max_value": "37443.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "id_student",
+          "inferred_type": "integer",
+          "row_count": 173912,
+          "null_ratio": 0.0,
+          "distinct_count": 23369,
+          "min_value": "6516.0",
+          "max_value": "2698588.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "date_submitted",
+          "inferred_type": "integer",
+          "row_count": 173912,
+          "null_ratio": 0.0,
+          "distinct_count": 312,
+          "min_value": "-11.0",
+          "max_value": "608.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "is_banked",
+          "inferred_type": "integer",
+          "row_count": 173912,
+          "null_ratio": 0.0,
+          "distinct_count": 2,
+          "min_value": "0.0",
+          "max_value": "1.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "score",
+          "inferred_type": "integer",
+          "row_count": 173912,
+          "null_ratio": 0.0009947559685358112,
+          "distinct_count": 102,
+          "min_value": "0.0",
+          "max_value": "100.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "studentVle",
+      "source_file": "studentVle.csv",
+      "row_count": 10655280,
+      "columns": [
+        {
+          "name": "code_module",
+          "inferred_type": "string",
+          "row_count": 10655280,
+          "null_ratio": 0.0,
+          "distinct_count": 7,
+          "min_value": "AAA",
+          "max_value": "GGG",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "code_presentation",
+          "inferred_type": "string",
+          "row_count": 10655280,
+          "null_ratio": 0.0,
+          "distinct_count": 4,
+          "min_value": "2013B",
+          "max_value": "2014J",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "id_student",
+          "inferred_type": "integer",
+          "row_count": 10655280,
+          "null_ratio": 0.0,
+          "distinct_count": 26074,
+          "min_value": "6516.0",
+          "max_value": "2698588.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "id_site",
+          "inferred_type": "integer",
+          "row_count": 10655280,
+          "null_ratio": 0.0,
+          "distinct_count": 6268,
+          "min_value": "526721.0",
+          "max_value": "1049562.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "date",
+          "inferred_type": "integer",
+          "row_count": 10655280,
+          "null_ratio": 0.0,
+          "distinct_count": 295,
+          "min_value": "-25.0",
+          "max_value": "269.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "sum_click",
+          "inferred_type": "integer",
+          "row_count": 10655280,
+          "null_ratio": 0.0,
+          "distinct_count": 498,
+          "min_value": "1.0",
+          "max_value": "6977.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    }
+  ],
+  "key_candidates": [
+    {
+      "table": "courses",
+      "columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "assessments",
+      "columns": [
+        "id_assessment"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "vle",
+      "columns": [
+        "id_site"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "studentInfo",
+      "columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "studentRegistration",
+      "columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "studentAssessment",
+      "columns": [
+        "id_assessment",
+        "id_student"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "studentVle",
+      "columns": [
+        "code_module",
+        "code_presentation",
+        "id_student",
+        "id_site",
+        "date"
+      ],
+      "is_unique_in_batch": false,
+      "null_count": 0
+    }
+  ],
+  "relationship_candidates": [
+    {
+      "child_table": "assessments",
+      "child_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "parent_table": "courses",
+      "parent_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "vle",
+      "child_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "parent_table": "courses",
+      "parent_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "studentInfo",
+      "child_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "parent_table": "courses",
+      "parent_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "studentRegistration",
+      "child_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "parent_table": "courses",
+      "parent_columns": [
+        "code_module",
+        "code_presentation"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "studentRegistration",
+      "child_columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "parent_table": "studentInfo",
+      "parent_columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "studentAssessment",
+      "child_columns": [
+        "id_assessment"
+      ],
+      "parent_table": "assessments",
+      "parent_columns": [
+        "id_assessment"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "studentVle",
+      "child_columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "parent_table": "studentInfo",
+      "parent_columns": [
+        "code_module",
+        "code_presentation",
+        "id_student"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "studentVle",
+      "child_columns": [
+        "id_site"
+      ],
+      "parent_table": "vle",
+      "parent_columns": [
+        "id_site"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "studentVle",
+      "child_columns": [
+        "code_module",
+        "code_presentation",
+        "id_site"
+      ],
+      "parent_table": "vle",
+      "parent_columns": [
+        "code_module",
+        "code_presentation",
+        "id_site"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    }
+  ],
+  "notes": [
+    "Converted from the OULAD golden statistical report.",
+    "Null ratios include these null-like tokens: [\"\", \"?\", \"NA\", \"N/A\", \"NULL\", \"null\", \"NaN\"]",
+    "Keys and relationships are batch observations, not approved constraints.",
+    "Relationship student_assessment_to_student_info_by_student: studentAssessment ['id_student'] -> studentInfo ['id_student']. Parent key is NOT unique; joining may multiply rows. Match rate: 100.0%; orphan rows: 0. Not included in relationship_candidates because the report does not provide max_parent_matches. Reconsider the join key and grain before using this relationship."
+  ]
+}

@@ -1,0 +1,217 @@
+{
+  "design": {
+    "facts": [
+      {
+        "rationale": "Order grain fact table capturing order-level metrics aggregated from line items, allowing sales analysis over time by customer nation and product type based on confirmed business rules.",
+        "open_questions": [],
+        "name": "fct_order_sales",
+        "grain": "One row per order, identified by order key.",
+        "source_tables": [
+          "orders",
+          "lineitem"
+        ],
+        "measures": [
+          "net_revenue",
+          "order_count"
+        ],
+        "dimension_keys": [
+          "o_custkey",
+          "p_partkey"
+        ]
+      }
+    ],
+    "dimensions": [
+      {
+        "rationale": "Customer dimension containing demographic and geographic details, connected to nation.",
+        "open_questions": [],
+        "name": "dim_customer",
+        "business_key": [
+          "c_custkey"
+        ],
+        "source_table": "customer",
+        "attributes": [
+          "c_name",
+          "c_address",
+          "c_nationkey",
+          "c_phone",
+          "c_acctbal",
+          "c_mktsegment"
+        ]
+      },
+      {
+        "rationale": "Nation dimension containing nation names for geographic grouping.",
+        "open_questions": [],
+        "name": "dim_nation",
+        "business_key": [
+          "n_nationkey"
+        ],
+        "source_table": "nation",
+        "attributes": [
+          "n_name",
+          "n_regionkey"
+        ]
+      },
+      {
+        "rationale": "Part dimension containing product details and product types.",
+        "open_questions": [],
+        "name": "dim_part",
+        "business_key": [
+          "p_partkey"
+        ],
+        "source_table": "part",
+        "attributes": [
+          "p_name",
+          "p_mfgr",
+          "p_brand",
+          "p_type",
+          "p_size",
+          "p_container",
+          "p_retailprice"
+        ]
+      }
+    ],
+    "keys": [
+      {
+        "rationale": "Primary key for customer dimension.",
+        "open_questions": [],
+        "table": "dim_customer",
+        "columns": [
+          "c_custkey"
+        ],
+        "kind": "primary"
+      },
+      {
+        "rationale": "Primary key for nation dimension.",
+        "open_questions": [],
+        "table": "dim_nation",
+        "columns": [
+          "n_nationkey"
+        ],
+        "kind": "primary"
+      },
+      {
+        "rationale": "Primary key for part dimension.",
+        "open_questions": [],
+        "table": "dim_part",
+        "columns": [
+          "p_partkey"
+        ],
+        "kind": "primary"
+      },
+      {
+        "rationale": "Primary key for the order sales fact table.",
+        "open_questions": [],
+        "table": "fct_order_sales",
+        "columns": [
+          "o_orderkey"
+        ],
+        "kind": "primary"
+      }
+    ],
+    "relationships": [
+      {
+        "rationale": "Customer belongs to a nation.",
+        "open_questions": [],
+        "child_table": "dim_customer",
+        "child_columns": [
+          "c_nationkey"
+        ],
+        "parent_table": "dim_nation",
+        "parent_columns": [
+          "n_nationkey"
+        ],
+        "cardinality": "many_to_one"
+      }
+    ],
+    "metrics": [
+      {
+        "rationale": "Total net revenue calculated from line items excluding returned items.",
+        "open_questions": [],
+        "name": "total_revenue",
+        "definition": "Sum of extended price times one minus discount for non-returned items",
+        "expression": "sum(net_revenue)",
+        "fact_table": "fct_order_sales"
+      },
+      {
+        "rationale": "Total count of orders placed.",
+        "open_questions": [],
+        "name": "order_count",
+        "definition": "Count of distinct orders",
+        "expression": "count(order_count)",
+        "fact_table": "fct_order_sales"
+      }
+    ],
+    "cleaning_rules": [],
+    "update_policy": {
+      "rationale": "Full refresh mode for snapshot replace load strategy.",
+      "open_questions": [],
+      "mode": "snapshot_replace",
+      "required_files": [
+        "orders.csv",
+        "lineitem.csv",
+        "customer.csv",
+        "nation.csv",
+        "part.csv"
+      ]
+    },
+    "dashboard": {
+      "rationale": "Dashboard requirements supporting sales revenue and order counts over time, customer nation, and product type.",
+      "open_questions": [],
+      "metrics": [
+        "total_revenue",
+        "order_count"
+      ],
+      "dimensions": [
+        "n_name",
+        "p_type",
+        "o_orderdate"
+      ],
+      "filters": [
+        "n_name",
+        "p_type"
+      ],
+      "cards": [
+        {
+          "key": "card_revenue_over_time",
+          "title": "Revenue Over Time",
+          "type": "line",
+          "metric": "total_revenue",
+          "dimension": "o_orderdate"
+        },
+        {
+          "key": "card_order_counts",
+          "title": "Order Counts by Nation",
+          "type": "bar",
+          "metric": "order_count",
+          "dimension": "n_name"
+        }
+      ]
+    },
+    "constraints": [
+      {
+        "layer": "mart",
+        "model": "fct_order_sales",
+        "columns": [
+          "o_orderkey"
+        ],
+        "kind": "not_null",
+        "params": {},
+        "evidence": null
+      },
+      {
+        "layer": "mart",
+        "model": "fct_order_sales",
+        "columns": [
+          "o_orderkey"
+        ],
+        "kind": "unique",
+        "params": {},
+        "evidence": null
+      }
+    ],
+    "assumptions": [
+      "Line items are aggregated to the order grain according to the confirmed user decision."
+    ]
+  },
+  "questions": []
+}

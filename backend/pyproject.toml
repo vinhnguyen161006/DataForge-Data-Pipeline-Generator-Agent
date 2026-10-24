@@ -73,6 +73,7 @@ runtime-evaluated-base-classes = [
 "tests/**" = ["S101"]
 "app/api/**" = ["TC001", "TC002", "TC003"]
 "app/api/schemas.py" = ["S105"]
+"app/profiler/profile.py" = ["S608"]
 "migrations/versions/**" = ["E501"]
 
 [tool.mypy]

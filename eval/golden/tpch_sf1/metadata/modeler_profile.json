@@ -1,0 +1,928 @@
+{
+  "tables": [
+    {
+      "name": "region",
+      "source_file": "region.csv",
+      "row_count": 5,
+      "columns": [
+        {
+          "name": "r_regionkey",
+          "inferred_type": "integer",
+          "row_count": 5,
+          "null_ratio": 0.0,
+          "distinct_count": 5,
+          "min_value": "0.0",
+          "max_value": "4.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "r_name",
+          "inferred_type": "string",
+          "row_count": 5,
+          "null_ratio": 0.0,
+          "distinct_count": 5,
+          "min_value": "AFRICA",
+          "max_value": "MIDDLE EAST",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "r_comment",
+          "inferred_type": "string",
+          "row_count": 5,
+          "null_ratio": 0.0,
+          "distinct_count": 5,
+          "min_value": " foxes boost furiously along the carefully dogged tithes. slyly regular orbits according to the special epit",
+          "max_value": "s are. furiously even pinto bea",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "nation",
+      "source_file": "nation.csv",
+      "row_count": 25,
+      "columns": [
+        {
+          "name": "n_nationkey",
+          "inferred_type": "integer",
+          "row_count": 25,
+          "null_ratio": 0.0,
+          "distinct_count": 25,
+          "min_value": "0.0",
+          "max_value": "24.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "n_name",
+          "inferred_type": "string",
+          "row_count": 25,
+          "null_ratio": 0.0,
+          "distinct_count": 25,
+          "min_value": "ALGERIA",
+          "max_value": "VIETNAM",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "n_regionkey",
+          "inferred_type": "integer",
+          "row_count": 25,
+          "null_ratio": 0.0,
+          "distinct_count": 5,
+          "min_value": "0.0",
+          "max_value": "4.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "n_comment",
+          "inferred_type": "string",
+          "row_count": 25,
+          "null_ratio": 0.0,
+          "distinct_count": 25,
+          "min_value": " beans after the carefully regular accounts r",
+          "max_value": "usly ironic, pending foxes. even, special instructions nag. sly, final foxes detect slyly fluffily ",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "supplier",
+      "source_file": "supplier.csv",
+      "row_count": 10000,
+      "columns": [
+        {
+          "name": "s_suppkey",
+          "inferred_type": "integer",
+          "row_count": 10000,
+          "null_ratio": 0.0,
+          "distinct_count": 10000,
+          "min_value": "1.0",
+          "max_value": "10000.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "s_name",
+          "inferred_type": "string",
+          "row_count": 10000,
+          "null_ratio": 0.0,
+          "distinct_count": 10000,
+          "min_value": "Supplier#000000001",
+          "max_value": "Supplier#000010000",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "s_address",
+          "inferred_type": "string",
+          "row_count": 10000,
+          "null_ratio": 0.0,
+          "distinct_count": 10000,
+          "min_value": "  3TLxhVMgyjeZyud",
+          "max_value": "zzeiHvqsHBhiLpxcRfnNDLw2SBc5EPaWKjgzw",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "s_nationkey",
+          "inferred_type": "integer",
+          "row_count": 10000,
+          "null_ratio": 0.0,
+          "distinct_count": 25,
+          "min_value": "0.0",
+          "max_value": "24.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "s_phone",
+          "inferred_type": "string",
+          "row_count": 10000,
+          "null_ratio": 0.0,
+          "distinct_count": 10000,
+          "min_value": "10-102-116-6785",
+          "max_value": "34-998-900-4911",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "s_acctbal",
+          "inferred_type": "float",
+          "row_count": 10000,
+          "null_ratio": 0.0,
+          "distinct_count": 9955,
+          "min_value": "-998.22",
+          "max_value": "9999.72",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "s_comment",
+          "inferred_type": "string",
+          "row_count": 10000,
+          "null_ratio": 0.0,
+          "distinct_count": 9998,
+          "min_value": " Tiresias cajole final excuses. c",
+          "max_value": "zzle-- final, unusual platelets above the c",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "customer",
+      "source_file": "customer.csv",
+      "row_count": 150000,
+      "columns": [
+        {
+          "name": "c_custkey",
+          "inferred_type": "integer",
+          "row_count": 150000,
+          "null_ratio": 0.0,
+          "distinct_count": 150000,
+          "min_value": "1.0",
+          "max_value": "150000.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "c_name",
+          "inferred_type": "string",
+          "row_count": 150000,
+          "null_ratio": 0.0,
+          "distinct_count": 150000,
+          "min_value": "Customer#000000001",
+          "max_value": "Customer#000150000",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "c_address",
+          "inferred_type": "string",
+          "row_count": 150000,
+          "null_ratio": 0.0,
+          "distinct_count": 150000,
+          "min_value": "   2Ksa,hc rgy7p",
+          "max_value": "zzyQcZpC50YDkK26Pglp",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "c_nationkey",
+          "inferred_type": "integer",
+          "row_count": 150000,
+          "null_ratio": 0.0,
+          "distinct_count": 25,
+          "min_value": "0.0",
+          "max_value": "24.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "c_phone",
+          "inferred_type": "string",
+          "row_count": 150000,
+          "null_ratio": 0.0,
+          "distinct_count": 150000,
+          "min_value": "10-100-106-1617",
+          "max_value": "34-999-618-6881",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "c_acctbal",
+          "inferred_type": "float",
+          "row_count": 150000,
+          "null_ratio": 0.0,
+          "distinct_count": 140187,
+          "min_value": "-999.99",
+          "max_value": "9999.99",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "c_mktsegment",
+          "inferred_type": "string",
+          "row_count": 150000,
+          "null_ratio": 0.0,
+          "distinct_count": 5,
+          "min_value": "AUTOMOBILE",
+          "max_value": "MACHINERY",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "c_comment",
+          "inferred_type": "string",
+          "row_count": 150000,
+          "null_ratio": 0.0,
+          "distinct_count": 148965,
+          "min_value": " Tiresias about the quickly express ideas detect quickly regular dependencies. even requests wake across the",
+          "max_value": "zzle. quickly bold accounts according to the ironic ideas affix",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "part",
+      "source_file": "part.csv",
+      "row_count": 200000,
+      "columns": [
+        {
+          "name": "p_partkey",
+          "inferred_type": "integer",
+          "row_count": 200000,
+          "null_ratio": 0.0,
+          "distinct_count": 200000,
+          "min_value": "1.0",
+          "max_value": "200000.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "p_name",
+          "inferred_type": "string",
+          "row_count": 200000,
+          "null_ratio": 0.0,
+          "distinct_count": 199997,
+          "min_value": "almond antique blue royal burnished",
+          "max_value": "yellow white seashell lavender black",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "p_mfgr",
+          "inferred_type": "string",
+          "row_count": 200000,
+          "null_ratio": 0.0,
+          "distinct_count": 5,
+          "min_value": "Manufacturer#1",
+          "max_value": "Manufacturer#5",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "p_brand",
+          "inferred_type": "string",
+          "row_count": 200000,
+          "null_ratio": 0.0,
+          "distinct_count": 25,
+          "min_value": "Brand#11",
+          "max_value": "Brand#55",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "p_type",
+          "inferred_type": "string",
+          "row_count": 200000,
+          "null_ratio": 0.0,
+          "distinct_count": 150,
+          "min_value": "ECONOMY ANODIZED BRASS",
+          "max_value": "STANDARD POLISHED TIN",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "p_size",
+          "inferred_type": "integer",
+          "row_count": 200000,
+          "null_ratio": 0.0,
+          "distinct_count": 50,
+          "min_value": "1.0",
+          "max_value": "50.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "p_container",
+          "inferred_type": "string",
+          "row_count": 200000,
+          "null_ratio": 0.0,
+          "distinct_count": 40,
+          "min_value": "JUMBO BAG",
+          "max_value": "WRAP PKG",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "p_retailprice",
+          "inferred_type": "float",
+          "row_count": 200000,
+          "null_ratio": 0.0,
+          "distinct_count": 20899,
+          "min_value": "901.0",
+          "max_value": "2098.99",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "p_comment",
+          "inferred_type": "string",
+          "row_count": 200000,
+          "null_ratio": 0.0,
+          "distinct_count": 130704,
+          "min_value": " Tires",
+          "max_value": "zzle? fur",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "partsupp",
+      "source_file": "partsupp.csv",
+      "row_count": 800000,
+      "columns": [
+        {
+          "name": "ps_partkey",
+          "inferred_type": "integer",
+          "row_count": 800000,
+          "null_ratio": 0.0,
+          "distinct_count": 200000,
+          "min_value": "1.0",
+          "max_value": "200000.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "ps_suppkey",
+          "inferred_type": "integer",
+          "row_count": 800000,
+          "null_ratio": 0.0,
+          "distinct_count": 10000,
+          "min_value": "1.0",
+          "max_value": "10000.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "ps_availqty",
+          "inferred_type": "integer",
+          "row_count": 800000,
+          "null_ratio": 0.0,
+          "distinct_count": 9999,
+          "min_value": "1.0",
+          "max_value": "9999.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "ps_supplycost",
+          "inferred_type": "float",
+          "row_count": 800000,
+          "null_ratio": 0.0,
+          "distinct_count": 99865,
+          "min_value": "1.0",
+          "max_value": "1000.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "ps_comment",
+          "inferred_type": "string",
+          "row_count": 800000,
+          "null_ratio": 0.0,
+          "distinct_count": 772739,
+          "min_value": " Tiresias about the carefully even packages detect quickly silent packages. ironic, pending ideas about the slyly unusual dolphins wake permanently package",
+          "max_value": "zzle. thinly regular deposits haggle blithely regular, regular instructions. carefully special instructions haggle final accounts. blithely special accoun",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "orders",
+      "source_file": "orders.csv",
+      "row_count": 1500000,
+      "columns": [
+        {
+          "name": "o_orderkey",
+          "inferred_type": "integer",
+          "row_count": 1500000,
+          "null_ratio": 0.0,
+          "distinct_count": 1500000,
+          "min_value": "1.0",
+          "max_value": "6000000.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "o_custkey",
+          "inferred_type": "integer",
+          "row_count": 1500000,
+          "null_ratio": 0.0,
+          "distinct_count": 99996,
+          "min_value": "1.0",
+          "max_value": "149999.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "o_orderstatus",
+          "inferred_type": "string",
+          "row_count": 1500000,
+          "null_ratio": 0.0,
+          "distinct_count": 3,
+          "min_value": "F",
+          "max_value": "P",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "o_totalprice",
+          "inferred_type": "float",
+          "row_count": 1500000,
+          "null_ratio": 0.0,
+          "distinct_count": 1464556,
+          "min_value": "857.71",
+          "max_value": "555285.16",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "o_orderdate",
+          "inferred_type": "string",
+          "row_count": 1500000,
+          "null_ratio": 0.0,
+          "distinct_count": 2406,
+          "min_value": "1992-01-01",
+          "max_value": "1998-08-02",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "o_orderpriority",
+          "inferred_type": "string",
+          "row_count": 1500000,
+          "null_ratio": 0.0,
+          "distinct_count": 5,
+          "min_value": "1-URGENT",
+          "max_value": "5-LOW",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "o_clerk",
+          "inferred_type": "string",
+          "row_count": 1500000,
+          "null_ratio": 0.0,
+          "distinct_count": 1000,
+          "min_value": "Clerk#000000001",
+          "max_value": "Clerk#000001000",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "o_shippriority",
+          "inferred_type": "integer",
+          "row_count": 1500000,
+          "null_ratio": 0.0,
+          "distinct_count": 1,
+          "min_value": "0.0",
+          "max_value": "0.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "o_comment",
+          "inferred_type": "string",
+          "row_count": 1500000,
+          "null_ratio": 0.0,
+          "distinct_count": 1387872,
+          "min_value": " Tiresias about the quickly express ideas detect quickly regular depen",
+          "max_value": "zzle? furiously ironic packages are sil",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    },
+    {
+      "name": "lineitem",
+      "source_file": "lineitem.csv",
+      "row_count": 6001215,
+      "columns": [
+        {
+          "name": "l_orderkey",
+          "inferred_type": "integer",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 1500000,
+          "min_value": "1.0",
+          "max_value": "6000000.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_partkey",
+          "inferred_type": "integer",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 200000,
+          "min_value": "1.0",
+          "max_value": "200000.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_suppkey",
+          "inferred_type": "integer",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 10000,
+          "min_value": "1.0",
+          "max_value": "10000.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_linenumber",
+          "inferred_type": "integer",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 7,
+          "min_value": "1.0",
+          "max_value": "7.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_quantity",
+          "inferred_type": "float",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 50,
+          "min_value": "1.0",
+          "max_value": "50.0",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_extendedprice",
+          "inferred_type": "float",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 933900,
+          "min_value": "901.0",
+          "max_value": "104949.5",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_discount",
+          "inferred_type": "float",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 11,
+          "min_value": "0.0",
+          "max_value": "0.1",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_tax",
+          "inferred_type": "float",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 9,
+          "min_value": "0.0",
+          "max_value": "0.08",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_returnflag",
+          "inferred_type": "string",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 3,
+          "min_value": "A",
+          "max_value": "R",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_linestatus",
+          "inferred_type": "string",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 2,
+          "min_value": "F",
+          "max_value": "O",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_shipdate",
+          "inferred_type": "string",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 2526,
+          "min_value": "1992-01-02",
+          "max_value": "1998-12-01",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_commitdate",
+          "inferred_type": "string",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 2466,
+          "min_value": "1992-01-31",
+          "max_value": "1998-10-31",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_receiptdate",
+          "inferred_type": "string",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 2554,
+          "min_value": "1992-01-04",
+          "max_value": "1998-12-31",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_shipinstruct",
+          "inferred_type": "string",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 4,
+          "min_value": "COLLECT COD",
+          "max_value": "TAKE BACK RETURN",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_shipmode",
+          "inferred_type": "string",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 7,
+          "min_value": "AIR",
+          "max_value": "TRUCK",
+          "sample_values": [],
+          "has_leading_zeros": false
+        },
+        {
+          "name": "l_comment",
+          "inferred_type": "string",
+          "row_count": 6001215,
+          "null_ratio": 0.0,
+          "distinct_count": 3610733,
+          "min_value": " Tiresias ",
+          "max_value": "zzle? furiously iro",
+          "sample_values": [],
+          "has_leading_zeros": false
+        }
+      ]
+    }
+  ],
+  "key_candidates": [
+    {
+      "table": "region",
+      "columns": [
+        "r_regionkey"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "nation",
+      "columns": [
+        "n_nationkey"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "supplier",
+      "columns": [
+        "s_suppkey"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "customer",
+      "columns": [
+        "c_custkey"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "part",
+      "columns": [
+        "p_partkey"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "partsupp",
+      "columns": [
+        "ps_partkey",
+        "ps_suppkey"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "orders",
+      "columns": [
+        "o_orderkey"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    },
+    {
+      "table": "lineitem",
+      "columns": [
+        "l_orderkey",
+        "l_linenumber"
+      ],
+      "is_unique_in_batch": true,
+      "null_count": 0
+    }
+  ],
+  "relationship_candidates": [
+    {
+      "child_table": "nation",
+      "child_columns": [
+        "n_regionkey"
+      ],
+      "parent_table": "region",
+      "parent_columns": [
+        "r_regionkey"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "supplier",
+      "child_columns": [
+        "s_nationkey"
+      ],
+      "parent_table": "nation",
+      "parent_columns": [
+        "n_nationkey"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "customer",
+      "child_columns": [
+        "c_nationkey"
+      ],
+      "parent_table": "nation",
+      "parent_columns": [
+        "n_nationkey"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "orders",
+      "child_columns": [
+        "o_custkey"
+      ],
+      "parent_table": "customer",
+      "parent_columns": [
+        "c_custkey"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "lineitem",
+      "child_columns": [
+        "l_orderkey"
+      ],
+      "parent_table": "orders",
+      "parent_columns": [
+        "o_orderkey"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "partsupp",
+      "child_columns": [
+        "ps_partkey"
+      ],
+      "parent_table": "part",
+      "parent_columns": [
+        "p_partkey"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "partsupp",
+      "child_columns": [
+        "ps_suppkey"
+      ],
+      "parent_table": "supplier",
+      "parent_columns": [
+        "s_suppkey"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    },
+    {
+      "child_table": "lineitem",
+      "child_columns": [
+        "l_partkey",
+        "l_suppkey"
+      ],
+      "parent_table": "partsupp",
+      "parent_columns": [
+        "ps_partkey",
+        "ps_suppkey"
+      ],
+      "match_ratio": 1.0,
+      "orphan_count": 0,
+      "parent_key_unique": true,
+      "fanout_warning": false,
+      "max_parent_matches": 1
+    }
+  ],
+  "notes": [
+    "Converted from the TPC-H SF1 golden statistical report.",
+    "Null ratios include these null-like tokens: [\"\", \"?\", \"NA\", \"N/A\", \"NULL\", \"null\", \"NaN\"]",
+    "Keys and relationships are batch observations, not approved constraints."
+  ]
+}

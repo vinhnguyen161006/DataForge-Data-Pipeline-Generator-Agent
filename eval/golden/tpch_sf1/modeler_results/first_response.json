@@ -1,0 +1,44 @@
+{
+  "design": null,
+  "questions": [
+    {
+      "topic": "grain",
+      "question": "What is the desired business grain for the sales fact table?",
+      "why": "The statistical profile contains both order-level data and lineitem-level data (parts, quantities, prices). We need to know whether each row in the fact table should represent an entire order or an individual line item to correctly compute metrics and join dimensions.",
+      "options": [
+        "Order grain (one row per order)",
+        "Line item grain (one row per order line item)"
+      ]
+    },
+    {
+      "topic": "metric",
+      "question": "How should revenue be calculated from the available financial columns?",
+      "why": "There are multiple ways to compute revenue using extended price, discount, and tax columns. We need to confirm the exact SQL formula.",
+      "options": [
+        "Sum of l_extendedprice",
+        "Sum of (l_extendedprice * (1 - l_discount))",
+        "Sum of (l_extendedprice * (1 - l_discount) * (1 + l_tax))"
+      ]
+    },
+    {
+      "topic": "metric",
+      "question": "Which date field should be used as the reporting date for the over-time analysis?",
+      "why": "Both orders and lineitems have multiple date fields available (e.g., order date, ship date, commit date, receipt date), which can significantly alter historical trend results.",
+      "options": [
+        "Order date (o_orderdate)",
+        "Ship date (l_shipdate)",
+        "Receipt date (l_receiptdate)"
+      ]
+    },
+    {
+      "topic": "metric",
+      "question": "How should returned items (l_returnflag) and order statuses be handled in revenue and order counts?",
+      "why": "The profile reveals return flags and order statuses. We need to know if returned items or specific statuses should be excluded or kept for revenue and order count calculations.",
+      "options": [
+        "Include all items and orders regardless of return flag or status",
+        "Exclude returned items (l_returnflag = 'R') from revenue",
+        "Include only specific order statuses"
+      ]
+    }
+  ]
+}
