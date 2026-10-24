@@ -94,4 +94,4 @@ Unit test kiểm tra readiness, retry startup, timeout, cancellation, task exit 
 
 Integration test tạo app mới với engine, graph và PostgreSQL checkpoint pool mới; đi qua lifespan và HTTP polling qua ASGI. Các trường hợp gồm run chưa khởi động, chờ job, kết quả hoàn thành khi API tắt, Cổng 1, clarification và hai startup đồng thời. Modeler dùng output xác định, không gọi dịch vụ LLM.
 
-Bài kiểm thử đóng hoàn toàn ứng dụng tạo run rồi mở ứng dụng khác, gửi quyết định tiếp tục và diễn tập dừng process Compose được thực hiện riêng. Xem thêm [worker-lifecycle.md](worker-lifecycle.md) về giao kết quả sau crash.
+Bộ [run-recovery.md](run-recovery.md) đóng toàn bộ ứng dụng A đang chờ Cổng 1, mở ứng dụng B với tài nguyên mới, so sánh điểm chờ và gửi quyết định qua HTTP. Các trường hợp gồm approve, sửa rồi approve, return, request trùng và identity cũ. Diễn tập dừng process Compose và SIGKILL vẫn cần thực hiện riêng. Xem thêm [worker-lifecycle.md](worker-lifecycle.md) về giao kết quả sau crash.
