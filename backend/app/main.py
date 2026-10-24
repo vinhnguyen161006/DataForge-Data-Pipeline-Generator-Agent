@@ -68,7 +68,7 @@ def make_lifespan(settings: ApiSettings, open_checkpointer: CheckpointerFactory)
             async with open_checkpointer(settings.checkpoint_database_url) as checkpointer:
                 sessionmaker = make_sessionmaker(engine)
                 graph = build_graph(checkpointer)
-                context = make_graph_context(sessionmaker, make_llm(settings))
+                context = make_graph_context(sessionmaker, make_llm(settings), settings.optimizer)
                 app.state.sessionmaker = sessionmaker
                 app.state.graph = graph
                 app.state.graph_context = context

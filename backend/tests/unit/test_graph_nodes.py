@@ -13,6 +13,7 @@ from app.graph.context import GraphContext
 from app.graph.design_store import DesignNotApprovedError
 from app.graph.interrupts import JobWait
 from app.graph.state import PipelineState
+from app.jobs.reports import DbtTestResult, ExecutionReportData, ModelMetrics
 from app.profiler.schemas import DataProfile
 from app.services.runs import run_view
 
@@ -74,6 +75,79 @@ def test_only_an_approved_design_reaches_codegen(state: PipelineState, expected:
 async def test_codegen_refuses_an_unapproved_design(state: PipelineState) -> None:
     with pytest.raises(DesignNotApprovedError):
         await nodes.codegen_node(state, unused_runtime())
+
+
+@pytest.mark.parametrize(
+    ("state", "expected"),
+    [
+        ({"code_version_id": "c1", "failure_report": None}, "execute"),
+        ({"failure_report": "Guard rejected the generated files: x"}, "codegen"),
+        ({"failure_report": "x", "error": "Code still failing"}, "__end__"),
+    ],
+)
+def test_route_after_codegen(state: PipelineState, expected: str) -> None:
+    assert nodes.route_after_codegen(state) == expected
+
+
+@pytest.mark.parametrize(
+    ("state", "expected"),
+    [
+        ({"execution_report": {}, "failure_report": None}, "optimize"),
+        ({"failure_report": "dbt compile failed"}, "codegen"),
+        ({"error": "Sandbox build failed: timeout"}, "__end__"),
+        ({"failure_report": "x", "error": "Code still failing"}, "__end__"),
+    ],
+)
+def test_route_after_execute(state: PipelineState, expected: str) -> None:
+    assert nodes.route_after_execute(state) == expected
+
+
+def test_failures_are_repaired_until_the_budget_is_spent() -> None:
+    first = nodes.code_failure(attempts=0, budget=2, report="dbt compile failed")
+    last = nodes.code_failure(attempts=2, budget=2, report="dbt compile failed")
+    assert first == {"failure_report": "dbt compile failed", "fix_attempts": 0}
+    assert last["error"] == "Code still failing after 2 repair attempts: dbt compile failed"
+
+
+def test_no_budget_ends_on_the_first_failure() -> None:
+    assert "error" in nodes.code_failure(attempts=0, budget=0, report="boom")
+
+
+def passing_report() -> ExecutionReportData:
+    return ExecutionReportData(
+        compiled=True,
+        succeeded=True,
+        models=[ModelMetrics(model_name="fct_orders", status="success", seconds=0.4)],
+        tests=[
+            DbtTestResult(
+                test_name="unique_order_id", model_name="fct_orders", status="pass", failures=0
+            )
+        ],
+    )
+
+
+def test_a_clean_build_has_no_failure() -> None:
+    assert nodes.build_failure(passing_report()) is None
+
+
+def test_a_failing_test_fails_the_build_even_when_dbt_succeeded() -> None:
+    report = passing_report()
+    report.tests[0].status = "fail"
+    report.tests[0].failures = 3
+    assert nodes.build_failure(report) == (
+        "test unique_order_id on fct_orders: fail, 3 failing rows"
+    )
+
+
+def test_compile_errors_are_reported_first() -> None:
+    report = ExecutionReportData(compiled=False, succeeded=False, error="Parser Error near FROM")
+    assert nodes.build_failure(report) == "Parser Error near FROM; dbt compile failed"
+
+
+def test_unsuccessful_build_without_details_still_fails() -> None:
+    report = passing_report()
+    report.succeeded = False
+    assert nodes.build_failure(report) == "dbt build did not succeed"
 
 
 def test_run_view_reports_the_pending_interrupt() -> None:

@@ -4,7 +4,15 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Approval, ApprovalDecision, DesignVersion, Gate, SourceFile
+from app.db.models import (
+    Approval,
+    ApprovalDecision,
+    CodeVersion,
+    DesignVersion,
+    ExecutionReport,
+    Gate,
+    SourceFile,
+)
 
 PRESENTED_VERSION_PART = "presented_design_version_id"
 
@@ -105,6 +113,19 @@ def design_decision(
         independent_review=False,
         comment=comment,
     )
+
+
+async def next_code_version(session: AsyncSession, run_id: uuid.UUID) -> int:
+    latest: int | None = await session.scalar(
+        select(func.max(CodeVersion.version)).where(CodeVersion.run_id == run_id)
+    )
+    return (latest or 0) + 1
+
+
+async def has_execution_report(session: AsyncSession, job_id: uuid.UUID) -> bool:
+    """A delivered build job is recorded once, even when its node re-runs after a crash."""
+    found = await session.scalar(select(ExecutionReport.id).where(ExecutionReport.job_id == job_id))
+    return found is not None
 
 
 async def assert_design_approved(session: AsyncSession, design_version_id: uuid.UUID) -> None:

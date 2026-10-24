@@ -1,34 +1,8 @@
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
-
+from app.jobs.reports import ExecutionReportData
 from worker.sandbox import Limits
-
-
-class ModelMetrics(BaseModel):
-    model_name: str
-    status: str
-    seconds: float
-    rows_scanned: int | None = None
-    peak_memory_bytes: int | None = None
-
-
-class DbtTestResult(BaseModel):
-    test_name: str
-    model_name: str
-    status: str
-    failures: int
-
-
-class ExecutionReportData(BaseModel):
-    compiled: bool
-    succeeded: bool
-    models: list[ModelMetrics] = Field(default_factory=list)
-    tests: list[DbtTestResult] = Field(default_factory=list)
-    quarantine_counts: dict[str, int] = Field(default_factory=dict)
-    total_seconds: float = 0.0
-    error: str | None = None
 
 
 def prepare_workspace(code_dir: Path, raw_dir: Path, workspace: Path) -> None:

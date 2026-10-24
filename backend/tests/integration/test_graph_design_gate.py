@@ -339,7 +339,7 @@ async def test_real_codegen_guard_lets_an_approved_design_through(setup: Fixture
 
     assert run.status is RunStatus.FAILED
     assert run.error is not None
-    assert run.error.startswith("NotImplementedError")
+    assert run.error == "RuntimeError: No code generator is configured for this graph context"
 
 
 async def test_a_second_decision_is_rejected(setup: Fixture) -> None:

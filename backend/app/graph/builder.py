@@ -30,7 +30,7 @@ def build_graph(checkpointer: BaseCheckpointSaver[str]) -> PipelineGraph:
     graph.add_conditional_edges("modeler", nodes.route_after_modeler)
     graph.add_edge("clarify", "modeler")
     graph.add_conditional_edges("design_gate", nodes.route_after_design_gate)
-    graph.add_edge("codegen", "execute")
+    graph.add_conditional_edges("codegen", nodes.route_after_codegen)
     graph.add_conditional_edges("execute", nodes.route_after_execute)
     graph.add_edge("optimize", "code_gate")
     graph.add_conditional_edges("code_gate", nodes.route_after_code_gate)
