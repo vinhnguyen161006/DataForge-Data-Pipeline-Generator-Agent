@@ -7,7 +7,6 @@ by a retry carrying identical bytes; final raw files are never blindly deleted.
 """
 
 import csv
-import hashlib
 import uuid
 from collections.abc import Callable
 from pathlib import Path
@@ -22,6 +21,7 @@ from app.api.schemas import BatchOut, SourceFileOut
 from app.db.models import Batch, BatchStatus, SourceFile
 from app.ingest.filenames import csv_filename, required_filenames
 from app.ingest.manifest import BatchManifest, BatchManifestFile
+from app.ingest.snapshot import verify_snapshot
 from app.ingest.sniff import CsvReadConfig, SniffResult, read_csv_preview, sniff_csv
 from app.ingest.storage import Storage, UploadTooLargeError, file_digest, stream_digest
 
@@ -298,19 +298,10 @@ async def mark_batch_ready(
 
 
 def _verify_published(storage: Storage, snapshot: BatchManifest, digest: str) -> None:
-    _check_snapshot_files(storage, snapshot)
-    path = storage.manifest_path(snapshot.project_id, snapshot.batch_id)
-    marker = storage.marker_path(snapshot.project_id, snapshot.batch_id)
-    if not path.is_file() or not marker.is_file():
-        raise BatchError("Batch publication is incomplete")
-    content = path.read_bytes()
-    parsed = BatchManifest.model_validate_json(content)
-    if (
-        hashlib.sha256(content).hexdigest() != digest
-        or parsed.canonical_bytes() != snapshot.canonical_bytes()
-        or marker.read_bytes() != (digest + "\n").encode("ascii")
-    ):
-        raise BatchError("The manifest or readiness marker does not match the committed snapshot")
+    try:
+        verify_snapshot(storage, snapshot, digest)
+    except ValueError as exc:
+        raise BatchError(str(exc)) from exc
 
 
 async def assert_batch_ready(

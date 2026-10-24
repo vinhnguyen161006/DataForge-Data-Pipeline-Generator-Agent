@@ -134,9 +134,9 @@ profile_files(
 
 `LoadedTable` chỉ mang tên bảng và tên file nguồn để gắn metadata, không cấp quyền đọc file. Worker chịu trách nhiệm load/config/lock/close. Profiler dùng connection được cấp, không tự `duckdb.connect()`, đọc CSV lại hoặc đóng connection của caller.
 
-Thuật toán `profile_files()` vẫn là stub của module profiler. SQL thống kê trong test chạy thật; chưa phải bằng chứng toàn bộ `DataProfile` hoặc queue → runner hoàn chỉnh. Reopen trả metadata nguồn rỗng; caller muốn profiling lại phải lấy mapping từ manifest đã kiểm chứng, không đoán từ database.
+Profiler và runner đã được triển khai qua child thật; xem [profile-runner.md](profile-runner.md) về giao thức, thống kê và kiểm chứng tích hợp. Reopen trả metadata nguồn rỗng; caller muốn profiling lại phải lấy mapping từ manifest đã kiểm chứng, không đoán từ database.
 
-Các bước nối runner tiếp theo: kiểm tra READY/hash/identity, tạo workspace theo run/job/attempt, staging bảo vệ raw gốc, giao thức JSON child và validate `DataProfile` trước lưu job. Không viết profiler thứ hai trong runner.
+Runner hiện kiểm tra READY/hash/identity, staging và JSON qua child có giới hạn filesystem. Worker loop, heartbeat và delivery tự động vẫn là phần tích hợp tiếp theo.
 
 ## Chạy kiểm chứng
 

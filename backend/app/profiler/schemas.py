@@ -1,45 +1,49 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
-class ColumnProfile(BaseModel):
+class ProfileModel(BaseModel):
+    model_config = ConfigDict(extra="forbid", allow_inf_nan=False)
+
+
+class ColumnProfile(ProfileModel):
     name: str
     inferred_type: str
-    row_count: int
-    null_ratio: float
-    distinct_count: int
+    row_count: int = Field(ge=0, strict=True)
+    null_ratio: float = Field(ge=0, le=1)
+    distinct_count: int = Field(ge=0, strict=True)
     min_value: str | None = None
     max_value: str | None = None
     sample_values: list[str] = Field(default_factory=list, max_length=5)
     has_leading_zeros: bool = False
 
 
-class KeyCandidate(BaseModel):
+class KeyCandidate(ProfileModel):
     table: str
     columns: list[str]
     is_unique_in_batch: bool
-    null_count: int
+    null_count: int = Field(ge=0, strict=True)
 
 
-class RelationshipCandidate(BaseModel):
+class RelationshipCandidate(ProfileModel):
     child_table: str
     child_columns: list[str]
     parent_table: str
     parent_columns: list[str]
-    match_ratio: float
-    orphan_count: int
+    match_ratio: float = Field(ge=0, le=1)
+    orphan_count: int = Field(ge=0, strict=True)
     parent_key_unique: bool
     fanout_warning: bool
-    max_parent_matches: int
+    max_parent_matches: int = Field(ge=0, strict=True)
 
 
-class TableProfile(BaseModel):
+class TableProfile(ProfileModel):
     name: str
     source_file: str
-    row_count: int
+    row_count: int = Field(ge=0, strict=True)
     columns: list[ColumnProfile]
 
 
-class DataProfile(BaseModel):
+class DataProfile(ProfileModel):
     """The only data description ever sent to the LLM. Never add raw rows here."""
 
     tables: list[TableProfile]
@@ -48,7 +52,7 @@ class DataProfile(BaseModel):
     notes: list[str] = Field(default_factory=list)
 
 
-class LoadedTable(BaseModel):
+class LoadedTable(ProfileModel):
     """A materialized source table; no source filesystem access is needed for profiling."""
 
     name: str

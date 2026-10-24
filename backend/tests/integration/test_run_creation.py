@@ -293,12 +293,13 @@ async def test_ready_batch_creates_committed_run_job_and_checkpoint(
     assert job.status == JobStatus.QUEUED
     assert job.idempotency_key == f"profile:{run_id}"
     assert job.payload["batch_id"] == str(creation.batch_id)
-    assert [entry["filename"] for entry in job.payload["files"]] == ["customers.csv", "orders.csv"]
-    for entry in job.payload["files"]:
-        assert entry["storage_path"] == str(
-            creation.storage.raw_path(creation.project_id, creation.batch_id, entry["filename"])
-        )
-        assert entry["read_config"] == CsvReadConfig(null_tokens=["", "NA"]).model_dump(mode="json")
+    assert job.payload["schema_version"] == 1
+    assert job.payload["project_id"] == str(creation.project_id)
+    async with creation.factory() as session:
+        batch = await session.get(Batch, creation.batch_id)
+        assert batch is not None
+        assert job.payload["manifest_sha256"] == batch.manifest_sha256
+    assert "files" not in job.payload
     snapshot = await creation.graph.aget_state(service.thread_config(run_id))
     assert snapshot.values["run_id"] == str(run_id)
     assert snapshot.values["project_id"] == str(creation.project_id)
