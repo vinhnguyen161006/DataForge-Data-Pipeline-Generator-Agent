@@ -64,4 +64,4 @@ Kiểm tra trên Linux/WSL với PostgreSQL test:
 
 Graph giữ các node thật từ profile đến Cổng 1, thay Modeler bằng output xác định và thay phần sau duyệt bằng codegen probe có kiểm tra approval trong DB. Probe nối tới END; trạng thái kết thúc của graph nhỏ không chứng minh pipeline đã sinh mã hoặc publish thật.
 
-Diễn tập dừng process backend bằng Compose và SIGKILL cần thực hiện riêng để kiểm chứng restart container. Chưa đánh dấu hoàn tất toàn bộ FR-21 chỉ dựa vào bộ test này. Xem [application-recovery.md](application-recovery.md) về startup và [worker-lifecycle.md](worker-lifecycle.md) về worker, lease và delivery sau crash.
+Diễn tập dừng process backend bằng Compose và SIGKILL đã được kiểm chứng riêng trong [backend-restart.md](backend-restart.md), dùng database/storage diễn tập cùng Modeler xác định. Các bài này nghiệm thu khôi phục Cổng 1; các ranh giới lỗi và Cổng 2 của FR-21 cần kiểm thử tương ứng. Xem [application-recovery.md](application-recovery.md) về startup và [worker-lifecycle.md](worker-lifecycle.md) về worker, lease và delivery sau crash.

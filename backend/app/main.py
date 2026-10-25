@@ -26,6 +26,8 @@ from app.services.runs import job_delivery_loop
 
 CheckpointerFactory = Callable[[str], AbstractAsyncContextManager[BaseCheckpointSaver[str]]]
 Lifespan = Callable[[FastAPI], AbstractAsyncContextManager[None]]
+GraphBuilder = Callable[[BaseCheckpointSaver[str]], PipelineGraph]
+ContextBuilder = Callable[[async_sessionmaker[AsyncSession], StructuredLLM], GraphContext]
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +75,13 @@ async def job_delivery(
         await stop_delivery(task, delivery_status)
 
 
-def make_lifespan(settings: ApiSettings, open_checkpointer: CheckpointerFactory) -> Lifespan:
+def make_lifespan(
+    settings: ApiSettings,
+    open_checkpointer: CheckpointerFactory,
+    *,
+    graph_builder: GraphBuilder | None = None,
+    context_builder: ContextBuilder | None = None,
+) -> Lifespan:
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         """Own the process-wide resources and release them on shutdown.
@@ -88,8 +96,8 @@ def make_lifespan(settings: ApiSettings, open_checkpointer: CheckpointerFactory)
         try:
             async with open_checkpointer(settings.checkpoint_database_url) as checkpointer:
                 sessionmaker = make_sessionmaker(engine)
-                graph = build_graph(checkpointer)
-                context = make_graph_context(sessionmaker, make_llm(settings))
+                graph = (graph_builder or build_graph)(checkpointer)
+                context = (context_builder or make_graph_context)(sessionmaker, make_llm(settings))
                 app.state.sessionmaker = sessionmaker
                 app.state.graph = graph
                 app.state.graph_context = context
@@ -105,10 +113,23 @@ def make_lifespan(settings: ApiSettings, open_checkpointer: CheckpointerFactory)
     return lifespan
 
 
-def create_app(open_checkpointer: CheckpointerFactory = open_postgres_checkpointer) -> FastAPI:
+def create_app(
+    open_checkpointer: CheckpointerFactory = open_postgres_checkpointer,
+    *,
+    graph_builder: GraphBuilder | None = None,
+    context_builder: ContextBuilder | None = None,
+) -> FastAPI:
     settings = get_api_settings()
     configure_logging(settings.log_level)
-    app = FastAPI(title="DataForge", lifespan=make_lifespan(settings, open_checkpointer))
+    app = FastAPI(
+        title="DataForge",
+        lifespan=make_lifespan(
+            settings,
+            open_checkpointer,
+            graph_builder=graph_builder,
+            context_builder=context_builder,
+        ),
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,

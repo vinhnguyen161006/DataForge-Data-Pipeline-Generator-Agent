@@ -1,0 +1,73 @@
+{
+  "cases": [
+    {
+      "api_projection_preserved": true,
+      "approval_count": 1,
+      "backend_started_after": "2026-10-25T05:07:35.96507127Z",
+      "backend_started_before": "2026-10-25T05:07:09.33395953Z",
+      "batch_id": "4674e8e0-6b2c-4a9d-bccf-0b0580d003bd",
+      "checks_passed": true,
+      "codegen_probe_calls": 1,
+      "database_and_checkpoint_preserved": true,
+      "design_hash": "4d995d6f1517ff7bde520f977ed0baed62ac4eb34fe52d1bc0d6b9d767794f23",
+      "design_version_id": "6938b1df-9ac2-4f44-8b2b-bdd9c10dd647",
+      "duplicate_status": 409,
+      "interrupt_id": "05fb0019977ea8d2be6edb6aaefae013",
+      "job_count": 1,
+      "mode": "clean",
+      "modeler_calls": 1,
+      "postgres_worker_and_mounts_preserved": true,
+      "profile_attempts": 1,
+      "run_id": "9a5a3e94-72b0-47a6-8471-7aff71d812d0",
+      "stop_exit_code": 0,
+      "thread_id": "9a5a3e94-72b0-47a6-8471-7aff71d812d0"
+    },
+    {
+      "api_projection_preserved": true,
+      "approval_count": 1,
+      "backend_started_after": "2026-10-25T05:08:18.562767078Z",
+      "backend_started_before": "2026-10-25T05:07:35.96507127Z",
+      "batch_id": "788bb129-43d4-4ac3-9422-2b37e9e8d393",
+      "checks_passed": true,
+      "codegen_probe_calls": 1,
+      "database_and_checkpoint_preserved": true,
+      "design_hash": "4d995d6f1517ff7bde520f977ed0baed62ac4eb34fe52d1bc0d6b9d767794f23",
+      "design_version_id": "349e6677-d618-41b5-9e68-d0d2774df4d1",
+      "duplicate_status": 409,
+      "interrupt_id": "f7b8e7ed6304352a1f8b8f0b6829e6ed",
+      "job_count": 1,
+      "mode": "abrupt",
+      "modeler_calls": 1,
+      "postgres_worker_and_mounts_preserved": true,
+      "profile_attempts": 1,
+      "run_id": "d3b46f2d-f544-421a-b592-d69ba639e818",
+      "stop_exit_code": 137,
+      "thread_id": "d3b46f2d-f544-421a-b592-d69ba639e818"
+    }
+  ],
+  "database": "dataforge_recovery",
+  "evidence_directory": "data/restart-checks/20261025T050700Z-cb32f4c9",
+  "finished_at": "2026-10-25T05:08:55.871847+00:00",
+  "passed": true,
+  "project_id": "e019c552-778b-4c19-8d80-52d7c71e144c",
+  "restored_default_backend": true,
+  "scenario_checks_passed": true,
+  "schema_version": 1,
+  "scope": "Gate 1 recovery with native profile worker, deterministic Modeler and codegen probe",
+  "started_at": "2026-10-25T05:07:00.493315+00:00",
+  "verification": {
+    "additional_mount_order_regression": {
+      "passed": 1
+    },
+    "backend_suite": {
+      "passed": 1210,
+      "skipped": 16
+    },
+    "conventions": "passed",
+    "mypy": "passed",
+    "related_tests": {
+      "passed": 37
+    },
+    "ruff": "passed"
+  }
+}
