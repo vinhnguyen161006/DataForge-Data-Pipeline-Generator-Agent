@@ -20,7 +20,7 @@ def model_test(constraint: Constraint) -> Any:
     """Map composite-unique or expression constraints to dataforge generic tests."""
     test_name = f"dataforge_{constraint.kind}"
     params = constraint.params.copy()
-    
+
     if len(constraint.columns) > 1 and constraint.kind != "expression":
         params["columns"] = constraint.columns
     elif constraint.columns:
@@ -31,10 +31,7 @@ def model_test(constraint: Constraint) -> Any:
 
 def schema_yml(design: DataDesign) -> dict[str, str]:
     """Return schema configurations mapped by file path built ONLY from approved constraints."""
-    layers_data: dict[str, dict[str, Any]] = {
-        "silver": {"models": {}},
-        "mart": {"models": {}}
-    }
+    layers_data: dict[str, dict[str, Any]] = {"silver": {"models": {}}, "mart": {"models": {}}}
 
     for constraint in design.constraints:
         layer = constraint.layer
@@ -44,11 +41,14 @@ def schema_yml(design: DataDesign) -> dict[str, str]:
             layers_data[layer]["models"][model_name] = {
                 "name": model_name,
                 "columns": {},
-                "tests": []
+                "tests": [],
             }
 
         is_single = len(constraint.columns) == 1 and constraint.kind in [
-            "not_null", "unique", "accepted_values", "relationship"
+            "not_null",
+            "unique",
+            "accepted_values",
+            "relationship",
         ]
 
         test_entry = column_test(constraint) if is_single else model_test(constraint)
@@ -67,9 +67,11 @@ def schema_yml(design: DataDesign) -> dict[str, str]:
             if col_name not in layers_data[layer]["models"][model_name]["columns"]:
                 layers_data[layer]["models"][model_name]["columns"][col_name] = {
                     "name": col_name,
-                    "tests": []
+                    "tests": [],
                 }
-            layers_data[layer]["models"][model_name]["columns"][col_name]["tests"].append(test_entry)
+            layers_data[layer]["models"][model_name]["columns"][col_name]["tests"].append(
+                test_entry
+            )
         else:
             layers_data[layer]["models"][model_name]["tests"].append(test_entry)
 
@@ -79,12 +81,12 @@ def schema_yml(design: DataDesign) -> dict[str, str]:
         for model_name, model_data in data["models"].items():
             final_model = {"name": model_name}
             cols_list = list(model_data["columns"].values())
-            
+
             if cols_list:
                 final_model["columns"] = cols_list
             if model_data["tests"]:
                 final_model["tests"] = model_data["tests"]
-                
+
             models_list.append(final_model)
 
         if models_list:
