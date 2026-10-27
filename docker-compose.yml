@@ -58,7 +58,7 @@ services:
       retries: 20
 
   qdrant:
-    image: qdrant/qdrant:v1.19.1
+    image: qdrant/qdrant:v1.20.0
     volumes:
       - qdrant-data:/qdrant/storage
     ports:
