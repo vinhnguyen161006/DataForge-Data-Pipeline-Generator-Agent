@@ -1,0 +1,518 @@
+{
+  "facts": [
+    {
+      "name": "fact_lineitem",
+      "grain": "M\u1ed9t d\u00f2ng h\u00e0ng trong m\u1ed9t \u0111\u01a1n",
+      "source_tables": [
+        "lineitem"
+      ],
+      "measures": [
+        "l_quantity",
+        "l_extendedprice",
+        "l_discount",
+        "l_tax"
+      ],
+      "dimension_keys": [
+        "dim_order",
+        "dim_partsupp"
+      ],
+      "rationale": "Kh\u00f3a (l_orderkey, l_linenumber) duy nh\u1ea5t 100% tr\u00ean 6.001.215 d\u00f2ng \u0111\u00e3 \u0111o.",
+      "open_questions": [
+        "TPC-01: l_extendedprice l\u00e0 th\u00e0nh ti\u1ec1n c\u1ee7a d\u00f2ng (x\u00e1c nh\u1eadn m\u1ed9t ph\u1ea7n t\u1eeb \u0111\u1ecbnh ngh\u0129a Q1, ngu\u1ed3n th\u1ee9 c\u1ea5p).",
+        "TPC-02: doanh thu sau chi\u1ebft kh\u1ea5u, kh\u00f4ng thu\u1ebf (x\u00e1c nh\u1eadn m\u1ed9t ph\u1ea7n)."
+      ]
+    },
+    {
+      "name": "fact_order",
+      "grain": "M\u1ed9t \u0111\u01a1n h\u00e0ng",
+      "source_tables": [
+        "orders"
+      ],
+      "measures": [
+        "o_totalprice"
+      ],
+      "dimension_keys": [
+        "dim_customer"
+      ],
+      "rationale": "M\u1ed7i \u0111\u01a1n m\u1ed9t d\u00f2ng; o_orderkey duy nh\u1ea5t 100% (1.500.000 d\u00f2ng).",
+      "open_questions": [
+        "TPC-03: o_totalprice c\u00f3 b\u1eb1ng t\u1ed5ng c\u00e1c d\u00f2ng lineitem kh\u00f4ng? Ch\u01b0a x\u00e1c nh\u1eadn."
+      ]
+    }
+  ],
+  "dimensions": [
+    {
+      "name": "dim_order",
+      "business_key": [
+        "o_orderkey"
+      ],
+      "source_table": "orders",
+      "attributes": [
+        "o_custkey",
+        "o_orderstatus",
+        "o_orderdate",
+        "o_orderpriority"
+      ],
+      "rationale": "D\u00f9ng l\u00e0m chi\u1ec1u th\u1eddi gian v\u00e0 tr\u1ea1ng th\u00e1i; kh\u00f3a duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "name": "dim_customer",
+      "business_key": [
+        "c_custkey"
+      ],
+      "source_table": "customer",
+      "attributes": [
+        "c_name",
+        "c_nationkey",
+        "c_mktsegment"
+      ],
+      "rationale": "Kh\u00e1ch c\u00f3 kh\u00f3a duy nh\u1ea5t 100% (150.000 d\u00f2ng).",
+      "open_questions": []
+    },
+    {
+      "name": "dim_part",
+      "business_key": [
+        "p_partkey"
+      ],
+      "source_table": "part",
+      "attributes": [
+        "p_name",
+        "p_brand",
+        "p_type",
+        "p_size",
+        "p_retailprice"
+      ],
+      "rationale": "S\u1ea3n ph\u1ea9m c\u00f3 kh\u00f3a duy nh\u1ea5t 100% (200.000 d\u00f2ng).",
+      "open_questions": []
+    },
+    {
+      "name": "dim_supplier",
+      "business_key": [
+        "s_suppkey"
+      ],
+      "source_table": "supplier",
+      "attributes": [
+        "s_name",
+        "s_nationkey",
+        "s_acctbal"
+      ],
+      "rationale": "Nh\u00e0 cung c\u1ea5p c\u00f3 kh\u00f3a duy nh\u1ea5t 100% (10.000 d\u00f2ng).",
+      "open_questions": []
+    },
+    {
+      "name": "dim_nation",
+      "business_key": [
+        "n_nationkey"
+      ],
+      "source_table": "nation",
+      "attributes": [
+        "n_name",
+        "n_regionkey"
+      ],
+      "rationale": "25 qu\u1ed1c gia, kh\u00f3a duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "name": "dim_region",
+      "business_key": [
+        "r_regionkey"
+      ],
+      "source_table": "region",
+      "attributes": [
+        "r_name"
+      ],
+      "rationale": "5 v\u00f9ng, kh\u00f3a duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "name": "dim_partsupp",
+      "business_key": [
+        "ps_partkey",
+        "ps_suppkey"
+      ],
+      "source_table": "partsupp",
+      "attributes": [
+        "ps_availqty",
+        "ps_supplycost"
+      ],
+      "rationale": "C\u1ea7u n\u1ed1i N-N gi\u1eefa part v\u00e0 supplier; kh\u00f3a gh\u00e9p duy nh\u1ea5t 100% (800.000 d\u00f2ng).",
+      "open_questions": []
+    }
+  ],
+  "keys": [
+    {
+      "table": "fact_lineitem",
+      "columns": [
+        "l_orderkey",
+        "l_linenumber"
+      ],
+      "kind": "composite",
+      "rationale": "Duy nh\u1ea5t 100% (\u0111\u00e3 \u0111o sf = 1).",
+      "open_questions": []
+    },
+    {
+      "table": "fact_order",
+      "columns": [
+        "o_orderkey"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_order",
+      "columns": [
+        "o_orderkey"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_customer",
+      "columns": [
+        "c_custkey"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_part",
+      "columns": [
+        "p_partkey"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_supplier",
+      "columns": [
+        "s_suppkey"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_nation",
+      "columns": [
+        "n_nationkey"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_region",
+      "columns": [
+        "r_regionkey"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_partsupp",
+      "columns": [
+        "ps_partkey",
+        "ps_suppkey"
+      ],
+      "kind": "composite",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    }
+  ],
+  "relationships": [
+    {
+      "child_table": "fact_lineitem",
+      "child_columns": [
+        "l_orderkey"
+      ],
+      "parent_table": "dim_order",
+      "parent_columns": [
+        "o_orderkey"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i (\u0111\u00e3 \u0111o).",
+      "open_questions": []
+    },
+    {
+      "child_table": "fact_lineitem",
+      "child_columns": [
+        "l_partkey",
+        "l_suppkey"
+      ],
+      "parent_table": "dim_partsupp",
+      "parent_columns": [
+        "ps_partkey",
+        "ps_suppkey"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i (\u0111\u00e3 \u0111o); kh\u00f3a ngo\u1ea1i gh\u00e9p.",
+      "open_questions": []
+    },
+    {
+      "child_table": "fact_order",
+      "child_columns": [
+        "o_orderkey"
+      ],
+      "parent_table": "dim_order",
+      "parent_columns": [
+        "o_orderkey"
+      ],
+      "cardinality": "one_to_one",
+      "rationale": "C\u00f9ng m\u1ed9t \u0111\u01a1n; quan h\u1ec7 1-1 theo kh\u00f3a.",
+      "open_questions": []
+    },
+    {
+      "child_table": "dim_order",
+      "child_columns": [
+        "o_custkey"
+      ],
+      "parent_table": "dim_customer",
+      "parent_columns": [
+        "c_custkey"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i (\u0111\u00e3 \u0111o).",
+      "open_questions": []
+    },
+    {
+      "child_table": "dim_customer",
+      "child_columns": [
+        "c_nationkey"
+      ],
+      "parent_table": "dim_nation",
+      "parent_columns": [
+        "n_nationkey"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i (\u0111\u00e3 \u0111o).",
+      "open_questions": []
+    },
+    {
+      "child_table": "dim_supplier",
+      "child_columns": [
+        "s_nationkey"
+      ],
+      "parent_table": "dim_nation",
+      "parent_columns": [
+        "n_nationkey"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i (\u0111\u00e3 \u0111o).",
+      "open_questions": []
+    },
+    {
+      "child_table": "dim_nation",
+      "child_columns": [
+        "n_regionkey"
+      ],
+      "parent_table": "dim_region",
+      "parent_columns": [
+        "r_regionkey"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i (\u0111\u00e3 \u0111o).",
+      "open_questions": []
+    },
+    {
+      "child_table": "dim_partsupp",
+      "child_columns": [
+        "ps_partkey"
+      ],
+      "parent_table": "dim_part",
+      "parent_columns": [
+        "p_partkey"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i (\u0111\u00e3 \u0111o).",
+      "open_questions": []
+    },
+    {
+      "child_table": "dim_partsupp",
+      "child_columns": [
+        "ps_suppkey"
+      ],
+      "parent_table": "dim_supplier",
+      "parent_columns": [
+        "s_suppkey"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i (\u0111\u00e3 \u0111o).",
+      "open_questions": []
+    }
+  ],
+  "metrics": [
+    {
+      "name": "revenue_after_discount",
+      "definition": "Doanh thu sau chi\u1ebft kh\u1ea5u",
+      "expression": "sum(l_extendedprice * (1 - l_discount))",
+      "fact_table": "fact_lineitem",
+      "rationale": "\u0110\u1ecbnh ngh\u0129a c\u1ee7a truy v\u1ea5n TPC-H (ngu\u1ed3n th\u1ee9 c\u1ea5p tr\u00edch \u0111\u1eb7c t\u1ea3 Rev 2.17.1); x\u00e1c nh\u1eadn m\u1ed9t ph\u1ea7n.",
+      "open_questions": [
+        "Ch\u01b0a \u0111\u1ecdc \u0111\u1eb7c t\u1ea3 g\u1ed1c; c\u1ea7n \u0111\u1ed1i chi\u1ebfu v\u1edbi tpch_answers()."
+      ]
+    },
+    {
+      "name": "revenue_after_tax",
+      "definition": "Doanh thu sau chi\u1ebft kh\u1ea5u v\u00e0 thu\u1ebf",
+      "expression": "sum(l_extendedprice * (1 - l_discount) * (1 + l_tax))",
+      "fact_table": "fact_lineitem",
+      "rationale": "Bi\u1ec3u th\u1ee9c sum_charge c\u1ee7a truy v\u1ea5n Q1 (ngu\u1ed3n th\u1ee9 c\u1ea5p).",
+      "open_questions": [
+        "X\u00e1c nh\u1eadn m\u1ed9t ph\u1ea7n."
+      ]
+    },
+    {
+      "name": "total_quantity",
+      "definition": "T\u1ed5ng s\u1ed1 l\u01b0\u1ee3ng b\u00e1n",
+      "expression": "sum(l_quantity)",
+      "fact_table": "fact_lineitem",
+      "rationale": "\u0110\u1ebfm s\u1ed1 l\u01b0\u1ee3ng tr\u00ean d\u00f2ng h\u00e0ng.",
+      "open_questions": []
+    },
+    {
+      "name": "order_count",
+      "definition": "S\u1ed1 \u0111\u01a1n",
+      "expression": "count(*)",
+      "fact_table": "fact_order",
+      "rationale": "\u0110\u1ebfm \u0111\u01a1n; m\u1ed9t \u0111\u01a1n m\u1ed9t d\u00f2ng \u1edf b\u1ea3ng fact_order.",
+      "open_questions": []
+    }
+  ],
+  "cleaning_rules": [],
+  "update_policy": {
+    "mode": "snapshot_replace",
+    "required_files": [
+      "region.csv",
+      "nation.csv",
+      "supplier.csv",
+      "customer.csv",
+      "part.csv",
+      "partsupp.csv",
+      "orders.csv",
+      "lineitem.csv"
+    ],
+    "rationale": "B\u1ea3n \u0111\u1ea7u ch\u1ec9 h\u1ed7 tr\u1ee3 snapshot thay th\u1ebf to\u00e0n b\u1ed9 theo CLAUDE.md m\u1ee5c 4 b\u01b0\u1edbc 3.",
+    "open_questions": []
+  },
+  "dashboard": {
+    "metrics": [
+      "revenue_after_discount",
+      "order_count",
+      "total_quantity"
+    ],
+    "dimensions": [
+      "o_orderstatus",
+      "r_name",
+      "o_orderdate"
+    ],
+    "filters": [
+      "o_orderstatus",
+      "r_name"
+    ],
+    "cards": [
+      {
+        "key": "kpi_revenue",
+        "title": "Doanh thu sau chi\u1ebft kh\u1ea5u",
+        "type": "kpi",
+        "metric": "revenue_after_discount",
+        "dimension": null
+      },
+      {
+        "key": "bar_revenue_by_region",
+        "title": "Doanh thu theo v\u00f9ng",
+        "type": "bar",
+        "metric": "revenue_after_discount",
+        "dimension": "r_name"
+      },
+      {
+        "key": "bar_orders_by_status",
+        "title": "S\u1ed1 \u0111\u01a1n theo tr\u1ea1ng th\u00e1i",
+        "type": "bar",
+        "metric": "order_count",
+        "dimension": "o_orderstatus"
+      },
+      {
+        "key": "line_revenue_by_date",
+        "title": "Doanh thu theo ng\u00e0y \u0111\u1eb7t",
+        "type": "line",
+        "metric": "revenue_after_discount",
+        "dimension": "o_orderdate"
+      }
+    ],
+    "rationale": "Dashboard ki\u1ec3m ch\u1ee9ng t\u01b0\u01a1ng \u0111\u01b0\u01a1ng rewrite, kh\u00f4ng ph\u1ea3i dashboard s\u1ea3n ph\u1ea9m.",
+    "open_questions": [
+      "Ch\u1ecdn c\u00e1ch t\u1ed5ng h\u1ee3p theo n\u0103m hay th\u00e1ng cho line card."
+    ]
+  },
+  "constraints": [
+    {
+      "layer": "mart",
+      "model": "fact_lineitem",
+      "columns": [
+        "l_orderkey",
+        "l_linenumber"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "Duy nh\u1ea5t 100% (sf = 1)."
+    },
+    {
+      "layer": "mart",
+      "model": "fact_lineitem",
+      "columns": [
+        "l_orderkey"
+      ],
+      "kind": "relationship",
+      "params": {
+        "to_model": "dim_order",
+        "to_columns": [
+          "o_orderkey"
+        ]
+      },
+      "evidence": "0 m\u1ed3 c\u00f4i (\u0111\u00e3 \u0111o)."
+    },
+    {
+      "layer": "mart",
+      "model": "dim_order",
+      "columns": [
+        "o_orderkey"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "Duy nh\u1ea5t 100%."
+    },
+    {
+      "layer": "mart",
+      "model": "dim_customer",
+      "columns": [
+        "c_custkey"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "Duy nh\u1ea5t 100%."
+    },
+    {
+      "layer": "mart",
+      "model": "dim_partsupp",
+      "columns": [
+        "ps_partkey",
+        "ps_suppkey"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "Duy nh\u1ea5t 100%."
+    }
+  ],
+  "assumptions": [
+    "D\u1eef li\u1ec7u TPC-H s\u1ea1ch v\u1ec1 c\u1ea5u tr\u00fac; kh\u00f4ng c\u00f3 quy t\u1eafc l\u00e0m s\u1ea1ch \u0111\u1ec1 xu\u1ea5t (cleaning_rules r\u1ed7ng c\u00f3 ch\u1ee7 \u0111\u00edch).",
+    "B\u1ed9 n\u00e0y ki\u1ec3m ch\u1ee9ng m\u00e1y m\u00f3c; kh\u00f4ng d\u00f9ng \u0111\u1ec3 \u0111o kh\u1ea3 n\u0103ng ph\u00e1t hi\u1ec7n l\u1ed7i t\u1ef1 nhi\u00ean.",
+    "C\u00f4ng th\u1ee9c doanh thu v\u00e0 TPC-03 ch\u01b0a \u0111\u01b0\u1ee3c x\u00e1c nh\u1eadn t\u1eeb \u0111\u1eb7c t\u1ea3 g\u1ed1c.",
+    "Schema gap: MetricDefinition.fact_table cho order_count tr\u1ecf t\u1edbi fact_order, c\u1ea7n nh\u1ea5t qu\u00e1n v\u1edbi t\u00ean fact."
+  ]
+}

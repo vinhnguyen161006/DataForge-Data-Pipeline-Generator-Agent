@@ -1,0 +1,654 @@
+{
+  "facts": [
+    {
+      "name": "fact_order_item",
+      "grain": "M\u1ed9t d\u00f2ng h\u00e0ng trong m\u1ed9t \u0111\u01a1n",
+      "source_tables": [
+        "order_items"
+      ],
+      "measures": [
+        "price",
+        "freight_value"
+      ],
+      "dimension_keys": [
+        "dim_order",
+        "dim_product",
+        "dim_seller"
+      ],
+      "rationale": "Kh\u00f3a (order_id, order_item_id) duy nh\u1ea5t 100% (112.650 d\u00f2ng); kh\u00f4ng ch\u1ee9a thanh to\u00e1n \u0111\u1ec3 tr\u00e1nh \u0111\u1ebfm tr\u00f9ng.",
+      "open_questions": [
+        "OLI-04: doanh thu l\u1ea5y price, price + freight_value hay payment_value? Ch\u1edd nh\u00f3m."
+      ]
+    },
+    {
+      "name": "fact_payment",
+      "grain": "M\u1ed9t l\u1ea7n thanh to\u00e1n trong m\u1ed9t \u0111\u01a1n",
+      "source_tables": [
+        "order_payments"
+      ],
+      "measures": [
+        "payment_value",
+        "payment_installments"
+      ],
+      "dimension_keys": [
+        "dim_order"
+      ],
+      "rationale": "Kh\u00f3a (order_id, payment_sequential) duy nh\u1ea5t 100% (103.886 d\u00f2ng); t\u00e1ch kh\u1ecfi h\u00e0ng v\u00ec m\u1ed9t \u0111\u01a1n c\u00f3 nhi\u1ec1u l\u1ea7n thanh to\u00e1n.",
+      "open_questions": [
+        "OLI-01: payment_value c\u00f3 g\u1ed3m l\u00e3i tr\u1ea3 g\u00f3p kh\u00f4ng? 380 \u0111\u01a1n kh\u00f4ng kh\u1edbp h\u00e0ng + ph\u00ed."
+      ]
+    },
+    {
+      "name": "fact_review",
+      "grain": "M\u1ed9t \u0111\u00e1nh gi\u00e1 g\u1eafn v\u1edbi m\u1ed9t \u0111\u01a1n",
+      "source_tables": [
+        "order_reviews"
+      ],
+      "measures": [
+        "review_score"
+      ],
+      "dimension_keys": [
+        "dim_order"
+      ],
+      "rationale": "Kh\u00f3a t\u1ed5 h\u1ee3p (review_id, order_id) duy nh\u1ea5t 100%; review_id ri\u00eang kh\u00f4ng duy nh\u1ea5t (789 nh\u00f3m tr\u00f9ng).",
+      "open_questions": [
+        "OLI-03: m\u1ed9t review_id c\u00f3 th\u1ec3 g\u1eafn nhi\u1ec1u \u0111\u01a1n, hay d\u00f2ng tr\u00f9ng l\u00e0 l\u1ed7i?"
+      ]
+    }
+  ],
+  "dimensions": [
+    {
+      "name": "dim_order",
+      "business_key": [
+        "order_id"
+      ],
+      "source_table": "orders",
+      "attributes": [
+        "customer_id",
+        "order_status",
+        "order_purchase_timestamp",
+        "order_approved_at",
+        "order_delivered_carrier_date",
+        "order_delivered_customer_date",
+        "order_estimated_delivery_date"
+      ],
+      "rationale": "M\u1ed7i \u0111\u01a1n m\u1ed9t d\u00f2ng; order_id duy nh\u1ea5t 100% (99.441 d\u00f2ng).",
+      "open_questions": [
+        "OLI-07: 8 \u0111\u01a1n delivered thi\u1ebfu ng\u00e0y giao."
+      ]
+    },
+    {
+      "name": "dim_customer",
+      "business_key": [
+        "customer_id"
+      ],
+      "source_table": "customers",
+      "attributes": [
+        "customer_unique_id",
+        "customer_zip_code_prefix",
+        "customer_city",
+        "customer_state"
+      ],
+      "rationale": "M\u00e3 kh\u00e1ch theo \u0111\u01a1n; m\u00e3 kh\u00e1ch th\u1eadt l\u00e0 customer_unique_id (xem kh\u00f3a kinh doanh).",
+      "open_questions": []
+    },
+    {
+      "name": "dim_product",
+      "business_key": [
+        "product_id"
+      ],
+      "source_table": "products",
+      "attributes": [
+        "product_category_name",
+        "product_name_lenght",
+        "product_description_lenght",
+        "product_photos_qty",
+        "product_weight_g",
+        "product_length_cm",
+        "product_height_cm",
+        "product_width_cm"
+      ],
+      "rationale": "M\u1ed7i s\u1ea3n ph\u1ea9m m\u1ed9t d\u00f2ng; product_id duy nh\u1ea5t 100% (32.951 d\u00f2ng).",
+      "open_questions": [
+        "Kh\u1ed1i l\u01b0\u1ee3ng 0 v\u00e0 610 s\u1ea3n ph\u1ea9m thi\u1ebfu danh m\u1ee5c c\u1ea7n duy\u1ec7t."
+      ]
+    },
+    {
+      "name": "dim_seller",
+      "business_key": [
+        "seller_id"
+      ],
+      "source_table": "sellers",
+      "attributes": [
+        "seller_zip_code_prefix",
+        "seller_city",
+        "seller_state"
+      ],
+      "rationale": "seller_id duy nh\u1ea5t 100% (3.095 d\u00f2ng).",
+      "open_questions": [
+        "seller_city c\u00f3 gi\u00e1 tr\u1ecb d\u1ea1ng s\u1ed1 (F-9)."
+      ]
+    },
+    {
+      "name": "dim_category",
+      "business_key": [
+        "product_category_name"
+      ],
+      "source_table": "category_translation",
+      "attributes": [
+        "product_category_name_english"
+      ],
+      "rationale": "Danh m\u1ee5c duy nh\u1ea5t 100% (71 d\u00f2ng) c\u00f9ng b\u1ea3n d\u1ecbch.",
+      "open_questions": []
+    },
+    {
+      "name": "dim_zip",
+      "business_key": [
+        "geolocation_zip_code_prefix"
+      ],
+      "source_table": "geolocation",
+      "attributes": [
+        "geolocation_lat",
+        "geolocation_lng",
+        "geolocation_city",
+        "geolocation_state"
+      ],
+      "rationale": "T\u1ecda \u0111\u1ed9 theo zip; kh\u00f4ng c\u00f3 kh\u00f3a t\u1ef1 nhi\u00ean, ph\u1ea3i t\u1ed5ng h\u1ee3p tr\u01b0\u1edbc khi n\u1ed1i (19.015 zip).",
+      "open_questions": [
+        "OLI-05: t\u1ed5ng h\u1ee3p t\u1ecda \u0111\u1ed9 theo zip b\u1eb1ng trung b\u00ecnh hay ch\u1ecdn m\u1ed9t d\u00f2ng?",
+        "T\u1ecda \u0111\u1ed9 ngo\u00e0i Brazil (F-16)."
+      ]
+    }
+  ],
+  "keys": [
+    {
+      "table": "dim_order",
+      "columns": [
+        "order_id"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_customer",
+      "columns": [
+        "customer_id"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100% (m\u00e3 theo \u0111\u01a1n).",
+      "open_questions": []
+    },
+    {
+      "table": "dim_customer",
+      "columns": [
+        "customer_unique_id"
+      ],
+      "kind": "business",
+      "rationale": "\u0110\u1ecbnh danh kh\u00e1ch th\u1eadt theo m\u00f4 t\u1ea3 ngu\u1ed3n; ch\u1ec9 duy nh\u1ea5t 96,64% tr\u00ean d\u1eef li\u1ec7u.",
+      "open_questions": [
+        "OLI-02: \u0111\u1ebfm kh\u00e1ch theo customer_unique_id hay customer_id?"
+      ]
+    },
+    {
+      "table": "dim_product",
+      "columns": [
+        "product_id"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_seller",
+      "columns": [
+        "seller_id"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "dim_category",
+      "columns": [
+        "product_category_name"
+      ],
+      "kind": "primary",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "fact_order_item",
+      "columns": [
+        "order_id",
+        "order_item_id"
+      ],
+      "kind": "composite",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "fact_payment",
+      "columns": [
+        "order_id",
+        "payment_sequential"
+      ],
+      "kind": "composite",
+      "rationale": "Duy nh\u1ea5t 100%.",
+      "open_questions": []
+    },
+    {
+      "table": "fact_review",
+      "columns": [
+        "review_id",
+        "order_id"
+      ],
+      "kind": "composite",
+      "rationale": "Duy nh\u1ea5t 100%; review_id ri\u00eang kh\u00f4ng ph\u1ea3i kh\u00f3a.",
+      "open_questions": []
+    }
+  ],
+  "relationships": [
+    {
+      "child_table": "fact_order_item",
+      "child_columns": [
+        "order_id"
+      ],
+      "parent_table": "dim_order",
+      "parent_columns": [
+        "order_id"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i (112.650 d\u00f2ng).",
+      "open_questions": []
+    },
+    {
+      "child_table": "fact_order_item",
+      "child_columns": [
+        "product_id"
+      ],
+      "parent_table": "dim_product",
+      "parent_columns": [
+        "product_id"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i.",
+      "open_questions": []
+    },
+    {
+      "child_table": "fact_order_item",
+      "child_columns": [
+        "seller_id"
+      ],
+      "parent_table": "dim_seller",
+      "parent_columns": [
+        "seller_id"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i.",
+      "open_questions": []
+    },
+    {
+      "child_table": "fact_payment",
+      "child_columns": [
+        "order_id"
+      ],
+      "parent_table": "dim_order",
+      "parent_columns": [
+        "order_id"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i; 1 \u0111\u01a1n kh\u00f4ng c\u00f3 thanh to\u00e1n.",
+      "open_questions": []
+    },
+    {
+      "child_table": "fact_review",
+      "child_columns": [
+        "order_id"
+      ],
+      "parent_table": "dim_order",
+      "parent_columns": [
+        "order_id"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i; 768 \u0111\u01a1n kh\u00f4ng c\u00f3 \u0111\u00e1nh gi\u00e1.",
+      "open_questions": []
+    },
+    {
+      "child_table": "dim_order",
+      "child_columns": [
+        "customer_id"
+      ],
+      "parent_table": "dim_customer",
+      "parent_columns": [
+        "customer_id"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "0 m\u1ed3 c\u00f4i (99.441 d\u00f2ng).",
+      "open_questions": []
+    },
+    {
+      "child_table": "dim_product",
+      "child_columns": [
+        "product_category_name"
+      ],
+      "parent_table": "dim_category",
+      "parent_columns": [
+        "product_category_name"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "623 d\u00f2ng kh\u00f4ng kh\u1edbp: 610 r\u1ed7ng v\u00e0 13 kh\u00f4ng c\u00f3 b\u1ea3n d\u1ecbch (F-6).",
+      "open_questions": []
+    },
+    {
+      "child_table": "dim_customer",
+      "child_columns": [
+        "customer_zip_code_prefix"
+      ],
+      "parent_table": "dim_zip",
+      "parent_columns": [
+        "geolocation_zip_code_prefix"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "278 d\u00f2ng m\u1ed3 c\u00f4i theo zip; quan h\u1ec7 theo zip c\u1ea7n t\u1ed5ng h\u1ee3p dim_zip tr\u01b0\u1edbc.",
+      "open_questions": [
+        "OLI-05 ch\u01b0a quy\u1ebft \u0111\u1ecbnh."
+      ]
+    },
+    {
+      "child_table": "dim_seller",
+      "child_columns": [
+        "seller_zip_code_prefix"
+      ],
+      "parent_table": "dim_zip",
+      "parent_columns": [
+        "geolocation_zip_code_prefix"
+      ],
+      "cardinality": "many_to_one",
+      "rationale": "7 d\u00f2ng m\u1ed3 c\u00f4i theo zip.",
+      "open_questions": []
+    }
+  ],
+  "metrics": [
+    {
+      "name": "revenue_items",
+      "definition": "Doanh thu h\u00e0ng h\u00f3a (kh\u00f4ng g\u1ed3m ph\u00ed); c\u1ea7n join fact_order_item v\u1edbi dim_order theo order_id",
+      "expression": "sum(fact_order_item.price) filter (where dim_order.order_status = 'delivered')",
+      "fact_table": "fact_order_item",
+      "rationale": "C\u00f4ng th\u1ee9c \u0111\u1ec1 xu\u1ea5t: ch\u1ec9 \u0111\u01a1n delivered, t\u00ednh theo price.",
+      "open_questions": [
+        "OLI-04: c\u00f3 n\u00ean d\u00f9ng delivered hay m\u1ecdi tr\u1ea1ng th\u00e1i tr\u1eeb canceled; c\u00f3 g\u1ed3m ph\u00ed kh\u00f4ng?"
+      ]
+    },
+    {
+      "name": "revenue_with_freight",
+      "definition": "Doanh thu g\u1ed3m ph\u00ed v\u1eadn chuy\u1ec3n; c\u1ea7n join fact_order_item v\u1edbi dim_order theo order_id",
+      "expression": "sum(fact_order_item.price + fact_order_item.freight_value) filter (where dim_order.order_status = 'delivered')",
+      "fact_table": "fact_order_item",
+      "rationale": "Ph\u01b0\u01a1ng \u00e1n th\u1ee9 hai c\u1ee7a OLI-04.",
+      "open_questions": [
+        "OLI-04 ch\u01b0a quy\u1ebft \u0111\u1ecbnh."
+      ]
+    },
+    {
+      "name": "paid_total",
+      "definition": "T\u1ed5ng ti\u1ec1n \u0111\u00e3 thanh to\u00e1n",
+      "expression": "sum(payment_value)",
+      "fact_table": "fact_payment",
+      "rationale": "Ph\u01b0\u01a1ng \u00e1n c\u1ee7a OLI-04 d\u1ef1a tr\u00ean thanh to\u00e1n.",
+      "open_questions": [
+        "OLI-01: kh\u00f4ng \u0111\u01b0\u1ee3c c\u1ed9ng chung v\u1edbi revenue_items trong c\u00f9ng truy v\u1ea5n."
+      ]
+    },
+    {
+      "name": "order_count",
+      "definition": "S\u1ed1 \u0111\u01a1n",
+      "expression": "count(distinct order_id)",
+      "fact_table": "dim_order",
+      "rationale": "\u0110\u1ebfm \u0111\u01a1n theo order_id.",
+      "open_questions": [
+        "fact_table tr\u1ecf t\u1edbi dim_order v\u00ec ch\u1ec9 s\u1ed1 n\u00e0y kh\u00f4ng c\u00f3 fact ri\u00eang (schema gap nh\u01b0 OULAD)."
+      ]
+    },
+    {
+      "name": "customer_unique_count",
+      "definition": "S\u1ed1 kh\u00e1ch th\u1eadt",
+      "expression": "count(distinct customer_unique_id)",
+      "fact_table": "dim_customer",
+      "rationale": "\u0110\u1ebfm kh\u00e1ch theo customer_unique_id.",
+      "open_questions": [
+        "OLI-02 ch\u01b0a quy\u1ebft \u0111\u1ecbnh."
+      ]
+    },
+    {
+      "name": "installment_order_rate",
+      "definition": "T\u1ec9 l\u1ec7 \u0111\u01a1n tr\u1ea3 g\u00f3p",
+      "expression": "count(distinct order_id) filter (where payment_installments > 1) * 1.0 / count(distinct order_id)",
+      "fact_table": "fact_payment",
+      "rationale": "T\u1ec9 l\u1ec7 \u0111\u01a1n c\u00f3 tr\u1ea3 g\u00f3p theo payment_installments.",
+      "open_questions": []
+    },
+    {
+      "name": "avg_review_score",
+      "definition": "\u0110i\u1ec3m \u0111\u00e1nh gi\u00e1 trung b\u00ecnh theo \u0111\u00e1nh gi\u00e1",
+      "expression": "avg(review_score)",
+      "fact_table": "fact_review",
+      "rationale": "T\u00ednh theo \u0111\u00e1nh gi\u00e1, kh\u00f4ng theo d\u00f2ng h\u00e0ng, \u0111\u1ec3 tr\u00e1nh \u0111\u1ebfm tr\u00f9ng.",
+      "open_questions": [
+        "OLI-03 ch\u01b0a quy\u1ebft \u0111\u1ecbnh."
+      ]
+    }
+  ],
+  "cleaning_rules": [
+    {
+      "table": "dim_order",
+      "columns": [
+        "order_id"
+      ],
+      "condition": "order_id is null",
+      "action": "quarantine",
+      "default_value": null,
+      "rationale": "Kh\u00f3a r\u1ed7ng kh\u00f4ng \u0111\u01b0\u1ee3c v\u00e0o mart; 0 d\u00f2ng \u0111o \u0111\u01b0\u1ee3c.",
+      "open_questions": []
+    },
+    {
+      "table": "fact_review",
+      "columns": [
+        "review_score"
+      ],
+      "condition": "review_score not between 1 and 5",
+      "action": "quarantine",
+      "default_value": null,
+      "rationale": "\u0110i\u1ec3m ngo\u00e0i 1 \u0111\u1ebfn 5 kh\u00f4ng h\u1ee3p l\u1ec7 theo ngu\u1ed3n; 0 d\u00f2ng \u0111o \u0111\u01b0\u1ee3c.",
+      "open_questions": []
+    },
+    {
+      "table": "fact_review",
+      "columns": [
+        "review_comment_message"
+      ],
+      "condition": "review_comment_message = ''",
+      "action": "set_default",
+      "default_value": null,
+      "rationale": "Chu\u1ed7i r\u1ed7ng l\u00e0 gi\u00e1 tr\u1ecb thi\u1ebfu; \u0111\u1eb7t NULL (58,71% thi\u1ebfu).",
+      "open_questions": [
+        "Trim kho\u1ea3ng tr\u1eafng (8.120 d\u00f2ng) kh\u00f4ng c\u00f3 action trong schema; ghi th\u00e0nh c\u00e2u h\u1ecfi."
+      ]
+    },
+    {
+      "table": "fact_review",
+      "columns": [
+        "review_comment_title"
+      ],
+      "condition": "review_comment_title = ''",
+      "action": "set_default",
+      "default_value": null,
+      "rationale": "Chu\u1ed7i r\u1ed7ng l\u00e0 gi\u00e1 tr\u1ecb thi\u1ebfu; \u0111\u1eb7t NULL (88,34% thi\u1ebfu).",
+      "open_questions": []
+    }
+  ],
+  "update_policy": {
+    "mode": "snapshot_replace",
+    "required_files": [
+      "olist_customers_dataset.csv",
+      "olist_geolocation_dataset.csv",
+      "olist_orders_dataset.csv",
+      "olist_order_items_dataset.csv",
+      "olist_order_payments_dataset.csv",
+      "olist_order_reviews_dataset.csv",
+      "olist_products_dataset.csv",
+      "olist_sellers_dataset.csv",
+      "product_category_name_translation.csv"
+    ],
+    "rationale": "B\u1ea3n \u0111\u1ea7u ch\u1ec9 h\u1ed7 tr\u1ee3 snapshot thay th\u1ebf to\u00e0n b\u1ed9 theo CLAUDE.md m\u1ee5c 4 b\u01b0\u1edbc 3.",
+    "open_questions": []
+  },
+  "dashboard": {
+    "metrics": [
+      "revenue_items",
+      "order_count",
+      "installment_order_rate",
+      "avg_review_score"
+    ],
+    "dimensions": [
+      "order_status",
+      "customer_state",
+      "product_category_name"
+    ],
+    "filters": [
+      "order_status",
+      "customer_state"
+    ],
+    "cards": [
+      {
+        "key": "kpi_revenue_items",
+        "title": "Doanh thu h\u00e0ng h\u00f3a",
+        "type": "kpi",
+        "metric": "revenue_items",
+        "dimension": null
+      },
+      {
+        "key": "kpi_installment_rate",
+        "title": "T\u1ec9 l\u1ec7 \u0111\u01a1n tr\u1ea3 g\u00f3p",
+        "type": "kpi",
+        "metric": "installment_order_rate",
+        "dimension": null
+      },
+      {
+        "key": "bar_orders_by_status",
+        "title": "S\u1ed1 \u0111\u01a1n theo tr\u1ea1ng th\u00e1i",
+        "type": "bar",
+        "metric": "order_count",
+        "dimension": "order_status"
+      },
+      {
+        "key": "bar_review_by_category",
+        "title": "\u0110i\u1ec3m \u0111\u00e1nh gi\u00e1 theo danh m\u1ee5c",
+        "type": "bar",
+        "metric": "avg_review_score",
+        "dimension": "product_category_name"
+      }
+    ],
+    "rationale": "C\u00e1c c\u00e2u h\u1ecfi ch\u1ec9 d\u00f9ng c\u1ed9t \u0111\u00e3 \u0111o v\u00e0 c\u00f3 kh\u00f3a r\u00f5.",
+    "open_questions": [
+      "Doanh thu ch\u1edd OLI-04."
+    ]
+  },
+  "constraints": [
+    {
+      "layer": "mart",
+      "model": "dim_order",
+      "columns": [
+        "order_id"
+      ],
+      "kind": "not_null",
+      "params": {},
+      "evidence": null
+    },
+    {
+      "layer": "mart",
+      "model": "dim_order",
+      "columns": [
+        "order_id"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "Duy nh\u1ea5t 100%."
+    },
+    {
+      "layer": "mart",
+      "model": "dim_customer",
+      "columns": [
+        "customer_id"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "Duy nh\u1ea5t 100%."
+    },
+    {
+      "layer": "mart",
+      "model": "dim_product",
+      "columns": [
+        "product_id"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "Duy nh\u1ea5t 100%."
+    },
+    {
+      "layer": "mart",
+      "model": "fact_order_item",
+      "columns": [
+        "order_id",
+        "order_item_id"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "Duy nh\u1ea5t 100%."
+    },
+    {
+      "layer": "mart",
+      "model": "fact_payment",
+      "columns": [
+        "order_id",
+        "payment_sequential"
+      ],
+      "kind": "unique",
+      "params": {},
+      "evidence": "Duy nh\u1ea5t 100%."
+    },
+    {
+      "layer": "mart",
+      "model": "fact_order_item",
+      "columns": [
+        "order_id"
+      ],
+      "kind": "relationship",
+      "params": {
+        "to_model": "dim_order",
+        "to_columns": [
+          "order_id"
+        ]
+      },
+      "evidence": "0 m\u1ed3 c\u00f4i."
+    },
+    {
+      "layer": "mart",
+      "model": "fact_review",
+      "columns": [
+        "review_score"
+      ],
+      "kind": "expression",
+      "params": {
+        "expression": "review_score between 1 and 5"
+      },
+      "evidence": "\u0110\u00e3 \u0111o: gi\u00e1 tr\u1ecb t\u1eeb 1 \u0111\u1ebfn 5 (kh\u00f4ng c\u00f3 gi\u00e1 tr\u1ecb ngo\u00e0i)."
+    }
+  ],
+  "assumptions": [
+    "Kh\u00f4ng t\u1ea1o kh\u00f3a \u0111\u01a1n cho fact_review: review_id kh\u00f4ng duy nh\u1ea5t, d\u00f9ng kh\u00f3a t\u1ed5 h\u1ee3p (review_id, order_id).",
+    "B\u1ea3ng dim_zip ph\u1ee5 thu\u1ed9c quy\u1ebft \u0111\u1ecbnh t\u1ed5ng h\u1ee3p t\u1ecda \u0111\u1ed9 (OLI-05); ch\u01b0a c\u00f3 quy\u1ebft \u0111\u1ecbnh.",
+    "Schema gap: CleaningRule kh\u00f4ng c\u00f3 action trim kho\u1ea3ng tr\u1eafng; ghi th\u00e0nh c\u00e2u h\u1ecfi.",
+    "\u00dd ngh\u0129a c\u1ed9t l\u00e0 suy lu\u1eadn t\u1eeb t\u00ean v\u00e0 m\u00f4 t\u1ea3 c\u00f4ng khai; ch\u01b0a \u0111\u1ed1i chi\u1ebfu t\u00e0i li\u1ec7u ch\u00ednh th\u1ee9c."
+  ]
+}
