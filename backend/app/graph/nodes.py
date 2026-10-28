@@ -32,6 +32,7 @@ from app.profiler.schemas import DataProfile
 
 PROFILE_JOB_KIND = "profile"
 DBT_BUILD_JOB_KIND = "dbt_build"
+BUILD_JOB_KEY_PREFIX = f"{DBT_BUILD_JOB_KIND}:"
 MODEL_PASSED = "success"
 TEST_PASSED = "pass"
 
@@ -310,6 +311,11 @@ async def codegen_node(state: PipelineState, runtime: Runtime[GraphContext]) -> 
     }
 
 
+def build_job_key(code_version_id: uuid.UUID) -> str:
+    """Each code version is built at most once, so its job is found again by this key."""
+    return f"{BUILD_JOB_KEY_PREFIX}{code_version_id}"
+
+
 async def _enqueue_build(runtime: Runtime[GraphContext], state: PipelineState) -> uuid.UUID:
     run_id = uuid.UUID(state["run_id"])
     code_version_id = uuid.UUID(state["code_version_id"])
@@ -324,7 +330,7 @@ async def _enqueue_build(runtime: Runtime[GraphContext], state: PipelineState) -
             kind=DBT_BUILD_JOB_KIND,
             payload={**sources, "code_version_id": str(code.id), "code_dir": code.storage_path},
             run_id=run_id,
-            idempotency_key=f"{DBT_BUILD_JOB_KIND}:{code.id}",
+            idempotency_key=build_job_key(code.id),
         )
         return job.id
 

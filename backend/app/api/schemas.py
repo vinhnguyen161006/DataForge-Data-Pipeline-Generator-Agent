@@ -7,13 +7,16 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from app.agents.schemas import DataDesign
 from app.db.models import (
     ApprovalDecision,
+    CodeOrigin,
     Gate,
+    JobStatus,
     ProjectRole,
     ReviewMode,
     RunStatus,
 )
 from app.ingest.filenames import required_filenames
 from app.ingest.sniff import CsvReadConfig
+from app.jobs.reports import ExecutionReportData
 
 
 class ApprovalHistoryOut(BaseModel):
@@ -154,6 +157,23 @@ class RunOut(BaseModel):
     error: str | None
     updated_at: datetime
     interrupt_id: str | None = None
+
+
+class BuildAttemptOut(BaseModel):
+    """One generated code version and its sandbox build, if one was queued (FR-11)."""
+
+    code_version_id: uuid.UUID
+    version: int
+    origin: CodeOrigin
+    generated_at: datetime
+    job_status: JobStatus | None
+    queued_at: datetime | None
+    finished_at: datetime | None
+    report: ExecutionReportData | None
+
+
+class RunBuildsOut(BaseModel):
+    attempts: list[BuildAttemptOut]
 
 
 class ClarificationAnswerIn(BaseModel):

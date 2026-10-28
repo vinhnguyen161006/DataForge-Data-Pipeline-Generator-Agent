@@ -11,6 +11,7 @@ from app.api.schemas import (
     CodeDecision,
     DesignDecision,
     FileEdit,
+    RunBuildsOut,
     RunCreate,
     RunOut,
 )
@@ -19,6 +20,7 @@ from app.db.models import Batch, PipelineRun, ProjectRole, User
 from app.graph.interrupts import ClarificationAnswer, ClarificationReply, DesignGateReply
 from app.ingest.storage import Storage
 from app.services import batches as batch_service
+from app.services import builds as build_service
 from app.services import runs as run_service
 from app.services.run_lock import RunBusyError
 
@@ -75,6 +77,18 @@ async def get_run(
     """Read persisted run status without advancing the workflow."""
     run = await _get_project_run(session, project_id, run_id)
     return run_out(run)
+
+
+@router.get("/{run_id}/builds", response_model=RunBuildsOut)
+async def get_builds(
+    project_id: uuid.UUID,
+    run_id: uuid.UUID,
+    _member: ProjectMemberDep,
+    session: SessionDep,
+) -> RunBuildsOut:
+    """Every generated code version with its sandbox metrics and test results (FR-11)."""
+    await _get_project_run(session, project_id, run_id)
+    return RunBuildsOut(attempts=await build_service.build_attempts(session, run_id))
 
 
 @router.post("/{run_id}/clarifications", response_model=RunOut)

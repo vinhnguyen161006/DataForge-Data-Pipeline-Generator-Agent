@@ -100,6 +100,49 @@ export interface Run {
   updated_at: string;
 }
 
+export type JobStatus = "queued" | "running" | "succeeded" | "failed";
+export type CodeOrigin = "codegen" | "optimizer" | "user_edit";
+
+export interface ModelMetrics {
+  model_name: string;
+  status: string;
+  seconds: number;
+  rows_scanned: number | null;
+  peak_memory_bytes: number | null;
+}
+
+export interface DbtTestResult {
+  test_name: string;
+  model_name: string;
+  status: string;
+  failures: number;
+}
+
+export interface ExecutionReport {
+  compiled: boolean;
+  succeeded: boolean;
+  models: ModelMetrics[];
+  tests: DbtTestResult[];
+  quarantine_counts: Record<string, number>;
+  total_seconds: number;
+  error: string | null;
+}
+
+export interface BuildAttempt {
+  code_version_id: string;
+  version: number;
+  origin: CodeOrigin;
+  generated_at: string;
+  job_status: JobStatus | null;
+  queued_at: string | null;
+  finished_at: string | null;
+  report: ExecutionReport | null;
+}
+
+export interface RunBuilds {
+  attempts: BuildAttempt[];
+}
+
 export interface ClarificationAnswer {
   question: string;
   answer: string;

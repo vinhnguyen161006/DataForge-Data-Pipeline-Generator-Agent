@@ -697,3 +697,34 @@ async def test_concurrent_polling_reads_the_same_snapshot_without_writes(
     assert all(response.status_code == 200 for response in responses)
     assert all(response.json() == responses[0].json() for response in responses)
     assert await polling.persisted() == before
+
+
+async def get_builds(
+    polling: RunPollingScenario, *, actor: str = "engineer", project_index: int = 0
+) -> Response:
+    project, run = polling.project_ids[project_index], polling.run_ids[0]
+    return await polling.client.get(
+        f"/api/projects/{project}/runs/{run}/builds", headers=polling.headers[actor]
+    )
+
+
+@pytest.mark.parametrize("actor", ["engineer", "reviewer"])
+async def test_members_read_builds_of_a_run_without_code(
+    polling: RunPollingScenario, actor: str
+) -> None:
+    response = await get_builds(polling, actor=actor)
+    assert response.status_code == 200, response.text
+    assert response.json() == {"attempts": []}
+
+
+@pytest.mark.parametrize(("actor", "status"), [("anonymous", 401), ("outsider", 403)])
+async def test_builds_require_authentication_and_project_membership(
+    polling: RunPollingScenario, actor: str, status: int
+) -> None:
+    assert (await get_builds(polling, actor=actor)).status_code == status
+
+
+async def test_builds_reject_a_run_under_the_wrong_project(polling: RunPollingScenario) -> None:
+    response = await get_builds(polling, project_index=1)
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Run not found in this project"}

@@ -12,6 +12,7 @@ import type {
   ProjectCreate,
   PullRequestCreate,
   Run,
+  RunBuilds,
   SourceFile,
   TokenResponse,
 } from "./types";
@@ -194,6 +195,10 @@ export function answerClarifications(
 
 export function decideDesign(projectId: string, runId: string, body: DesignDecision): Promise<Run> {
   return requestJson<Run>(`${runPath(projectId, runId)}/design-decision`, jsonBody("POST", body));
+}
+
+export function getRunBuilds(projectId: string, runId: string): Promise<RunBuilds> {
+  return requestJson<RunBuilds>(`${runPath(projectId, runId)}/builds`);
 }
 
 export function getCode(projectId: string, runId: string): Promise<Record<string, unknown>> {

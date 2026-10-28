@@ -1,3 +1,20 @@
+const MILLISECONDS_PER_SECOND = 1000;
+
+export function formatSeconds(seconds: number): string {
+  if (seconds < 1) {
+    return `${Math.round(seconds * MILLISECONDS_PER_SECOND)} ms`;
+  }
+  return `${seconds.toFixed(2)} s`;
+}
+
+export function formatCount(count: number): string {
+  return count.toLocaleString("en-US");
+}
+
+export function formatClock(iso: string): string {
+  return new Date(iso).toLocaleTimeString("en-GB", { hour12: false });
+}
+
 const BYTE_UNITS = ["B", "KB", "MB", "GB"];
 const BYTES_PER_UNIT = 1024;
 const ONE_DECIMAL_BELOW = 10;

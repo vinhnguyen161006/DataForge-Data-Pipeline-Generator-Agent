@@ -21,6 +21,7 @@ from app.db.models import (
 from app.graph.interrupts import DesignGateReply
 from app.jobs.reports import ExecutionReportData
 from app.profiler.schemas import DataProfile
+from app.services.builds import build_attempts
 from app.services.runs import deliver_finished_jobs, thread_config
 from tests.integration import test_graph_design_gate as gate
 
@@ -203,6 +204,15 @@ async def test_failed_build_sends_files_and_failure_back_to_codegen(setup: gate.
     assert [j.payload["code_version_id"] for j in jobs] == [str(v.id) for v in versions]
     state = (await setup.graph.aget_state(thread_config(run_id))).values
     assert state["fix_attempts"] == 1
+
+    async with setup.factory() as session:
+        attempts = await build_attempts(session, run_id)
+    assert [(a.version, a.job_status, a.report) for a in attempts] == [
+        (1, JobStatus.SUCCEEDED, FAILED_BUILD),
+        (2, JobStatus.QUEUED, None),
+    ]
+    assert attempts[0].finished_at is not None
+    assert attempts[1].finished_at is None
 
 
 async def test_repairs_stop_when_the_budget_is_spent(setup: gate.Fixture) -> None:
