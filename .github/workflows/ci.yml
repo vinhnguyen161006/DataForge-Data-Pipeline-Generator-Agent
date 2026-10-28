@@ -155,3 +155,11 @@ jobs:
       - name: Audit frontend runtime dependencies
         working-directory: frontend
         run: npm audit --omit=dev --audit-level=high
+
+      - name: Test Airflow DAG Integrity (DagBag)
+        run: >-
+          docker run --rm --entrypoint python
+          -v "$PWD/airflow/dags:/opt/airflow/dags:ro"
+          -v "$PWD/airflow/tests:/opt/airflow/tests:ro"
+          dataforge-airflow:ci
+          -m pytest /opt/airflow/tests/
