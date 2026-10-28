@@ -99,12 +99,16 @@ services:
       DATAFORGE_GEMINI_EMBEDDING_MODEL: ${DATAFORGE_GEMINI_EMBEDDING_MODEL}
       DATAFORGE_QDRANT_URL: http://qdrant:6333
       DATAFORGE_GITHUB_TOKEN: ${DATAFORGE_GITHUB_TOKEN}
+      DATAFORGE_JOB_DELIVERY_ENABLED: ${DATAFORGE_JOB_DELIVERY_ENABLED:-true}
+      DATAFORGE_JOB_DELIVERY_INTERVAL_SECONDS: ${DATAFORGE_JOB_DELIVERY_INTERVAL_SECONDS:-2}
+      DATAFORGE_JOB_DELIVERY_STARTUP_TIMEOUT_SECONDS: ${DATAFORGE_JOB_DELIVERY_STARTUP_TIMEOUT_SECONDS:-120}
     volumes:
       - dataforge-data:/data
     ports:
       - "8000:8000"
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health', timeout=3)"]
+      start_period: ${DATAFORGE_JOB_DELIVERY_STARTUP_TIMEOUT_SECONDS:-120}s
       interval: 10s
       retries: 10
     depends_on:
@@ -115,8 +119,13 @@ services:
   sandbox-worker:
     <<: *backend-image
     command: python -m worker.main
+    stop_grace_period: 30s
     environment:
       <<: *app-db
+      DATAFORGE_WORKER_ID: ${DATAFORGE_WORKER_ID:-sandbox-1}
+      DATAFORGE_LEASE_SECONDS: ${DATAFORGE_LEASE_SECONDS:-300}
+      DATAFORGE_HEARTBEAT_INTERVAL_SECONDS: ${DATAFORGE_HEARTBEAT_INTERVAL_SECONDS:-60}
+      DATAFORGE_DATABASE_TIMEOUT_SECONDS: ${DATAFORGE_DATABASE_TIMEOUT_SECONDS:-10}
     volumes:
       - dataforge-data:/data
     networks:

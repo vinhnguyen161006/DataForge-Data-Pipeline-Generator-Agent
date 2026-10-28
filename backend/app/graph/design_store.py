@@ -4,7 +4,17 @@ from typing import Any
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Approval, ApprovalDecision, DesignVersion, Gate, SourceFile
+from app.db.models import (
+    Approval,
+    ApprovalDecision,
+    Batch,
+    BatchStatus,
+    CodeVersion,
+    DesignVersion,
+    ExecutionReport,
+    Gate,
+)
+from app.jobs.profile import ProfileJobPayload
 
 PRESENTED_VERSION_PART = "presented_design_version_id"
 
@@ -14,22 +24,14 @@ class DesignNotApprovedError(RuntimeError):
 
 
 async def profile_job_payload(session: AsyncSession, batch_id: uuid.UUID) -> dict[str, Any]:
-    files = (
-        await session.scalars(
-            select(SourceFile).where(SourceFile.batch_id == batch_id).order_by(SourceFile.filename)
-        )
-    ).all()
-    return {
-        "batch_id": str(batch_id),
-        "files": [
-            {
-                "filename": file.filename,
-                "storage_path": file.storage_path,
-                "read_config": file.read_config,
-            }
-            for file in files
-        ],
-    }
+    batch = await session.get(Batch, batch_id)
+    if batch is None or batch.status is not BatchStatus.READY or batch.manifest_sha256 is None:
+        raise ValueError("Profile jobs require a committed READY snapshot")
+    return ProfileJobPayload(
+        project_id=batch.project_id,
+        batch_id=batch.id,
+        manifest_sha256=batch.manifest_sha256,
+    ).model_dump(mode="json")
 
 
 async def add_design_version(
@@ -105,6 +107,19 @@ def design_decision(
         independent_review=False,
         comment=comment,
     )
+
+
+async def next_code_version(session: AsyncSession, run_id: uuid.UUID) -> int:
+    latest: int | None = await session.scalar(
+        select(func.max(CodeVersion.version)).where(CodeVersion.run_id == run_id)
+    )
+    return (latest or 0) + 1
+
+
+async def has_execution_report(session: AsyncSession, job_id: uuid.UUID) -> bool:
+    """A delivered build job is recorded once, even when its node re-runs after a crash."""
+    found = await session.scalar(select(ExecutionReport.id).where(ExecutionReport.job_id == job_id))
+    return found is not None
 
 
 async def assert_design_approved(session: AsyncSession, design_version_id: uuid.UUID) -> None:

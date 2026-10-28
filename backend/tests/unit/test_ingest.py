@@ -102,8 +102,11 @@ def test_storage_marks_non_empty_batch_ready(tmp_path: Path) -> None:
     destination = storage.raw_path(project_id, batch_id, "source.csv")
     storage.save_raw(destination, io.BytesIO(b"id\n1\n"))
 
-    storage.mark_ready(project_id, batch_id)
-    storage.mark_ready(project_id, batch_id)
+    content = b'{"manifest_version":1}'
+    storage.write_manifest(project_id, batch_id, content)
+    digest = hashlib.sha256(content).hexdigest()
+    storage.mark_ready(project_id, batch_id, digest)
+    storage.mark_ready(project_id, batch_id, digest)
 
     assert (storage.batch_dir(project_id, batch_id) / "_READY").is_file()
 
@@ -112,4 +115,4 @@ def test_storage_does_not_mark_empty_batch_ready(tmp_path: Path) -> None:
     storage = Storage(tmp_path)
 
     with pytest.raises(ValueError, match="cannot mark an empty batch ready"):
-        storage.mark_ready(uuid.uuid4(), uuid.uuid4())
+        storage.mark_ready(uuid.uuid4(), uuid.uuid4(), "0" * 64)

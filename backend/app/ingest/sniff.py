@@ -1,21 +1,42 @@
+import codecs
 import csv
 import sys
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class CsvReadConfig(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     encoding: str = "utf-8"
-    delimiter: str = ","
-    quote: str = '"'
-    escape: str = '"'
+    delimiter: str = Field(default=",", min_length=1, max_length=1)
+    quote: str = Field(default='"', max_length=1)
+    escape: str = Field(default='"', max_length=1)
     has_header: bool = True
-    skip_rows: int = 0
+    skip_rows: int = Field(default=0, ge=0)
     null_tokens: list[str] = Field(default_factory=lambda: [""])
     date_format: str | None = None
     timestamp_format: str | None = None
+
+    @field_validator("encoding")
+    @classmethod
+    def validate_encoding(cls, value: str) -> str:
+        try:
+            codec = codecs.lookup(value)
+        except LookupError as exc:
+            raise ValueError("Unknown CSV text encoding") from exc
+        if not getattr(codec, "_is_text_encoding", False):
+            raise ValueError("CSV encoding must be a text codec")
+        return value
+
+    @field_validator("delimiter", "quote", "escape")
+    @classmethod
+    def validate_control_characters(cls, value: str) -> str:
+        if any(char in value for char in ("\x00", "\r", "\n")):
+            raise ValueError("CSV separators cannot contain nulls or line breaks")
+        return value
 
     def duckdb_read_expr(self, path: str, *, all_varchar: bool) -> str:
         """Render a DuckDB read_csv expression from this configuration."""
@@ -45,15 +66,20 @@ class SniffResult(BaseModel):
 
 def detect_encoding(path: Path) -> tuple[str, list[str]]:
     """Detect UTF encodings and use latin-1 only as an explicit fallback."""
-    data = path.read_bytes()
-    if data.startswith(b"\xef\xbb\xbf"):
-        return "utf-8-sig", []
-    if data.startswith(b"\xff\xfe") or data.startswith(b"\xfe\xff"):
-        return "utf-16", []
-    try:
-        data.decode("utf-8")
-    except UnicodeDecodeError:
-        return "latin-1", ["File is not valid UTF-8; latin-1 fallback was selected."]
+    with path.open("rb") as stream:
+        prefix = stream.read(4)
+        if prefix.startswith(b"\xef\xbb\xbf"):
+            return "utf-8-sig", []
+        if prefix.startswith(b"\xff\xfe") or prefix.startswith(b"\xfe\xff"):
+            return "utf-16", []
+        stream.seek(0)
+        decoder = codecs.getincrementaldecoder("utf-8")()
+        try:
+            while chunk := stream.read(64 * 1024):
+                decoder.decode(chunk)
+            decoder.decode(b"", final=True)
+        except UnicodeDecodeError:
+            return "latin-1", ["File is not valid UTF-8; latin-1 fallback was selected."]
     return "utf-8", []
 
 
@@ -65,8 +91,11 @@ def detect_null_tokens(path: Path, config: CsvReadConfig) -> list[str]:
         reader = csv.reader(
             stream,
             delimiter=config.delimiter,
-            quotechar=config.quote,
-            escapechar=config.escape or None,
+            quotechar=config.quote or None,
+            quoting=csv.QUOTE_MINIMAL if config.quote else csv.QUOTE_NONE,
+            doublequote=config.escape == config.quote,
+            escapechar=(config.escape or None) if config.escape != config.quote else None,
+            strict=True,
         )
         for _ in range(config.skip_rows):
             next(reader, None)
@@ -99,6 +128,17 @@ def sniff_csv(path: Path, preview_rows: int = 10) -> SniffResult:
     config.null_tokens = detect_null_tokens(path, config)
     columns, preview = _read_preview(path, config, preview_rows)
     return SniffResult(config=config, columns=columns, preview=preview, warnings=warnings)
+
+
+def read_csv_preview(path: Path, config: CsvReadConfig, preview_rows: int = 10) -> SniffResult:
+    """Render bounded text preview from the submitted configuration without sniffing again."""
+    if not 0 <= preview_rows <= 100:
+        raise ValueError("Preview row count must be between 0 and 100")
+    _set_csv_field_limit()
+    columns, preview = _read_preview(path, config, preview_rows)
+    if not columns:
+        raise ValueError("The CSV has no columns after applying the read configuration")
+    return SniffResult(config=config, columns=columns, preview=preview)
 
 
 def _sql_literal(value: str) -> str:
@@ -163,8 +203,11 @@ def _read_preview(
         reader = csv.reader(
             stream,
             delimiter=config.delimiter,
-            quotechar=config.quote,
-            escapechar=config.escape or None,
+            quotechar=config.quote or None,
+            quoting=csv.QUOTE_MINIMAL if config.quote else csv.QUOTE_NONE,
+            doublequote=config.escape == config.quote,
+            escapechar=(config.escape or None) if config.escape != config.quote else None,
+            strict=True,
         )
         for _ in range(config.skip_rows):
             next(reader, None)
@@ -182,6 +225,8 @@ def _read_preview(
             if len(preview) >= preview_rows:
                 break
             preview.append(_normalize_row(row, config.null_tokens))
+        if any(len(row) != len(columns) for row in preview):
+            raise ValueError("CSV preview contains rows with inconsistent field counts")
         return columns, preview
 
 

@@ -98,10 +98,13 @@ class Batch(TimestampMixin, Base):
         _enum(BatchStatus, "batch_status"), default=BatchStatus.UPLOADING, nullable=False
     )
     schema_fingerprint: Mapped[str | None] = mapped_column(String(64))
+    required_files: Mapped[list[str] | None] = mapped_column(JsonType)
+    manifest_sha256: Mapped[str | None] = mapped_column(String(64))
 
 
 class SourceFile(TimestampMixin, Base):
     __tablename__ = "source_files"
+    __table_args__ = (UniqueConstraint("batch_id", "filename"),)
 
     id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
     batch_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("batches.id"), nullable=False)
@@ -135,10 +138,26 @@ class PipelineRun(TimestampMixin, Base):
     )
     current_step: Mapped[str | None] = mapped_column(String(64))
     pending: Mapped[dict[str, Any] | None] = mapped_column(JsonType)
+    interrupt_id: Mapped[str | None] = mapped_column(String(128))
     error: Mapped[str | None] = mapped_column(Text)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
     )
+
+
+class RunResumeIntent(TimestampMixin, Base):
+    """A validated human reply committed before advancing its checkpoint."""
+
+    __tablename__ = "run_resume_intents"
+    __table_args__ = (UniqueConstraint("run_id", "interrupt_id"),)
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("pipeline_runs.id"), nullable=False)
+    interrupt_id: Mapped[str] = mapped_column(String(128), nullable=False)
+    actor_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+    kind: Mapped[str] = mapped_column(String(32), nullable=False)
+    payload: Mapped[dict[str, Any]] = mapped_column(JsonType, nullable=False)
+    delivered: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False, index=True)
 
 
 class DesignVersion(TimestampMixin, Base):

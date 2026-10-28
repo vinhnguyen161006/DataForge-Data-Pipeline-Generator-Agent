@@ -1,9 +1,19 @@
+from pathlib import Path
+
 import pytest
 
+from worker.sandbox import build_env
 
-@pytest.mark.skip(reason="TODO")
-def test_sandbox_env_has_no_credentials() -> None:
-    """TODO: build_env() drops DATAFORGE_* and refuses DSN/password keys."""
+
+def test_sandbox_env_has_no_credentials(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """The sandbox environment excludes both prefixed and generic database credentials."""
+    for key in ("DATAFORGE_APP_DATABASE_URL", "DATAFORGE_WAREHOUSE_DSN", "PGPASSWORD"):
+        monkeypatch.setenv(key, "fixture-parent-only")
+    env = build_env(tmp_path)
+    assert not any(key.startswith("DATAFORGE_") for key in env)
+    assert "PGPASSWORD" not in env
+    with pytest.raises(ValueError, match="Unsupported or invalid"):
+        build_env(tmp_path, {"UNLISTED_VALUE": "fixture-parent-only"})
 
 
 @pytest.mark.skip(reason="TODO")

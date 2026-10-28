@@ -25,7 +25,7 @@ function blockReason(
     return "Wait until every file has finished uploading.";
   }
   if (entries.some((entry) => entry.status === "failed")) {
-    return "Retry or remove the files that failed to upload.";
+    return "Retry failed files, or discard the draft to choose a different file set.";
   }
   const unconfirmed = entries.filter((entry) => entry.status !== "confirmed").length;
   if (unconfirmed > 0) {
@@ -125,12 +125,16 @@ function UploadForm({
       <div className="up-columns">
         <div className="up-column">
           <FileDrop onFiles={upload.addFiles} />
+          <p className="ws-muted">
+            Choose the complete file set together. Discard the draft to change its file list.
+          </p>
           <FileList
             entries={upload.entries}
             selectedKey={selected?.key ?? null}
             onSelect={upload.select}
             onRetry={upload.retry}
             onRemove={upload.remove}
+            canRemove={upload.knownBatchId === null}
           />
           <label className="up-check up-complete">
             <input

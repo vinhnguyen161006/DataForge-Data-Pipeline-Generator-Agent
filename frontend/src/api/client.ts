@@ -12,6 +12,7 @@ import type {
   ProjectCreate,
   PullRequestCreate,
   Run,
+  RunBuilds,
   SourceFile,
   TokenResponse,
 } from "./types";
@@ -137,8 +138,11 @@ export function getApprovalHistory(projectId: string): Promise<ApprovalHistory[]
   return requestJson<ApprovalHistory[]>(`${projectPath(projectId)}/approvals`);
 }
 
-export function createBatch(projectId: string): Promise<Batch> {
-  return requestJson<Batch>(`${projectPath(projectId)}/batches`, { method: "POST" });
+export function createBatch(projectId: string, requiredFiles: string[]): Promise<Batch> {
+  return requestJson<Batch>(`${projectPath(projectId)}/batches`, {
+    method: "POST",
+    body: JSON.stringify({ required_files: requiredFiles }),
+  });
 }
 
 export function uploadFile(projectId: string, batchId: string, file: File): Promise<SourceFile> {
@@ -180,16 +184,21 @@ export function getRun(projectId: string, runId: string): Promise<Run> {
 export function answerClarifications(
   projectId: string,
   runId: string,
+  interruptId: string,
   answers: ClarificationAnswer[],
 ): Promise<Run> {
   return requestJson<Run>(
     `${runPath(projectId, runId)}/clarifications`,
-    jsonBody("POST", { answers }),
+    jsonBody("POST", { interrupt_id: interruptId, answers }),
   );
 }
 
 export function decideDesign(projectId: string, runId: string, body: DesignDecision): Promise<Run> {
   return requestJson<Run>(`${runPath(projectId, runId)}/design-decision`, jsonBody("POST", body));
+}
+
+export function getRunBuilds(projectId: string, runId: string): Promise<RunBuilds> {
+  return requestJson<RunBuilds>(`${runPath(projectId, runId)}/builds`);
 }
 
 export function getCode(projectId: string, runId: string): Promise<Record<string, unknown>> {

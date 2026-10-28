@@ -2,11 +2,11 @@ import hashlib
 import json
 import uuid
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 import pytest
 from langgraph.checkpoint.memory import InMemorySaver
-from langgraph.types import Command
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -15,6 +15,7 @@ from app.db.models import (
     Approval,
     ApprovalDecision,
     Batch,
+    BatchStatus,
     DesignVersion,
     Gate,
     Job,
@@ -34,12 +35,14 @@ from app.profiler.schemas import DataProfile
 from app.services.runs import (
     RunStateConflictError,
     deliver_finished_jobs,
+    deliver_resume_intents,
     drive_run,
     recover_pending_runs,
     resume_run,
     start_run,
 )
 from tests.designs import minimal_design, minimal_profile
+from tests.profile_jobs import make_profile_job
 
 pytestmark = pytest.mark.integration
 
@@ -97,25 +100,42 @@ def revised_design() -> DataDesign:
 
 
 @pytest.fixture
-async def setup(session_factory: async_sessionmaker[AsyncSession]) -> Fixture:
+async def setup(session_factory: async_sessionmaker[AsyncSession], tmp_path: Path) -> Fixture:
+    storage, prepared = make_profile_job(
+        tmp_path, {"studentRegistration.csv": "id_student,code_module\n001,AAA\n002,AAA\n003,BBB\n"}
+    )
+    source = prepared.manifest.files[0]
     async with session_factory.begin() as session:
         user = User(email=f"gate-{uuid.uuid4().hex}@example.com", password_hash=uuid.uuid4().hex)
         session.add(user)
         await session.flush()
-        project = Project(slug=f"gate-{uuid.uuid4().hex[:20]}", name="Gate", created_by=user.id)
+        project = Project(
+            id=prepared.identity.project_id,
+            slug=f"gate-{uuid.uuid4().hex[:20]}",
+            name="Gate",
+            created_by=user.id,
+        )
         session.add(project)
         await session.flush()
-        batch = Batch(project_id=project.id)
+        batch = Batch(
+            id=prepared.identity.batch_id,
+            project_id=project.id,
+            status=BatchStatus.READY,
+            required_files=prepared.manifest.required_files,
+            manifest_sha256=prepared.manifest.digest(),
+        )
         session.add(batch)
         await session.flush()
         session.add(
             SourceFile(
+                id=source.file_id,
                 batch_id=batch.id,
-                filename="studentRegistration.csv",
-                storage_path=f"raw/{batch.id}/studentRegistration.csv",
-                sha256="0" * 64,
-                size_bytes=10,
-                read_config={"delimiter": ","},
+                filename=source.filename,
+                storage_path=str(storage.raw_path(project.id, batch.id, source.filename)),
+                sha256=source.sha256,
+                size_bytes=source.size_bytes,
+                read_config=source.read_config.model_dump(mode="json"),
+                read_config_confirmed=True,
             )
         )
     modeler = ScriptedModeler(
@@ -179,11 +199,33 @@ async def finish_job(fx: Fixture, run: PipelineRun, *, failed: bool = False) -> 
         )
 
 
-async def reply(fx: Fixture, run_id: uuid.UUID, expected: RunStatus, value: Any) -> PipelineRun:
-    async with fx.factory() as session:
-        await resume_run(session, run_id, expected=expected)
-    resume: Command[Any] = Command(resume=value.model_dump(mode="json"))
-    await drive_run(fx.factory, fx.graph, fx.context, run_id, resume)
+async def accept_reply(
+    fx: Fixture, run_id: uuid.UUID, value: ClarificationReply | DesignGateReply
+) -> None:
+    run = await load_run(fx, run_id)
+    assert run.interrupt_id is not None
+    await resume_run(
+        fx.factory,
+        fx.graph,
+        fx.context,
+        run_id,
+        project_id=fx.project_id,
+        interrupt_id=run.interrupt_id,
+        reply=value,
+        design_version_id=(
+            uuid.UUID(run.pending["design_version_id"])
+            if isinstance(value, DesignGateReply) and run.pending
+            else None
+        ),
+    )
+
+
+async def reply(
+    fx: Fixture, run_id: uuid.UUID, expected: RunStatus, value: ClarificationReply | DesignGateReply
+) -> PipelineRun:
+    assert (await load_run(fx, run_id)).status is expected
+    await accept_reply(fx, run_id, value)
+    await deliver_resume_intents(fx.factory, fx.graph, fx.context)
     return await load_run(fx, run_id)
 
 
@@ -235,7 +277,12 @@ async def test_profile_job_is_enqueued_once_and_delivered_once(setup: Fixture) -
         jobs = (await session.scalars(select(Job).where(Job.run_id == run_id))).all()
     assert len(jobs) == 1
     assert jobs[0].delivered is True
-    assert jobs[0].payload["files"][0]["filename"] == "studentRegistration.csv"
+    assert jobs[0].payload["schema_version"] == 1
+    assert jobs[0].payload["project_id"] == str(setup.project_id)
+    async with setup.factory() as session:
+        batch = await session.get(Batch, setup.batch_id)
+        assert batch is not None
+        assert jobs[0].payload["manifest_sha256"] == batch.manifest_sha256
 
     run = await load_run(setup, run_id)
     assert run.status is RunStatus.WAITING_CLARIFICATION
@@ -339,7 +386,21 @@ async def test_real_codegen_guard_lets_an_approved_design_through(setup: Fixture
 
     assert run.status is RunStatus.FAILED
     assert run.error is not None
-    assert run.error.startswith("NotImplementedError")
+    assert run.error == "RuntimeError: No code generator is configured for this graph context"
+
+
+async def accept_reply_with_old_interrupt(
+    fx: Fixture, run_id: uuid.UUID, value: DesignGateReply
+) -> None:
+    await resume_run(
+        fx.factory,
+        fx.graph,
+        fx.context,
+        run_id,
+        project_id=fx.project_id,
+        interrupt_id="already-accepted",
+        reply=value,
+    )
 
 
 async def test_a_second_decision_is_rejected(setup: Fixture) -> None:
@@ -347,27 +408,16 @@ async def test_a_second_decision_is_rejected(setup: Fixture) -> None:
     returned = DesignGateReply(
         user_id=setup.user_id, decision="return", comment="Exclude withdrawals"
     )
-    async with setup.factory() as session:
-        await resume_run(session, run_id, expected=RunStatus.WAITING_DESIGN_APPROVAL)
-    async with setup.factory() as session:
-        with pytest.raises(RunStateConflictError):
-            await resume_run(session, run_id, expected=RunStatus.WAITING_DESIGN_APPROVAL)
-    await drive_run(
-        setup.factory,
-        setup.graph,
-        setup.context,
-        run_id,
-        Command(resume=returned.model_dump(mode="json")),
-    )
+    await accept_reply(setup, run_id, returned)
+    with pytest.raises(RunStateConflictError):
+        await accept_reply_with_old_interrupt(setup, run_id, returned)
+    await deliver_resume_intents(setup.factory, setup.graph, setup.context)
     assert len(await design_approvals(setup, run_id)) == 1
 
 
 async def test_restart_restores_a_run_waiting_at_gate_one(setup: Fixture) -> None:
     run_id = await reach_design_gate(setup)
     before = await load_run(setup, run_id)
-    async with setup.factory() as session:
-        await resume_run(session, run_id, expected=RunStatus.WAITING_DESIGN_APPROVAL)
-
     restarted = build_graph(setup.checkpointer)
     await recover_pending_runs(setup.factory, restarted, setup.context)
 

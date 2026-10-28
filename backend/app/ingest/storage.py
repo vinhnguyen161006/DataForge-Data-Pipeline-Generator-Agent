@@ -5,15 +5,28 @@ from pathlib import Path
 from typing import BinaryIO
 
 
-class Storage:
-    """Layout of the shared persistent volume.
+class UploadTooLargeError(ValueError):
+    """An incoming stream exceeded the configured byte limit."""
 
-    projects/<project_id>/batches/<batch_id>/raw/<filename>
-    projects/<project_id>/batches/<batch_id>/_READY
-    projects/<project_id>/runs/<run_id>/code/v<N>/
-    projects/<project_id>/runs/<run_id>/workspaces/<job_id>/
-    projects/<project_id>/approved/<code_version_id>/
-    """
+
+def stream_digest(stream: BinaryIO, max_bytes: int | None = None) -> tuple[str, int]:
+    digest = hashlib.sha256()
+    size = 0
+    while chunk := stream.read(1024 * 1024):
+        size += len(chunk)
+        if max_bytes is not None and size > max_bytes:
+            raise UploadTooLargeError("The uploaded file exceeds the configured size limit")
+        digest.update(chunk)
+    return digest.hexdigest(), size
+
+
+def file_digest(path: Path) -> tuple[str, int]:
+    with path.open("rb") as stream:
+        return stream_digest(stream)
+
+
+class Storage:
+    """Persistent batch inputs, immutable manifests and per-job workspaces."""
 
     def __init__(self, root: Path):
         self.root = root
@@ -48,55 +61,89 @@ class Storage:
     def approved_dir(self, project_id: uuid.UUID, code_version_id: uuid.UUID) -> Path:
         return self.root / "projects" / str(project_id) / "approved" / str(code_version_id)
 
-    def save_raw(self, dest: Path, stream: BinaryIO) -> tuple[str, int]:
-        """Stream bytes to a temporary file and publish them without overwriting."""
-        destination = dest.resolve()
-        root = self.root.resolve()
-        if not destination.is_relative_to(root):
-            raise ValueError("destination must be inside the storage root")
+    def checked_path(self, path: Path) -> Path:
+        if path.is_symlink() or not path.resolve().is_relative_to(self.root.resolve()):
+            raise ValueError("destination must be inside the storage root without symlinks")
+        return path
+
+    def save_raw(
+        self, dest: Path, stream: BinaryIO, *, max_bytes: int | None = None
+    ) -> tuple[str, int]:
+        """Publish complete raw bytes without replacement; remove only this writer's temporary."""
+        destination = self.checked_path(dest)
         destination.parent.mkdir(parents=True, exist_ok=True)
         if destination.exists():
             raise FileExistsError(destination)
-        partial = destination.with_name(destination.name + ".part")
-        if partial.exists():
-            raise FileExistsError(partial)
+        partial = destination.with_name(f".{destination.name}.{uuid.uuid4().hex}.part")
         digest = hashlib.sha256()
         size = 0
         try:
             with partial.open("xb") as output:
-                while True:
-                    chunk = stream.read(1024 * 1024)
-                    if not chunk:
-                        break
+                while chunk := stream.read(1024 * 1024):
+                    size += len(chunk)
+                    if max_bytes is not None and size > max_bytes:
+                        raise UploadTooLargeError(
+                            "The uploaded file exceeds the configured size limit"
+                        )
                     output.write(chunk)
                     digest.update(chunk)
-                    size += len(chunk)
                 output.flush()
                 os.fsync(output.fileno())
-            if destination.exists():
-                raise FileExistsError(destination)
             os.link(partial, destination)
-            partial.unlink()
-        except BaseException:
+            self._sync_directory(destination.parent)
+        finally:
             partial.unlink(missing_ok=True)
-            raise
         return digest.hexdigest(), size
 
-    def mark_ready(self, project_id: uuid.UUID, batch_id: uuid.UUID) -> None:
-        """Create the batch readiness marker atomically."""
-        batch = self.batch_dir(project_id, batch_id)
-        raw = batch / "raw"
-        if not raw.is_dir() or not any(
-            path.is_file() and not path.name.endswith(".part") for path in raw.iterdir()
-        ):
-            raise ValueError("cannot mark an empty batch ready")
-        batch.mkdir(parents=True, exist_ok=True)
-        marker = batch / "_READY"
-        if marker.exists():
-            return
-        temporary = batch / "._READY.part"
+    def manifest_path(self, project_id: uuid.UUID, batch_id: uuid.UUID) -> Path:
+        return self.checked_path(self.batch_dir(project_id, batch_id) / "manifest.json")
+
+    def marker_path(self, project_id: uuid.UUID, batch_id: uuid.UUID) -> Path:
+        return self.checked_path(self.batch_dir(project_id, batch_id) / "_READY")
+
+    @staticmethod
+    def _sync_directory(directory: Path) -> None:
+        if os.name == "posix":
+            descriptor = os.open(directory, os.O_RDONLY)
+            try:
+                os.fsync(descriptor)
+            finally:
+                os.close(descriptor)
+
+    def _atomic_write(self, path: Path, content: bytes) -> None:
+        self.checked_path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        partial = path.with_name(f".{path.name}.{uuid.uuid4().hex}.part")
         try:
-            temporary.write_text("", encoding="utf-8")
-            os.replace(temporary, marker)
+            with partial.open("xb") as stream:
+                stream.write(content)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.replace(partial, path)
+            self._sync_directory(path.parent)
         finally:
-            temporary.unlink(missing_ok=True)
+            partial.unlink(missing_ok=True)
+
+    def write_manifest(self, project_id: uuid.UUID, batch_id: uuid.UUID, content: bytes) -> None:
+        path = self.manifest_path(project_id, batch_id)
+        if self.marker_path(project_id, batch_id).exists():
+            if not path.exists() or path.read_bytes() != content:
+                raise ValueError("A published batch manifest cannot be replaced")
+            return
+        self._atomic_write(path, content)
+
+    def mark_ready(self, project_id: uuid.UUID, batch_id: uuid.UUID, manifest_sha256: str) -> None:
+        """Publish the manifest digest only after the caller committed READY in PostgreSQL."""
+        raw = self.batch_dir(project_id, batch_id) / "raw"
+        if not raw.is_dir() or not any(path.is_file() for path in raw.iterdir()):
+            raise ValueError("cannot mark an empty batch ready")
+        manifest = self.manifest_path(project_id, batch_id)
+        if not manifest.is_file() or file_digest(manifest)[0] != manifest_sha256:
+            raise ValueError("Manifest does not match the committed snapshot")
+        marker = self.marker_path(project_id, batch_id)
+        content = (manifest_sha256 + "\n").encode("ascii")
+        if marker.exists():
+            if marker.read_bytes() != content:
+                raise ValueError("Readiness marker does not match the committed snapshot")
+            return
+        self._atomic_write(marker, content)

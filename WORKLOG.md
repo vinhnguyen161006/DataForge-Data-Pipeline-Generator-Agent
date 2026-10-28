@@ -124,7 +124,7 @@ Tuần 5 và 6 là nơi rủi ro tích hợp dồn lại. Nếu tuần 3–4 tr�
 ### Tú
 - [ ] `routes/batches.py` + `services/batches.py`: upload lô, lưu manifest, đánh dấu "sẵn sàng" khi bộ file đủ (nền cho FR-16).
 - [ ] `routes/runs.py`: tạo lượt chạy, đọc trạng thái (cho polling), resume Cổng 1; kiểm tra quyền theo dự án.
-- [ ] `worker/main.py` + `worker/runner.py` job `profile`; `worker/sandbox.py`: env allowlist, rlimit, timeout, `DUCKDB_LOCKDOWN_SETTINGS`; mỗi lượt một workspace + một file DuckDB riêng.
+- [x] `worker/main.py` + `worker/runner.py` job `profile`; `worker/sandbox.py`: env allowlist, rlimit, timeout, `DUCKDB_LOCKDOWN_SETTINGS`; mỗi lượt một workspace + một file DuckDB riêng. Tài liệu: [worker lifecycle](docs/testing/worker-lifecycle.md).
 - [ ] Test khôi phục (FR-21): dừng backend khi đang chờ Cổng 1, khởi động lại, lượt chạy vẫn ở đúng điểm dừng.
 
 ### Tuấn

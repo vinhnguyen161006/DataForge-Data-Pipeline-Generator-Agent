@@ -2,9 +2,10 @@
 
 - **Dự án:** DataForge — Data Pipeline Generator Agent.
 - **Người thực hiện:** Tú.
-- **Ngày ghi nhận:** 12/10/2026.
-- **Giai đoạn:** E1–E3 có artifact; E4 đã triển khai và chờ chạy.
-- **Trạng thái:** Đã đối chiếu metadata E1, plan/kết quả E2 và JSON profile/memory study E3. Code E4 có warmup, đo lặp, median và record bàn giao; chưa có mẫu E4. Việc xác nhận với nhóm và kết quả kiểm tra code mới vẫn chờ bằng chứng.
+- **Ngày ghi nhận artifact:** 12/10/2026.
+- **Ngày đối chiếu bổ sung:** 16/10/2026.
+- **Giai đoạn:** E1–E4 đã có artifact thực tế; E4 có 1 warmup và 5 trial được đối chiếu.
+- **Trạng thái:** Đã đối chiếu metadata E1, plan/kết quả E2, JSON profile/memory study E3 và bộ benchmark E4. Median Python elapsed E4 là `0.0046065689966781065` giây; median latency DuckDB là `0.004536641` giây. Record bàn giao vẫn là đề xuất; xác nhận nhóm và kiểm chứng lại phiên bản code hiện tại còn chờ bằng chứng.
 
 ## 1. Mục tiêu và phạm vi
 
@@ -12,7 +13,7 @@ Spike chuẩn bị cách thu thập ba chỉ số phục vụ yêu cầu FR-11: 
 
 Phạm vi E1 gồm đọc nơi sử dụng số đo trong code, tạo CLI chạy riêng trong WSL, kiểm tra DuckDB thực thi được SQL và lưu cấu hình thực tế để tái chạy thí nghiệm.
 
-E2 có query mẫu và EXPLAIN ANALYZE ở mục 8. E3 đã thu JSON profile và khảo sát memory; phương pháp ở mục 9 và số thật ở mục 10. E4 đã triển khai ở mục 11, chờ chạy để điền 5 mẫu và median. Chưa có kết luận về hiệu quả của rewrite.
+E2 có query mẫu và EXPLAIN ANALYZE ở mục 8. E3 đã thu JSON profile và khảo sát memory; phương pháp ở mục 9 và số thật ở mục 10. E4 có phương pháp ở mục 11 và 5 mẫu thật cùng median ở mục 11.5. Chưa có kết luận về hiệu quả của rewrite.
 
 ## 2. Nơi sử dụng số đo trong dự án
 
@@ -29,7 +30,8 @@ Các hàm nghiệp vụ nêu trên vẫn là stub tại thời điểm rà báo 
 | Nguồn | Vai trò |
 |---|---|
 | [spike_duckdb_profiling.py](../../backend/scripts/spike_duckdb_profiling.py) | CLI mở kết nối, đọc cấu hình, kiểm tra query và ghi metadata |
-| [environment.json](../../data/spikes/duckdb/e1/environment.json) | Artifact thực tế dùng để ghi thông tin môi trường trong báo cáo |
+| [environment.json](../../data/spikes/duckdb/e1/environment.json) | Artifact thực tế dùng để ghi thông tin môi trường E1 |
+| [summary E4](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/benchmark-summary.json), [samples E4](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/benchmark-samples.json), [record E4](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/benchmark-record.json) | Bằng chứng 5 trial, median và hợp đồng bàn giao; raw profile liên kết tại mục 11.5 |
 | [pyproject.toml](../../backend/pyproject.toml) | Đối chiếu phiên bản dependency được khai báo |
 | [uv.lock](../../backend/uv.lock) | Lockfile của môi trường Python dự án |
 
@@ -149,7 +151,7 @@ uv run --locked ruff check scripts/spike_duckdb_profiling.py
 uv run --locked mypy scripts/spike_duckdb_profiling.py
 ```
 
-E3 đã có artifact được đối chiếu ở mục 10. Code E4 mới chưa chạy thí nghiệm, lint hay mypy trong lần cập nhật báo cáo này; lệnh E4 nằm ở mục 11.
+E3 đã có artifact được đối chiếu ở mục 10. E4 đã có bộ artifact được đối chiếu ở mục 11.5; lệnh tái chạy nằm ở mục 11.1. Không chạy lại thí nghiệm hoặc công cụ kiểm tra khi cập nhật tài liệu ngày 16/10/2026.
 
 
 ## 7. Kết quả E1 đã ghi nhận và giới hạn
@@ -321,7 +323,7 @@ Bộ artifact đã đối chiếu chứa các trường hợp trong cùng PID; c
 
 ## 11. E4 — Warmup, đo lặp và record bàn giao
 
-**Trạng thái:** Code E4 đã triển khai; chưa chạy benchmark E4 hoặc lint/mypy trong lần cập nhật này. Chưa có 5 mẫu E4 hoặc median để ghi vào báo cáo. Script được định dạng bằng Ruff format trước khi bàn giao.
+**Trạng thái:** Đã đối chiếu run `20261012T150253130140Z-4f713538`: 1 warmup, đủ 5 trial và 5 latency; ba metric có đủ ở mọi trial. Số thật và median tại mục 11.5. Không chạy lại benchmark trong lần cập nhật báo cáo này.
 
 ### 11.1. Cách chạy
 
@@ -379,7 +381,7 @@ Connection benchmark riêng tránh dùng trực tiếp instance vừa chạy pre
 
 `environment.json.benchmark` chứa summary E4. `environment.json.measurements` tiếp tục là mẫu fresh E3 và không được đọc như median E4. `samples.json` vẫn dành cho các trường hợp E3; mẫu benchmark nằm trong `benchmark-samples.json`.
 
-Khi chạy xong, đối chiếu `warmup_count = 1`, `measured_count = 5`, `latency_sample_count = 5`, `all_required_metrics_present`, query/result hash và số profile riêng. Ghi từng mẫu trước khi ghi median; không điền số minh họa làm kết quả.
+Đã đối chiếu run hiện có: `warmup_count = 1`, `measured_count = 5`, `latency_sample_count = 5`, `all_required_metrics_present = true`, cùng các hash và profile riêng. Số đo từng mẫu và median nằm ở mục 11.5; giữ cùng tiêu chí khi chạy một run mới.
 
 ### 11.4. Hợp đồng record đề xuất
 
@@ -401,6 +403,56 @@ Record có `schema_version = 1` và `contract_status = proposal`; chưa thay đ�
 
 Bàn giao record để Vinh/Tuấn Anh/Trí review scope và cách tích hợp. Hợp đồng đang ở trạng thái đề xuất, chưa có bằng chứng nhóm chấp thuận.
 
+### 11.5. Kết quả E4 đã đối chiếu ngày 16/10/2026
+
+Nguồn của lần chạy: [environment.json](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/environment.json), [benchmark-summary.json](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/benchmark-summary.json), [benchmark-samples.json](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/benchmark-samples.json), [warmup](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/benchmark-warmup.json) và [record bàn giao](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/benchmark-record.json). Lần cập nhật tài liệu này chỉ đọc artifact có sẵn, không chạy lại query hoặc benchmark.
+
+| Thuộc tính | Giá trị trong artifact |
+|---|---|
+| Run ID | `20261012T150253130140Z-4f713538` |
+| Thời điểm metadata UTC | `2026-10-12T15:02:53.306689+00:00` |
+| Runtime | DuckDB `1.5.5`, Python `3.11.14`, WSL2 Linux x86_64 |
+| Process ID | `1512054` |
+| Dữ liệu | File `sample.duckdb` tạo trong run; `source_rows = 1000000`; kết quả SELECT có 10 dòng |
+| Cấu hình | 1 thread yêu cầu/thực tế; memory limit `512MB` / `488.2 MiB` |
+| Phương pháp | `select_fetch_all`; 1 warmup, 5 trial; profiling bật; metric mode `default` |
+| Coverage | `requested_repeats = measured_count = latency_sample_count = 5`; `all_required_metrics_present = true` |
+| Trạng thái memory | Buffer peak trên instance tái dùng; `buffer_peak_reset_status = not_established` |
+| Record | `schema_version = 1`, `contract_status = proposal`, `model_id = null` |
+
+Định danh đã đối chiếu:
+
+- Query SHA-256: `73c2f82c7eb07c5b60c051312605b4dcdc146413ee6b53c69b6d12739bc8cce0`.
+- Result SHA-256: `550682ff4d3242a6575d2e8ff1676055ad2bce2902fa1ea8e580919efc0ed9ae`.
+- Database file SHA-256: `4a3dd7bd241a6e7f9626c4282a451b0b1ad97245b05238a2d3118a4399b9a687`.
+
+File hash đã được tính lại từ database có sẵn để đối chiếu record; chỉ nhận diện snapshot vật lý, không thay phép đối chiếu nội dung giữa hai dataset khác file.
+
+Các giá trị dưới đây giữ đơn vị gốc; mỗi dòng có raw profile riêng:
+
+| Trial / raw profile | Python execute + fetch, giây | DuckDB latency, giây | Dòng quét | Peak buffer, byte |
+|---|---:|---:|---:|---:|
+| [1](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/profile-benchmark-trial-1.json) | 0.004562920999887865 | 0.004464398 | 1000000 | 6103040 |
+| [2](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/profile-benchmark-trial-2.json) | 0.0046065689966781065 | 0.004536641 | 1000000 | 6103040 |
+| [3](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/profile-benchmark-trial-3.json) | 0.004906813002889976 | 0.004765501 | 1000000 | 6103040 |
+| [4](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/profile-benchmark-trial-4.json) | 0.00555505199736217 | 0.004621429 | 1000000 | 6103040 |
+| [5](../../data/spikes/duckdb/e4/20261012T150253130140Z-4f713538/profile-benchmark-trial-5.json) | 0.004560262001177762 | 0.004415583 | 1000000 | 6103040 |
+| **Median thời gian** | **0.0046065689966781065** | **0.004536641** | Không tổng hợp | Không tổng hợp |
+
+Median Python tương đương khoảng **4,607 ms**; median latency khoảng **4,537 ms**. Hai median được tính lại độc lập từ 5 mẫu, khớp summary, environment.benchmark và record bàn giao.
+
+Warmup có Python elapsed `0.005552375994739123` giây và latency `0.005458578` giây; không đưa vào 5 trial hoặc median. Mẫu `fresh` trong cùng run có Python elapsed `0.005773493998276535` giây và latency `0.005620381` giây, thuộc bước E3; cũng không đưa vào median E4.
+
+Đã đối chiếu 5 trial với raw profile, measurement, SQL file, danh sách sample, summary và handoff record: mỗi raw profile có đúng query và 10 dòng trả về, hash SQL khớp, các record có cùng hash kết quả; latency, elapsed và ba metric thống nhất giữa các nguồn tương ứng. `missing_metrics` của cả 5 sample đều rỗng. Không chạy lại SELECT để tính lại hash kết quả; nhận định về kết quả dựa trên record đã được CLI kiểm tra khi tạo artifact.
+
+Đây là bằng chứng spike đã thu được thời gian, dòng quét và buffer peak lặp lại trên một workload cố định. Chưa có cặp query trước/sau rewrite, đo nhiễu để phán xét cải thiện, số đo RSS, hay benchmark dbt materialization. Năm peak bằng nhau không chứng minh metric đã reset giữa các trial và không có nghĩa mỗi query dùng thêm đúng 6.103.040 byte.
+
+### 11.6. Trạng thái kiểm tra và bàn giao
+
+Log F1 do Tú cung cấp trước lần đối chiếu này ghi Ruff format/lint đạt, mypy đạt cho script profiling và Alembic ở `e41abe5a02f9 (head)` với `No new upgrade operations detected.` Full pytest ghi `458 passed, 16 skipped`, các skip là placeholder TODO ngoài các test auth/project/deps/session/queue đã chạy. Nguồn và giới hạn của các log này được ghi tại [báo cáo rà schema Tuần 1](../reviews/week-1-schema-audit.md#5-bằng-chứng-authqueue-và-kiểm-chứng-đã-nhận).
+
+Các log không nằm trong bộ artifact DuckDB và chưa kèm commit ID; không dùng chúng để khẳng định code hiện tại hoặc CI đã được kiểm chứng lại ngày 16/10/2026. Lần cập nhật này không chạy pytest, Ruff, mypy, Alembic hoặc benchmark. Việc nhóm chấp thuận record và phạm vi FR-11 vẫn chờ xác nhận.
+
 ## 12. Câu hỏi bàn giao tuần 3 và tiêu chí chốt
 
 | Vấn đề | Nhận định / đề xuất | Cần chốt hoặc kiểm chứng |
@@ -412,5 +464,5 @@ Bàn giao record để Vinh/Tuấn Anh/Trí review scope và cách tích hợp. 
 
 Theo [tài liệu run results của dbt](https://docs.getdbt.com/reference/artifacts/run-results-json), node có timing theo từng bước; cần đối chiếu với run thật của repo. Spike chưa thực thi dbt build nên chưa xác nhận timing/materialization của dbt trong môi trường này.
 
-Chốt E4 sau khi có 5 mẫu thật, median đúng scope, record bàn giao tái chạy được và ghi rõ giới hạn. Hiện E3 có số thật; E4 mới hoàn thành phần triển khai và cần Tú chạy để xác nhận. Chưa kết luận rewrite nhanh hơn hoặc tương đương, chưa xác nhận CI toàn dự án.
+E4 đã có bằng chứng thu 5 mẫu thật, median đúng phạm vi SELECT execute + fetch, raw profile riêng và record bàn giao có giới hạn rõ. Không cần coi E4 là chưa chạy. Việc nhóm chấp thuận hợp đồng, kiểm chứng dbt/CTAS, RSS/reset memory và log tái chạy gắn với phiên bản bàn giao vẫn cần xác nhận. Chưa kết luận rewrite nhanh hơn hoặc tương đương, chưa xác nhận CI toàn dự án.
 

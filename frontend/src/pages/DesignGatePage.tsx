@@ -71,6 +71,7 @@ function blockReasonOf(design: DataDesign, editing: boolean): string | null {
 export function DesignGatePage({
   projectId,
   runId,
+  interruptId,
   pending,
   canDecide,
   onDecided,
@@ -78,6 +79,7 @@ export function DesignGatePage({
 }: {
   projectId: string;
   runId: string;
+  interruptId: string;
   pending: PendingDesignGate;
   canDecide: boolean;
   onDecided: (run: Run) => void;
@@ -98,11 +100,15 @@ export function DesignGatePage({
   const design = draft ?? pending.design;
   const open = openQuestionsOf(pending.design).length;
 
-  const submit = async (body: DesignDecision) => {
+  const submit = async (body: Omit<DesignDecision, "interrupt_id" | "design_version_id">) => {
     setBusy(true);
     setError(null);
     try {
-      const next = await decideDesign(projectId, runId, body);
+      const next = await decideDesign(projectId, runId, {
+        ...body,
+        interrupt_id: interruptId,
+        design_version_id: pending.design_version_id,
+      });
       work.clear();
       clearWork(runId, returnScope(pending.design_version_id));
       onDecided(next);

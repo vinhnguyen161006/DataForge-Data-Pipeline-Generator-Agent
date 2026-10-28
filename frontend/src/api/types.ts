@@ -65,6 +65,7 @@ export interface SourceFile {
 }
 
 export interface Batch {
+  required_files: string[] | null;
   id: string;
   status: BatchStatus;
   files: SourceFile[];
@@ -90,12 +91,56 @@ export interface RunCreate {
 }
 
 export interface Run {
+  interrupt_id: string | null;
   id: string;
   status: RunStatus;
   current_step: string | null;
   pending: Pending | null;
   error: string | null;
   updated_at: string;
+}
+
+export type JobStatus = "queued" | "running" | "succeeded" | "failed";
+export type CodeOrigin = "codegen" | "optimizer" | "user_edit";
+
+export interface ModelMetrics {
+  model_name: string;
+  status: string;
+  seconds: number;
+  rows_scanned: number | null;
+  peak_memory_bytes: number | null;
+}
+
+export interface DbtTestResult {
+  test_name: string;
+  model_name: string;
+  status: string;
+  failures: number;
+}
+
+export interface ExecutionReport {
+  compiled: boolean;
+  succeeded: boolean;
+  models: ModelMetrics[];
+  tests: DbtTestResult[];
+  quarantine_counts: Record<string, number>;
+  total_seconds: number;
+  error: string | null;
+}
+
+export interface BuildAttempt {
+  code_version_id: string;
+  version: number;
+  origin: CodeOrigin;
+  generated_at: string;
+  job_status: JobStatus | null;
+  queued_at: string | null;
+  finished_at: string | null;
+  report: ExecutionReport | null;
+}
+
+export interface RunBuilds {
+  attempts: BuildAttempt[];
 }
 
 export interface ClarificationAnswer {
@@ -232,6 +277,8 @@ export interface DataDesign {
 }
 
 export interface DesignDecision {
+  interrupt_id: string;
+  design_version_id: string;
   decision: "approve" | "return";
   edited_design?: DataDesign | null;
   comment?: string | null;

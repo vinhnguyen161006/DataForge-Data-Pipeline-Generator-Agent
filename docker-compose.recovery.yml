@@ -1,0 +1,26 @@
+services:
+  migrate:
+    environment:
+      DATAFORGE_APP_DATABASE_URL: postgresql+asyncpg://dataforge:${DATAFORGE_APP_PASSWORD}@postgres:5432/dataforge_recovery
+      DATAFORGE_CHECKPOINT_DATABASE_URL: postgresql://dataforge:${DATAFORGE_APP_PASSWORD}@postgres:5432/dataforge_recovery
+
+  backend:
+    command: ["uvicorn", "--factory", "recovery_app:create_app", "--host", "0.0.0.0", "--port", "8000"]
+    stop_grace_period: 30s
+    environment:
+      DATAFORGE_APP_DATABASE_URL: postgresql+asyncpg://dataforge:${DATAFORGE_APP_PASSWORD}@postgres:5432/dataforge_recovery
+      DATAFORGE_CHECKPOINT_DATABASE_URL: postgresql://dataforge:${DATAFORGE_APP_PASSWORD}@postgres:5432/dataforge_recovery
+      DATAFORGE_STORAGE_ROOT: /data/recovery-drill
+      DATAFORGE_RECOVERY_DRILL: "true"
+      DATAFORGE_GEMINI_API_KEY: ""
+      DATAFORGE_GITHUB_TOKEN: ""
+      DATAFORGE_JOB_DELIVERY_ENABLED: "true"
+      DATAFORGE_JOB_DELIVERY_INTERVAL_SECONDS: "0.25"
+      DATAFORGE_JOB_DELIVERY_STARTUP_TIMEOUT_SECONDS: "60"
+    volumes:
+      - ./backend/scripts/recovery_app.py:/app/recovery_app.py:ro
+
+  sandbox-worker:
+    environment:
+      DATAFORGE_APP_DATABASE_URL: postgresql+asyncpg://dataforge:${DATAFORGE_APP_PASSWORD}@postgres:5432/dataforge_recovery
+      DATAFORGE_STORAGE_ROOT: /data/recovery-drill

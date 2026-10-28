@@ -2,10 +2,12 @@ import "../upload.css";
 import "../run.css";
 import { useEffect } from "react";
 import type { Run } from "../api/types";
+import { BuildLog } from "../components/run/BuildLog";
 import { ClarificationPanel } from "../components/run/ClarificationPanel";
 import { WorkflowSteps } from "../components/run/WorkflowSteps";
 import { LoadError } from "../components/workspace/LoadError";
 import { useProject } from "../hooks/useProjects";
+import { useRunBuilds } from "../hooks/useRunBuilds";
 import { useRunPolling } from "../hooks/useRunPolling";
 import { recordRunStatus } from "../progress";
 import { navigate } from "../router";
@@ -29,6 +31,14 @@ const WORKING: Record<string, { title: string; text: string }> = {
   design_gate: {
     title: "Recording your decision",
     text: "The decision is being bound to this exact design version.",
+  },
+  codegen: {
+    title: "Writing the dbt models",
+    text: "Codegen is writing the silver and mart models for the approved design. The guard checks every file before it reaches the sandbox.",
+  },
+  execute: {
+    title: "Building in the sandbox",
+    text: "dbt compiles, runs and tests this code version on DuckDB in the isolated worker. A failing build goes back to Codegen within the repair budget.",
   },
 };
 
@@ -91,12 +101,17 @@ function RunBody({
   if (run.status === "failed") {
     return <Failed projectId={projectId} error={run.error} />;
   }
-  if (run.status === "waiting_clarification" && pending?.kind === "clarification") {
+  if (
+    run.status === "waiting_clarification" &&
+    pending?.kind === "clarification" &&
+    run.interrupt_id
+  ) {
     return (
       <ClarificationPanel
-        key={pending.questions.map((question) => question.question).join("|")}
+        key={run.interrupt_id}
         projectId={projectId}
         runId={run.id}
+        interruptId={run.interrupt_id}
         questions={pending.questions}
         canAnswer={canDecide}
         onAnswered={onRunChange}
@@ -104,12 +119,17 @@ function RunBody({
       />
     );
   }
-  if (run.status === "waiting_design_approval" && pending?.kind === "design_gate") {
+  if (
+    run.status === "waiting_design_approval" &&
+    pending?.kind === "design_gate" &&
+    run.interrupt_id
+  ) {
     return (
       <DesignGatePage
-        key={pending.design_version_id}
+        key={run.interrupt_id}
         projectId={projectId}
         runId={run.id}
+        interruptId={run.interrupt_id}
         pending={pending}
         canDecide={canDecide}
         onDecided={onRunChange}
@@ -136,6 +156,7 @@ export function RunPage({ projectId, runId }: { projectId: string; runId: string
   const canDecide = project?.roles.includes("engineer") ?? false;
   const status = run?.status;
   const updatedAt = run?.updated_at;
+  const builds = useRunBuilds(projectId, runId, updatedAt);
 
   useEffect(() => {
     if (status && updatedAt) {
@@ -162,6 +183,8 @@ export function RunPage({ projectId, runId }: { projectId: string; runId: string
       ) : (
         error === null && <p className="ws-muted">Loading the run...</p>
       )}
+      {builds.error !== null && <LoadError error={builds.error} onRetry={builds.refresh} />}
+      {builds.attempts.length > 0 && <BuildLog attempts={builds.attempts} />}
     </div>
   );
 }
