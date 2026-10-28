@@ -1,6 +1,8 @@
 import re
+
 import sqlglot
 import sqlglot.expressions as exp
+
 from app.agents.schemas import GeneratedFile
 
 ALLOWED_PREFIXES = ("models/silver/", "models/mart/")
@@ -255,7 +257,6 @@ def check_sql(file: GeneratedFile) -> list[str]:
         "ordered",
         "on",
         "using",
-        "cast",
         "convert",
         "datetime_add",
         "datetime_sub",
@@ -290,7 +291,6 @@ def check_sql(file: GeneratedFile) -> list[str]:
         "var_samp",
         "list_extract",
         "list_value",
-        "unnest",
         "current_row",
         "window_frame",
         "expression",
@@ -298,14 +298,15 @@ def check_sql(file: GeneratedFile) -> list[str]:
 
     if ast:
         for node in ast.walk():
-            actual_node = node[0] if isinstance(node, tuple) else node
+            actual_node = node
 
             if actual_node.key.lower() not in allowed_node_keys:
                 violations.append(f"AST node '{actual_node.key}' not allowed in {file.path}")
 
-            if isinstance(actual_node, exp.Table):
-                if not isinstance(actual_node.this, exp.Identifier):
-                    violations.append(f"Table function not allowed in {file.path}")
+            if isinstance(actual_node, exp.Table) and not isinstance(
+                actual_node.this, exp.Identifier
+            ):
+                violations.append(f"Table function not allowed in {file.path}")
 
             if isinstance(actual_node, (exp.Func, exp.Anonymous)):
                 func_name = actual_node.name.lower() if hasattr(actual_node, "name") else ""

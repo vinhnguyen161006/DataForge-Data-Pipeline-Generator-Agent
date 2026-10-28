@@ -75,6 +75,8 @@ runtime-evaluated-base-classes = [
 "scripts/check_backend_recovery.py" = ["S603"]
 "worker/limit_exec.py" = ["S606"]
 "app/profiler/profile.py" = ["S608"]
+"app/codegen/bronze.py" = ["S608"]
+"scripts/spike_metabase.py" = ["S106"]
 "tests/fixtures/sandbox/container_probe.py" = ["S603"]
 "app/api/**" = ["TC001", "TC002", "TC003"]
 "app/api/schemas.py" = ["S105"]
@@ -89,5 +91,5 @@ warn_unreachable = true
 exclude = ["^migrations/versions/"]
 
 [[tool.mypy.overrides]]
-module = ["asgi_lifespan.*", "duckdb.*", "qdrant_client.*"]
+module = ["asgi_lifespan.*", "duckdb.*", "qdrant_client.*", "yaml.*"]
 ignore_missing_imports = true

@@ -1,12 +1,13 @@
-import yaml
 from typing import Any
+
+import yaml
 
 from app.agents.schemas import Constraint, DataDesign
 
 
 def column_test(constraint: Constraint) -> Any:
     """Map a single-column constraint to a dbt data_test entry with optional arguments."""
-    test_name = constraint.kind
+    test_name: str = constraint.kind
     if test_name == "relationship":
         test_name = "relationships"
 
@@ -76,7 +77,7 @@ def schema_yml(design: DataDesign) -> dict[str, str]:
             layers_data[layer]["models"][model_name]["tests"].append(test_entry)
 
     result_files = {}
-    for layer, data in layers_data.items():
+    for layer_name, data in layers_data.items():
         models_list = []
         for model_name, model_data in data["models"].items():
             final_model = {"name": model_name}
@@ -91,8 +92,8 @@ def schema_yml(design: DataDesign) -> dict[str, str]:
 
         if models_list:
             output_data = {"version": 2, "models": models_list}
-            result_files[f"models/{layer}/_schema.yml"] = yaml.dump(
+            result_files[f"models/{layer_name}/_schema.yml"] = yaml.dump(
                 output_data, sort_keys=False, allow_unicode=True
             )
 
-        return result_files
+    return result_files
