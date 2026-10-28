@@ -7,12 +7,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models import (
     Approval,
     ApprovalDecision,
+    Batch,
+    BatchStatus,
     CodeVersion,
     DesignVersion,
     ExecutionReport,
     Gate,
-    SourceFile,
 )
+from app.jobs.profile import ProfileJobPayload
 
 PRESENTED_VERSION_PART = "presented_design_version_id"
 
@@ -22,22 +24,14 @@ class DesignNotApprovedError(RuntimeError):
 
 
 async def profile_job_payload(session: AsyncSession, batch_id: uuid.UUID) -> dict[str, Any]:
-    files = (
-        await session.scalars(
-            select(SourceFile).where(SourceFile.batch_id == batch_id).order_by(SourceFile.filename)
-        )
-    ).all()
-    return {
-        "batch_id": str(batch_id),
-        "files": [
-            {
-                "filename": file.filename,
-                "storage_path": file.storage_path,
-                "read_config": file.read_config,
-            }
-            for file in files
-        ],
-    }
+    batch = await session.get(Batch, batch_id)
+    if batch is None or batch.status is not BatchStatus.READY or batch.manifest_sha256 is None:
+        raise ValueError("Profile jobs require a committed READY snapshot")
+    return ProfileJobPayload(
+        project_id=batch.project_id,
+        batch_id=batch.id,
+        manifest_sha256=batch.manifest_sha256,
+    ).model_dump(mode="json")
 
 
 async def add_design_version(

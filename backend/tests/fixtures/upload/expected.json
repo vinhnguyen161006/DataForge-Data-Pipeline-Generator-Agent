@@ -1,0 +1,45 @@
+{
+  "fixture_version": 1,
+  "required_files": [
+    "customers.csv",
+    "orders.csv"
+  ],
+  "expected": {
+    "customers_rows": 3,
+    "orders_rows": 3,
+    "orphan_orders": 0,
+    "customers_without_orders": [
+      "003"
+    ],
+    "total_amount": "225.00",
+    "customer_ids": [
+      "001",
+      "002",
+      "003"
+    ]
+  },
+  "read_configs": {
+    "customers": {
+      "encoding": "utf-8",
+      "delimiter": ",",
+      "null_tokens": [
+        "",
+        "NA"
+      ]
+    },
+    "orders": {
+      "encoding": "utf-8",
+      "delimiter": ",",
+      "null_tokens": [
+        ""
+      ]
+    },
+    "semicolon_orders": {
+      "encoding": "utf-8",
+      "delimiter": ";",
+      "null_tokens": [
+        ""
+      ]
+    }
+  }
+}

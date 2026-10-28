@@ -39,12 +39,14 @@ export function FileList({
   onSelect,
   onRetry,
   onRemove,
+  canRemove = true,
 }: {
   entries: FileEntry[];
   selectedKey: string | null;
   onSelect: (key: string) => void;
   onRetry: (key: string) => void;
   onRemove: (key: string) => void;
+  canRemove?: boolean;
 }) {
   if (entries.length === 0) {
     return null;
@@ -72,14 +74,16 @@ export function FileList({
                 <button type="button" className="ws-link" onClick={() => onRetry(entry.key)}>
                   Retry
                 </button>
-                <button
-                  type="button"
-                  className="up-remove"
-                  aria-label={`Remove ${entry.name}`}
-                  onClick={() => onRemove(entry.key)}
-                >
-                  &times;
-                </button>
+                {canRemove && (
+                  <button
+                    type="button"
+                    className="up-remove"
+                    aria-label={`Remove ${entry.name}`}
+                    onClick={() => onRemove(entry.key)}
+                  >
+                    &times;
+                  </button>
+                )}
               </span>
             ) : (
               <span />

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.agents.schemas import DataDesign
 from app.db.models import (
@@ -12,6 +12,7 @@ from app.db.models import (
     ReviewMode,
     RunStatus,
 )
+from app.ingest.filenames import required_filenames
 from app.ingest.sniff import CsvReadConfig
 
 
@@ -108,19 +109,41 @@ class SourceFileOut(BaseModel):
     warnings: list[str]
 
 
+class BatchCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    required_files: list[str] = Field(min_length=1)
+
+    @field_validator("required_files")
+    @classmethod
+    def validate_required_files(cls, values: list[str]) -> list[str]:
+        return required_filenames(values)
+
+
 class BatchOut(BaseModel):
     id: uuid.UUID
     status: str
     files: list[SourceFileOut]
+    required_files: list[str] | None = None
 
 
 class ReadConfigConfirm(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     read_config: CsvReadConfig
 
 
 class RunCreate(BaseModel):
     batch_id: uuid.UUID
     request_text: str
+
+    @field_validator("request_text")
+    @classmethod
+    def validate_request_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("The analytical requirement cannot be empty")
+        return value
 
 
 class RunOut(BaseModel):
@@ -130,16 +153,57 @@ class RunOut(BaseModel):
     pending: dict[str, Any] | None
     error: str | None
     updated_at: datetime
+    interrupt_id: str | None = None
+
+
+class ClarificationAnswerIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=1)
+    answer: str = Field(min_length=1)
+
+    @field_validator("question", "answer")
+    @classmethod
+    def reject_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("The value cannot be blank")
+        return value
+
+    @field_validator("answer")
+    @classmethod
+    def trim_answer(cls, value: str) -> str:
+        return value.strip()
 
 
 class ClarificationAnswers(BaseModel):
-    answers: list[dict[str, str]]
+    model_config = ConfigDict(extra="forbid")
+
+    interrupt_id: str = Field(min_length=1, max_length=128)
+    answers: list[ClarificationAnswerIn] = Field(min_length=1)
 
 
 class DesignDecision(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    interrupt_id: str = Field(min_length=1, max_length=128)
+    design_version_id: uuid.UUID
     decision: Literal["approve", "return"]
     edited_design: DataDesign | None = None
     comment: str | None = None
+
+    @field_validator("comment")
+    @classmethod
+    def normalize_comment(cls, value: str | None) -> str | None:
+        return value.strip() or None if value is not None else None
+
+    @model_validator(mode="after")
+    def validate_decision(self) -> "DesignDecision":
+        if self.decision == "return":
+            if self.edited_design is not None:
+                raise ValueError("A returned design cannot carry edits")
+            if self.comment is None:
+                raise ValueError("Returning a design requires feedback")
+        return self
 
 
 class CodeDecision(BaseModel):

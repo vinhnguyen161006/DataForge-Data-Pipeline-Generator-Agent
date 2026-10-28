@@ -99,6 +99,7 @@ function QuestionField({
 export function ClarificationPanel({
   projectId,
   runId,
+  interruptId,
   questions,
   canAnswer,
   onAnswered,
@@ -106,6 +107,7 @@ export function ClarificationPanel({
 }: {
   projectId: string;
   runId: string;
+  interruptId: string;
   questions: ClarificationQuestion[];
   canAnswer: boolean;
   onAnswered: (run: Run) => void;
@@ -113,7 +115,7 @@ export function ClarificationPanel({
 }) {
   const work = useRunWork<Draft[]>(
     runId,
-    `clarify:${questions.map((question) => question.question).join("|")}`,
+    `clarify:${interruptId}`,
     () => questions.map(() => ({ choice: null, other: "" })),
     (value): value is Draft[] => isDraftList(value) && value.length === questions.length,
     noAnswers,
@@ -134,7 +136,7 @@ export function ClarificationPanel({
         question: question.question,
         answer: answers[index],
       }));
-      const next = await answerClarifications(projectId, runId, body);
+      const next = await answerClarifications(projectId, runId, interruptId, body);
       work.clear();
       onAnswered(next);
     } catch (caught) {

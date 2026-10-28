@@ -1,3 +1,5 @@
+import hashlib
+import json
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -30,8 +32,13 @@ def sha256_bytes(data: bytes) -> str:
 
 
 def canonical_json_hash(value: Any) -> str:
-    """TODO: hash JSON (or a Pydantic model dump) with sorted keys and compact separators."""
-    raise NotImplementedError
+    """Hash JSON deterministically, rejecting non-JSON numeric values."""
+    if isinstance(value, BaseModel):
+        value = value.model_dump(mode="json")
+    content = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
+    )
+    return hashlib.sha256(content.encode("utf-8")).hexdigest()
 
 
 def hash_file_map(files: Mapping[str, bytes]) -> str:

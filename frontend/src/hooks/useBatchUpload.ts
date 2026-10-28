@@ -58,6 +58,7 @@ export function useBatchUpload(projectId: string, initial: UploadDraft | null): 
   const [entries, setEntries] = useState<FileEntry[]>(() => initial?.files.map(restored) ?? []);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [knownBatchId, setKnownBatchId] = useState<string | null>(initial?.batchId ?? null);
+  const declaredFiles = useRef<string[]>(initial?.files.map((file) => file.source.filename) ?? []);
   const batch = useRef<Promise<string> | null>(
     initial?.batchId ? Promise.resolve(initial.batchId) : null,
   );
@@ -68,7 +69,7 @@ export function useBatchUpload(projectId: string, initial: UploadDraft | null): 
     );
 
   const batchId = (): Promise<string> => {
-    batch.current ??= createBatch(projectId).then(
+    batch.current ??= createBatch(projectId, declaredFiles.current).then(
       (created) => {
         setKnownBatchId(created.id);
         return created.id;
@@ -92,6 +93,11 @@ export function useBatchUpload(projectId: string, initial: UploadDraft | null): 
   };
 
   const addFiles = async (files: File[]) => {
+    if (batch.current === null) {
+      declaredFiles.current = [
+        ...new Set([...declaredFiles.current, ...files.map((file) => file.name)]),
+      ];
+    }
     const added: FileEntry[] = files.map((file) => ({
       key: crypto.randomUUID(),
       name: file.name,
@@ -121,6 +127,13 @@ export function useBatchUpload(projectId: string, initial: UploadDraft | null): 
   };
 
   const remove = (key: string) => {
+    if (batch.current !== null) {
+      return;
+    }
+    const entry = find(key);
+    if (entry) {
+      declaredFiles.current = declaredFiles.current.filter((name) => name !== entry.name);
+    }
     setEntries((current) => current.filter((entry) => entry.key !== key));
     setSelectedKey((current) => (current === key ? null : current));
   };

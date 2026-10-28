@@ -8,11 +8,20 @@ from langgraph.types import Command, StateSnapshot
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from app.db.models import Job, JobStatus, PipelineRun, RunStatus
+from app.db.models import Job, JobStatus, PipelineRun, RunResumeIntent, RunStatus
 from app.graph.builder import PipelineGraph
 from app.graph.context import GraphContext
-from app.graph.interrupts import WAITING_STATUS, JobOutcome, pending_adapter
+from app.graph.interrupts import (
+    WAITING_STATUS,
+    ClarificationReply,
+    ClarificationRequest,
+    DesignGateReply,
+    DesignGateRequest,
+    JobOutcome,
+    pending_adapter,
+)
 from app.graph.state import PipelineState
+from app.services.run_lock import run_lock
 
 if TYPE_CHECKING:
     from langchain_core.runnables import RunnableConfig
@@ -64,21 +73,184 @@ async def start_run(
     return run.id
 
 
-async def resume_run(session: AsyncSession, run_id: uuid.UUID, *, expected: RunStatus) -> None:
-    """Claim a waiting run for resumption; the caller then schedules drive_run with
-    Command(resume=...).
+class RunDecisionConflictError(Exception):
+    """The submitted interrupt or design is no longer current."""
 
-    Separating the check from execution keeps the HTTP request short while the Modeler
-    calls Gemini, and makes a duplicated decision fail instead of resuming twice.
-    """
-    run = await session.get(PipelineRun, run_id, with_for_update=True)
-    if run is None:
-        raise RunNotFoundError(f"Run {run_id} does not exist")
-    if run.status is not expected:
-        raise RunStateConflictError(run_id, expected, run.status)
-    run.status = RunStatus.RUNNING
-    run.pending = None
-    await session.commit()
+
+class RunReplyValidationError(ValueError):
+    """The reply does not answer the current questions or contains an invalid design."""
+
+
+def _human_pending(
+    snapshot: StateSnapshot,
+) -> tuple[str, ClarificationRequest | DesignGateRequest]:
+    interrupts = [item for task in snapshot.tasks for item in task.interrupts]
+    if len(interrupts) != 1:
+        raise RunDecisionConflictError("The run is not waiting for this decision")
+    item = interrupts[0]
+    pending = pending_adapter.validate_python(item.value)
+    if not isinstance(pending, ClarificationRequest | DesignGateRequest):
+        raise RunDecisionConflictError("The run is waiting for a worker job")
+    return item.id, pending
+
+
+def _validate_reply(
+    pending: ClarificationRequest | DesignGateRequest,
+    reply: ClarificationReply | DesignGateReply,
+    design_version_id: uuid.UUID | None,
+    context: GraphContext,
+) -> None:
+    if isinstance(pending, ClarificationRequest) and isinstance(reply, ClarificationReply):
+        questions = [question.question for question in pending.questions]
+        supplied = [answer.question for answer in reply.answers]
+        if (
+            len(questions) != len(set(questions))
+            or len(supplied) != len(set(supplied))
+            or set(supplied) != set(questions)
+        ):
+            raise RunReplyValidationError("Answer each current question exactly once")
+        if any(not answer.answer.strip() for answer in reply.answers):
+            raise RunReplyValidationError("Answers cannot be blank")
+        return
+    if isinstance(pending, DesignGateRequest) and isinstance(reply, DesignGateReply):
+        if design_version_id != pending.design_version_id:
+            raise RunDecisionConflictError("The design version has changed; refresh the run")
+        if reply.decision == "approve":
+            problems = context.check_design(reply.edited_design or pending.design)
+            if problems:
+                raise RunReplyValidationError("; ".join(problems))
+        return
+    raise RunDecisionConflictError("This reply does not match the current gate")
+
+
+async def resume_run(
+    factory: async_sessionmaker[AsyncSession],
+    graph: PipelineGraph,
+    context: GraphContext,
+    run_id: uuid.UUID,
+    *,
+    project_id: uuid.UUID,
+    interrupt_id: str,
+    reply: ClarificationReply | DesignGateReply,
+    design_version_id: uuid.UUID | None = None,
+) -> PipelineRun:
+    """Atomically accept one human reply; delivery remains recoverable after HTTP returns."""
+    expected = (
+        RunStatus.WAITING_CLARIFICATION
+        if isinstance(reply, ClarificationReply)
+        else RunStatus.WAITING_DESIGN_APPROVAL
+    )
+    async with run_lock(factory, run_id, wait=False), factory() as session:
+        run = await session.scalar(
+            select(PipelineRun)
+            .where(PipelineRun.id == run_id, PipelineRun.project_id == project_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        if run is None:
+            raise RunNotFoundError("Run not found in this project")
+        if run.status is not expected:
+            raise RunStateConflictError(run_id, expected, run.status)
+        if run.interrupt_id != interrupt_id:
+            raise RunDecisionConflictError("The interrupt has changed; refresh the run")
+        existing = await session.scalar(
+            select(RunResumeIntent.id).where(
+                RunResumeIntent.run_id == run_id,
+                RunResumeIntent.interrupt_id == interrupt_id,
+            )
+        )
+        if existing is not None:
+            raise RunDecisionConflictError("A decision was already accepted for this interrupt")
+        snapshot = await graph.aget_state(thread_config(run_id))
+        current_id, pending = _human_pending(snapshot)
+        if current_id != interrupt_id:
+            raise RunDecisionConflictError("The interrupt has changed; refresh the run")
+        _validate_reply(pending, reply, design_version_id, context)
+        session.add(
+            RunResumeIntent(
+                run_id=run_id,
+                interrupt_id=interrupt_id,
+                actor_id=reply.user_id,
+                kind=pending.kind,
+                payload=reply.model_dump(mode="json"),
+            )
+        )
+        run.status = RunStatus.RUNNING
+        run.pending = None
+        run.interrupt_id = None
+        run.error = None
+        await session.flush()
+        await session.refresh(run)
+        await session.commit()
+        return run
+
+
+async def _deliver_resume_intent_locked(
+    factory: async_sessionmaker[AsyncSession],
+    graph: PipelineGraph,
+    context: GraphContext,
+    intent_id: uuid.UUID,
+) -> bool:
+    async with factory() as session:
+        intent = await session.get(RunResumeIntent, intent_id)
+    if intent is None or intent.delivered:
+        return False
+    reply = (
+        ClarificationReply.model_validate(intent.payload)
+        if intent.kind == "clarification"
+        else DesignGateReply.model_validate(intent.payload)
+    )
+    if reply.user_id != intent.actor_id:
+        raise RunReplyValidationError("Stored reply actor does not match its receipt")
+    snapshot = await graph.aget_state(thread_config(intent.run_id))
+    if not snapshot.values:
+        raise RuntimeError("The checkpoint for an accepted reply is unavailable")
+    interrupt_ids = {item.id for task in snapshot.tasks for item in task.interrupts}
+    if intent.interrupt_id in interrupt_ids:
+        command: Command[Any] = Command(resume={intent.interrupt_id: reply.model_dump(mode="json")})
+        await _drive_run(factory, graph, context, intent.run_id, command)
+    elif snapshot.next and not interrupt_ids:
+        await _drive_run(factory, graph, context, intent.run_id)
+    else:
+        await sync_run(factory, graph, intent.run_id)
+    await _mark_resume_delivered(factory, intent_id)
+    return True
+
+
+async def _mark_resume_delivered(
+    factory: async_sessionmaker[AsyncSession], intent_id: uuid.UUID
+) -> None:
+    async with factory.begin() as session:
+        stored = await session.get(RunResumeIntent, intent_id, with_for_update=True)
+        if stored is not None:
+            stored.delivered = True
+
+
+async def deliver_resume_intents(
+    factory: async_sessionmaker[AsyncSession],
+    graph: PipelineGraph,
+    context: GraphContext,
+    run_id: uuid.UUID | None = None,
+) -> int:
+    """Drain committed human replies without sending an old reply into a later interrupt."""
+    query = select(RunResumeIntent.id, RunResumeIntent.run_id).where(
+        RunResumeIntent.delivered.is_(False)
+    )
+    if run_id is not None:
+        query = query.where(RunResumeIntent.run_id == run_id)
+    async with factory() as session:
+        intents = (
+            await session.execute(
+                query.order_by(RunResumeIntent.created_at, RunResumeIntent.id).limit(
+                    DELIVERY_BATCH_SIZE
+                )
+            )
+        ).all()
+    delivered = 0
+    for intent_id, run_id in intents:
+        async with run_lock(factory, run_id):
+            delivered += await _deliver_resume_intent_locked(factory, graph, context, intent_id)
+    return delivered
 
 
 async def _initial_input(
@@ -118,10 +290,23 @@ async def _mark_failed(
         if run is not None:
             run.status = RunStatus.FAILED
             run.pending = None
+            run.interrupt_id = None
             run.error = error
 
 
 async def drive_run(
+    factory: async_sessionmaker[AsyncSession],
+    graph: PipelineGraph,
+    context: GraphContext,
+    run_id: uuid.UUID,
+    command: Command[Any] | None = None,
+) -> None:
+    """Serialize graph execution with human replies, recovery and job delivery."""
+    async with run_lock(factory, run_id):
+        await _drive_run(factory, graph, context, run_id, command)
+
+
+async def _drive_run(
     factory: async_sessionmaker[AsyncSession],
     graph: PipelineGraph,
     context: GraphContext,
@@ -168,6 +353,9 @@ async def sync_run(
         run.status = status
         run.current_step = step
         run.pending = pending
+        run.interrupt_id = next(
+            (item.id for task in snapshot.tasks for item in task.interrupts), None
+        )
         run.error = snapshot.values.get("error")
     return status
 
@@ -200,6 +388,7 @@ async def _claim_waiting_run(factory: async_sessionmaker[AsyncSession], job: Job
         if run is not None and waiting:
             run.status = RunStatus.RUNNING
             run.pending = None
+            run.interrupt_id = None
         return waiting
 
 
@@ -221,30 +410,33 @@ async def deliver_finished_jobs(
     """
     resumed = 0
     for job in await _finished_undelivered_jobs(factory):
-        if job.run_id is not None and await _claim_waiting_run(factory, job):
-            outcome = JobOutcome(
-                job_id=job.id,
-                status=job.status,
-                result=job.result,
-                error=job.last_error,
-            )
-            await drive_run(
-                factory, graph, context, job.run_id, Command(resume=outcome.model_dump(mode="json"))
-            )
-            resumed += 1
-        await _mark_delivered(factory, job.id)
+        if job.run_id is None:
+            continue
+        async with run_lock(factory, job.run_id):
+            if await _claim_waiting_run(factory, job):
+                outcome = JobOutcome(
+                    job_id=job.id,
+                    status=job.status,
+                    result=job.result,
+                    error=job.last_error,
+                )
+                await _drive_run(
+                    factory,
+                    graph,
+                    context,
+                    job.run_id,
+                    Command(resume=outcome.model_dump(mode="json")),
+                )
+                resumed += 1
+            await _mark_delivered(factory, job.id)
     return resumed
 
 
 async def recover_pending_runs(
     factory: async_sessionmaker[AsyncSession], graph: PipelineGraph, context: GraphContext
 ) -> int:
-    """On startup, re-sync every unfinished run from its checkpoint and continue the ones that
-    stopped between nodes; return how many runs were recovered.
-
-    A run claimed for resumption but never driven goes back to its waiting status, so the
-    Engineer's decision or the job delivery can be sent again.
-    """
+    """Deliver accepted replies, then restore unfinished projections from checkpoints."""
+    await deliver_resume_intents(factory, graph, context)
     async with factory() as session:
         run_ids = (
             await session.scalars(
@@ -252,10 +444,22 @@ async def recover_pending_runs(
             )
         ).all()
     for run_id in run_ids:
-        snapshot = await graph.aget_state(thread_config(run_id))
-        unstarted = not snapshot.values
-        if unstarted or await sync_run(factory, graph, run_id) is RunStatus.RUNNING:
-            await drive_run(factory, graph, context, run_id)
+        async with run_lock(factory, run_id):
+            async with factory() as session:
+                pending_intents = list(
+                    await session.scalars(
+                        select(RunResumeIntent.id).where(
+                            RunResumeIntent.run_id == run_id,
+                            RunResumeIntent.delivered.is_(False),
+                        )
+                    )
+                )
+            for intent_id in pending_intents:
+                await _deliver_resume_intent_locked(factory, graph, context, intent_id)
+            snapshot = await graph.aget_state(thread_config(run_id))
+            unstarted = not snapshot.values
+            if unstarted or await sync_run(factory, graph, run_id) is RunStatus.RUNNING:
+                await _drive_run(factory, graph, context, run_id)
     return len(run_ids)
 
 
@@ -279,5 +483,6 @@ async def job_delivery_loop(
     """Recover unfinished runs once, then keep delivering finished jobs until cancelled."""
     await _logged("recover_pending_runs", recover_pending_runs(factory, graph, context))
     while True:
+        await _logged("deliver_resume_intents", deliver_resume_intents(factory, graph, context))
         await _logged("deliver_finished_jobs", deliver_finished_jobs(factory, graph, context))
         await asyncio.sleep(interval_seconds)
