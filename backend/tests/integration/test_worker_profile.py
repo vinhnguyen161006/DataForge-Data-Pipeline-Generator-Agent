@@ -27,6 +27,7 @@ from app.db.models import (
 )
 from app.db.session import make_sessionmaker
 from app.jobs import queue
+from app.jobs.queue import JobOwnershipLostError
 from app.profiler.schemas import DataProfile
 from app.services.batches import BatchError
 from tests.profile_jobs import make_profile_job
@@ -212,8 +213,9 @@ async def test_preparation_requires_live_owned_profile_attempt(
             stored.kind = "dbt_build"
         else:
             stored.run_id = None
+    expected_error = ValueError if invalid == "missing_run" else JobOwnershipLostError
     async with profile_job.factory() as session:
-        with pytest.raises(ValueError, match="live"):
+        with pytest.raises(expected_error, match="live"):
             await prepare_profile_job(
                 session, profile_job.storage, job_id=job.id, worker_id="profile-test", attempt=1
             )

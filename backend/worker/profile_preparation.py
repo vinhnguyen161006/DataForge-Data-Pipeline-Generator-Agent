@@ -11,6 +11,7 @@ from sqlalchemy import func, select
 from app.db.models import Job, JobQueue, JobStatus, PipelineRun
 from app.ingest.sniff import CsvReadConfig
 from app.jobs.profile import ProfileJobPayload
+from app.jobs.queue import JobOwnershipLostError
 from app.services.batches import assert_batch_ready
 from worker.profile_protocol import PreparedProfileJob, ProfileIdentity
 
@@ -81,8 +82,10 @@ async def prepare_profile_job(
             Job.lease_expires_at > func.clock_timestamp(),
         )
     )
-    if job is None or job.run_id is None:
-        raise ValueError("No live profile job is owned by this worker and attempt")
+    if job is None:
+        raise JobOwnershipLostError("No live profile job is owned by this worker and attempt")
+    if job.run_id is None:
+        raise ValueError("The live profile job has no pipeline run")
     run = await session.get(PipelineRun, job.run_id)
     if run is None:
         raise ValueError("Profile job has no pipeline run")

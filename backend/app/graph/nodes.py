@@ -70,10 +70,16 @@ async def profile_node(state: PipelineState, runtime: Runtime[GraphContext]) -> 
         job_id = job.id
     wait = JobWait(job_id=job_id, job_kind=PROFILE_JOB_KIND)
     outcome = JobOutcome.model_validate(interrupt(wait.model_dump(mode="json")))
+    if outcome.job_id != job_id:
+        raise ValueError("Profile outcome does not match the awaited job")
+    consumed = [*state.get("consumed_job_ids", []), str(job_id)]
     if outcome.status is JobStatus.FAILED:
-        return {"error": f"Profiling failed: {outcome.error or 'unknown error'}"}
+        return {
+            "consumed_job_ids": consumed,
+            "error": f"Profiling failed: {outcome.error or 'unknown error'}",
+        }
     profile = DataProfile.model_validate(outcome.result)
-    return {"profile": profile.model_dump(mode="json")}
+    return {"profile": profile.model_dump(mode="json"), "consumed_job_ids": consumed}
 
 
 async def modeler_node(state: PipelineState, runtime: Runtime[GraphContext]) -> dict[str, Any]:

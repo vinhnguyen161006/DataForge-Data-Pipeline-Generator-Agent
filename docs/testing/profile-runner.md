@@ -36,7 +36,7 @@ claim_next() commit owner và tăng attempt
   → caller complete/fail bằng owner và attempt
 ```
 
-Runner không tự claim, complete, retry hoặc gọi Modeler. Worker loop/heartbeat/delivery là phần tích hợp tiếp theo; `worker/main.py` vẫn là stub.
+Runner không tự claim, complete, retry hoặc gọi Modeler. Worker loop quản lý lease và lifecycle; API giao kết quả theo checkpoint. Xem [worker-lifecycle.md](worker-lifecycle.md).
 
 `prepare_profile_job()` kiểm tra queue SANDBOX, kind profile, RUNNING, worker_id, attempt và lease còn hạn theo đồng hồ PostgreSQL. Identity lấy từ Job → PipelineRun, rồi so với payload và manifest. UUID hợp lệ về cú pháp không đủ chứng minh quan hệ giữa các tài nguyên.
 

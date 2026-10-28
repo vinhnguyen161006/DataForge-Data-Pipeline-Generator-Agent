@@ -1,10 +1,12 @@
 import asyncio
 import logging
+import math
 import uuid
 from collections.abc import Awaitable
 from typing import TYPE_CHECKING, Any
 
 from langgraph.types import Command, StateSnapshot
+from pydantic import ValidationError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
@@ -18,9 +20,11 @@ from app.graph.interrupts import (
     DesignGateReply,
     DesignGateRequest,
     JobOutcome,
+    JobWait,
     pending_adapter,
 )
 from app.graph.state import PipelineState
+from app.profiler.schemas import DataProfile
 from app.services.run_lock import run_lock
 
 if TYPE_CHECKING:
@@ -360,36 +364,30 @@ async def sync_run(
     return status
 
 
-async def _finished_undelivered_jobs(factory: async_sessionmaker[AsyncSession]) -> list[Job]:
+async def _finished_undelivered_jobs(
+    factory: async_sessionmaker[AsyncSession], *, after_id: uuid.UUID | None = None
+) -> list[Job]:
+    query = select(Job).where(
+        Job.run_id.is_not(None),
+        Job.delivered.is_(False),
+        Job.status.in_(TERMINAL_JOB_STATUSES),
+    )
+    if after_id is not None:
+        query = query.where(Job.id > after_id)
     async with factory() as session:
-        jobs = await session.scalars(
-            select(Job)
-            .where(
-                Job.run_id.is_not(None),
-                Job.delivered.is_(False),
-                Job.status.in_(TERMINAL_JOB_STATUSES),
-            )
-            .order_by(Job.finished_at, Job.id)
-            .limit(DELIVERY_BATCH_SIZE)
-        )
+        jobs = await session.scalars(query.order_by(Job.id).limit(DELIVERY_BATCH_SIZE))
         return list(jobs.all())
 
 
-async def _claim_waiting_run(factory: async_sessionmaker[AsyncSession], job: Job) -> bool:
-    """Move the run from WAITING_JOB to RUNNING when it is waiting for exactly this job."""
+async def _mark_job_resuming(factory: async_sessionmaker[AsyncSession], run_id: uuid.UUID) -> None:
+    """Project a checkpoint-authorized resume while holding the shared run lock."""
     async with factory.begin() as session:
-        run = await session.get(PipelineRun, job.run_id, with_for_update=True)
-        waiting = (
-            run is not None
-            and run.status is RunStatus.WAITING_JOB
-            and run.pending is not None
-            and run.pending.get("job_id") == str(job.id)
-        )
-        if run is not None and waiting:
-            run.status = RunStatus.RUNNING
-            run.pending = None
-            run.interrupt_id = None
-        return waiting
+        run = await session.get(PipelineRun, run_id, with_for_update=True)
+        if run is None:
+            raise RunNotFoundError(f"Run {run_id} does not exist")
+        run.status = RunStatus.RUNNING
+        run.pending = None
+        run.interrupt_id = None
 
 
 async def _mark_delivered(factory: async_sessionmaker[AsyncSession], job_id: uuid.UUID) -> None:
@@ -399,36 +397,91 @@ async def _mark_delivered(factory: async_sessionmaker[AsyncSession], job_id: uui
             job.delivered = True
 
 
+def _job_consumed(snapshot: StateSnapshot, job: Job) -> bool:
+    if str(job.id) in snapshot.values.get("consumed_job_ids", []):
+        return True
+    return (
+        "consumed_job_ids" not in snapshot.values
+        and job.kind == "profile"
+        and job.idempotency_key == f"profile:{job.run_id}"
+        and bool(snapshot.values.get("profile"))
+    )
+
+
+async def _deliver_job_locked(
+    factory: async_sessionmaker[AsyncSession],
+    graph: PipelineGraph,
+    context: GraphContext,
+    job_id: uuid.UUID,
+) -> bool:
+    async with factory() as session:
+        job = await session.get(Job, job_id)
+    if (
+        job is None
+        or job.delivered
+        or job.run_id is None
+        or job.status not in TERMINAL_JOB_STATUSES
+    ):
+        return False
+    snapshot = await graph.aget_state(thread_config(job.run_id))
+    if not snapshot.values or snapshot.values.get("run_id") != str(job.run_id):
+        return False
+    interrupts = [item for task in snapshot.tasks for item in task.interrupts]
+    advanced = False
+    if snapshot.next and not interrupts:
+        await _drive_run(factory, graph, context, job.run_id)
+        advanced = True
+        snapshot = await graph.aget_state(thread_config(job.run_id))
+        interrupts = [item for task in snapshot.tasks for item in task.interrupts]
+    if _job_consumed(snapshot, job):
+        if not advanced:
+            await sync_run(factory, graph, job.run_id)
+        await _mark_delivered(factory, job.id)
+        return False
+    if len(interrupts) != 1:
+        return False
+    pending = pending_adapter.validate_python(interrupts[0].value)
+    if not isinstance(pending, JobWait) or pending.job_id != job.id or pending.job_kind != job.kind:
+        return False
+    outcome = JobOutcome(job_id=job.id, status=job.status, result=job.result, error=job.last_error)
+    if job.kind == "profile" and job.status is JobStatus.SUCCEEDED:
+        outcome.result = DataProfile.model_validate(job.result).model_dump(mode="json")
+    await _mark_job_resuming(factory, job.run_id)
+    await _drive_run(
+        factory,
+        graph,
+        context,
+        job.run_id,
+        Command(resume={interrupts[0].id: outcome.model_dump(mode="json")}),
+    )
+    snapshot = await graph.aget_state(thread_config(job.run_id))
+    if not _job_consumed(snapshot, job):
+        return False
+    await _mark_delivered(factory, job.id)
+    return True
+
+
 async def deliver_finished_jobs(
     factory: async_sessionmaker[AsyncSession], graph: PipelineGraph, context: GraphContext
 ) -> int:
-    """Resume every run whose awaited job finished; return how many runs were resumed.
-
-    Claiming the run row first makes concurrent deliverers resume a run once. The job
-    is marked delivered only after the run moved on, so a crash in between redelivers;
-    a run no longer waiting for that job then simply marks it delivered (FR-21).
-    """
+    """Deliver only to the matching checkpoint interrupt and acknowledge durable consumption."""
     resumed = 0
-    for job in await _finished_undelivered_jobs(factory):
-        if job.run_id is None:
-            continue
-        async with run_lock(factory, job.run_id):
-            if await _claim_waiting_run(factory, job):
-                outcome = JobOutcome(
-                    job_id=job.id,
-                    status=job.status,
-                    result=job.result,
-                    error=job.last_error,
-                )
-                await _drive_run(
-                    factory,
-                    graph,
-                    context,
-                    job.run_id,
-                    Command(resume=outcome.model_dump(mode="json")),
-                )
-                resumed += 1
-            await _mark_delivered(factory, job.id)
+    after_id = None
+    while jobs := await _finished_undelivered_jobs(factory, after_id=after_id):
+        for job in jobs:
+            if job.run_id is None:
+                continue
+            async with run_lock(factory, job.run_id):
+                try:
+                    resumed += await _deliver_job_locked(factory, graph, context, job.id)
+                except ValidationError:
+                    logger.error(
+                        "Job delivery rejected an invalid payload",
+                        extra={"job_id": str(job.id), "run_id": str(job.run_id)},
+                    )
+        after_id = jobs[-1].id
+        if len(jobs) < DELIVERY_BATCH_SIZE:
+            break
     return resumed
 
 
@@ -463,14 +516,15 @@ async def recover_pending_runs(
     return len(run_ids)
 
 
-async def _logged(step: str, work: Awaitable[int]) -> None:
+async def _logged(step: str, work: Awaitable[int]) -> bool:
     try:
         count = await work
     except Exception:
         logger.exception("%s failed; retrying on the next tick", step)
-        return
+        return False
     if count:
         logger.info("%s handled %d runs", step, count)
+    return True
 
 
 async def job_delivery_loop(
@@ -479,10 +533,23 @@ async def job_delivery_loop(
     context: GraphContext,
     *,
     interval_seconds: float,
+    startup_ready: asyncio.Event | None = None,
 ) -> None:
-    """Recover unfinished runs once, then keep delivering finished jobs until cancelled."""
-    await _logged("recover_pending_runs", recover_pending_runs(factory, graph, context))
+    """Recover and drain before readiness, then keep delivering results until cancelled."""
+    if not math.isfinite(interval_seconds) or interval_seconds <= 0:
+        raise ValueError("The delivery interval must be positive and finite")
+    recovered = False
     while True:
-        await _logged("deliver_resume_intents", deliver_resume_intents(factory, graph, context))
-        await _logged("deliver_finished_jobs", deliver_finished_jobs(factory, graph, context))
+        if not recovered:
+            recovered = await _logged(
+                "recover_pending_runs", recover_pending_runs(factory, graph, context)
+            )
+        intents_ok = await _logged(
+            "deliver_resume_intents", deliver_resume_intents(factory, graph, context)
+        )
+        jobs_ok = await _logged(
+            "deliver_finished_jobs", deliver_finished_jobs(factory, graph, context)
+        )
+        if recovered and intents_ok and jobs_ok and startup_ready is not None:
+            startup_ready.set()
         await asyncio.sleep(interval_seconds)
