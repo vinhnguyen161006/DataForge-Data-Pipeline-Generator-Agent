@@ -2,6 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from app.agents.schemas import GeneratedFile
+from app.codegen.guard import check_generated_files
 from worker.sandbox import build_env
 
 
@@ -18,7 +20,28 @@ def test_sandbox_env_has_no_credentials(tmp_path: Path, monkeypatch: pytest.Monk
 
 @pytest.mark.skip(reason="TODO")
 def test_codegen_guard_rejects_file_access() -> None:
-    """TODO: read_csv / attach / copy / paths outside models/silver|mart are violations."""
+    bad_file = GeneratedFile(
+        path="models/silver/bad.sql", content="SELECT * FROM read_csv('secret.csv');"
+    )
+    violations = check_generated_files([bad_file])
+    assert len(violations) > 0
+    assert any("read_csv" in v for v in violations)
+
+
+def test_codegen_guard_rejects_bad_paths() -> None:
+    bad_path = GeneratedFile(path="../models/mart/hacked.sql", content="SELECT 1")
+    violations = check_generated_files([bad_path])
+    assert len(violations) > 0
+    assert any("relative traversal" in v for v in violations)
+
+
+def test_codegen_guard_accepts_valid_code() -> None:
+    good_file = GeneratedFile(
+        path="models/mart/good.sql",
+        content="{{ config(materialized='table') }}\nSELECT * FROM {{ ref('silver_users') }}",
+    )
+    violations = check_generated_files([good_file])
+    assert len(violations) == 0
 
 
 @pytest.mark.skip(reason="TODO")
